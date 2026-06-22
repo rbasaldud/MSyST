@@ -1,0 +1,39 @@
+# ── Quarto ──────────────────────────────────────────
+.quarto/
+*_files/          # carpetas de dependencias (dygraphs JS/CSS, etc.)
+*_cache/          # caché de chunks de R
+*.html            # outputs renderizados (omite si los quieres versionar)
+
+# ── LaTeX / PDF ──────────────────────────────────────
+*.aux
+*.log
+*.toc
+*.lof
+*.lot
+*.out
+*.bbl
+*.blg
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.tex             # omite si tienes .tex fuente que sí quieres versionar
+
+# ── Tipografías y recursos temporales ────────────────
+*.ttf
+*.otf
+*.woff
+*.woff2
+
+# ── R ────────────────────────────────────────────────
+.Rhistory
+.RData
+.Rproj.user/
+*.Rproj            # omite si quieres compartir el proyecto de RStudio
+
+# ── YAML generados automáticamente ───────────────────
+# (los _quarto.yml que TÚ escribes sí deben versionarse)
+_freeze/
+
+# ── Sistema operativo ─────────────────────────────────
+.DS_Store
+Thumbs.db
