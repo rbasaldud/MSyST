@@ -1,0 +1,71 @@
+---
+format: 
+  revealjs:
+    slide-number: c/t
+    footer: "Facultad de Ciencias, UNAM"
+    center-title-slide: false
+    code-overflow: wrap
+    highlight-style: a11y
+    height: 1080
+    width: 1920
+execute: 
+  eval: true
+  echo: true
+---
+
+<h1>
+<b>Visualizando una serie de tiempo</b><br>
+<b></b>
+</h1>
+
+<hr>
+
+<h2>
+Algunas paqueterias en 
+</h2>
+
+<br>
+<br>
+
+<h3>Autor</h3>
+
+<ul style="font-size: 1.2em;">
+  <li>Rodrigo Basaldud</li>
+</ul>
+
+<br>
+
+<h3>Semestre 2027-1</h3>
+
+
+# La paqueteria `dygraphs`
+
+<br>
+
+```{r}
+#| echo: true
+#| fig-width: 10
+#| fig-height: 4.5
+
+library(dygraphs)
+lungDeaths <- cbind(mdeaths, fdeaths)
+
+dygraph(lungDeaths,main="Muertes por cancer de pulmon 1974 - 1979") %>%
+  dySeries("mdeaths", label = "Hombre") %>%
+  dySeries("fdeaths", label = "Mujer") %>%
+  dyOptions(stackedGraph = TRUE) %>%
+  dyRangeSelector(height = 20)
+
+```
+
+
+
+# La paqueteria `ggtime`
+
+
+
+
+
+# La paqueteria `lubridate`
+
+
