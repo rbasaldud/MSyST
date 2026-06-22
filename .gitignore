@@ -1,8 +1,14 @@
 # ── Quarto ──────────────────────────────────────────
 .quarto/
-*_files/          # carpetas de dependencias (dygraphs JS/CSS, etc.)
 *_cache/          # caché de chunks de R
 *.html            # outputs renderizados (omite si los quieres versionar)
+*_files/
+**/*_files/visualizacion_files/ # del archivo visualizacion qmd
+
+# Por si acaso, ignorar libs de htmlwidgets específicamente  
+libs/
+**/libs/
+
 
 # ── LaTeX / PDF ──────────────────────────────────────
 *.aux
@@ -31,7 +37,6 @@
 *.Rproj            # omite si quieres compartir el proyecto de RStudio
 
 # ── YAML generados automáticamente ───────────────────
-# (los _quarto.yml que TÚ escribes sí deben versionarse)
 _freeze/
 
 # ── Sistema operativo ─────────────────────────────────

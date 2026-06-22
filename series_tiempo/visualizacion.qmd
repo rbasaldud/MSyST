@@ -8,6 +8,8 @@ format:
     highlight-style: a11y
     height: 1080
     width: 1920
+    chalkboard: true
+
 execute: 
   eval: true
   echo: true
@@ -42,21 +44,67 @@ Algunas paqueterias en
 
 <br>
 
-```{r}
+::: {style="display: flex; justify-content: center;"}
+
+```{r ejemplo1}
 #| echo: true
 #| fig-width: 10
 #| fig-height: 4.5
+#| fig-cap: "Ejemplo con dygraphs"
 
 library(dygraphs)
-lungDeaths <- cbind(mdeaths, fdeaths)
+lungDeaths <- cbind(ldeaths, mdeaths, fdeaths)
 
 dygraph(lungDeaths,main="Muertes por cancer de pulmon 1974 - 1979") %>%
   dySeries("mdeaths", label = "Hombre") %>%
   dySeries("fdeaths", label = "Mujer") %>%
   dyOptions(stackedGraph = TRUE) %>%
-  dyRangeSelector(height = 20)
+  dyRangeSelector(height = 20) 
 
 ```
+
+:::
+
+--- 
+
+Tambien se pueden personalizar otras cosas como:
+
+<br>
+<br>
+
+```{r ejemplo2}
+#| fig-width: 12
+#| fig-height: 7
+#| output-location: column
+
+dygraph(lungDeaths, main = "Deaths from Lung Disease (UK)", width = "100%", height = "400px") %>%
+  dyHighlight(highlightSeriesOpts = list(strokeWidth = 3))
+
+
+```
+
+
+
+---
+
+Otra alternativa
+
+```{r ejemplo3}
+#| output-location: slide
+#| fig-width: 15
+#| fig-height: 8.5
+
+dygraph(lungDeaths, main = "Deaths from Lung Disease (UK)",width = "100%") %>%
+  dyHighlight(highlightSeriesOpts = list(strokeWidth = 5),
+              highlightCircleSize = 5)
+
+```
+
+
+
+
+
+
 
 
 
