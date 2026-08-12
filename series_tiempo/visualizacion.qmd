@@ -117,3 +117,50 @@ dygraph(lungDeaths, main = "Deaths from Lung Disease (UK)",width = "100%") %>%
 # La paqueteria `lubridate`
 
 
+# La paquetería `MXMaps` 
+
+<br>
+
+```{r mapaMexico} 
+#| echo: false
+#|fig-cap: "Mapa de México"
+#| fig-align: "center"
+#| fig-width: 15
+#| fig-height: 8
+
+
+library(mxmaps)
+library(leaflet) # for colorNumeric
+library(scales) # needed for comma
+
+#datos
+df_mxstate_2020$value <- df_mxstate_2020$afromexican / df_mxstate_2020$pop
+
+#paleta
+pal <- colorNumeric("Blues", domain = df_mxstate_2020$value)
+
+#mapa interactivo
+mxstate_leaflet(
+  df_mxstate_2020,
+  pal,
+  ~ pal(value),
+  ~ sprintf(
+    "Estado: %s<br/>Porcentaje Afromexicanos: %s",
+    state_name, comma(value)
+  )
+) |>
+  addLegend(
+    position = "bottomright",
+    pal = pal,
+    values = df_mxstate_2020$value,
+    title = "Porcentaje<br>Afromexicanos",
+    labFormat = labelFormat(
+      suffix = "%",
+      transform = function(x) {
+        100 * x
+      }
+    )
+  ) |>
+  addProviderTiles("CartoDB.Positron")
+
+```
