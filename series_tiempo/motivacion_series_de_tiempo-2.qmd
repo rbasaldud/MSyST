@@ -1,0 +1,578 @@
+---
+title: "¿Por qué estudiar Series de Tiempo?"
+subtitle: "Un caso de consultoría con Tiendas 3B en la Ciudad de México"
+author: "Rodrigo B."
+date: "Agosto 2026"
+format:
+  revealjs:
+    theme: simple
+    slide-number: true
+    chalkboard: false
+    transition: fade
+    incremental: false
+    toc: false
+    code-line-numbers: false
+    embed-resources: true
+    
+execute:
+  echo: false
+  warning: false
+  message: false
+---
+
+```{r}
+#| label: setup
+#| include: false
+
+library(tidyverse)
+library(lubridate)
+library(forecast)
+library(lmtest)
+library(broom)
+library(knitr)
+library(scales)
+library(plotly)
+library(RColorBrewer)
+library(leaflet)
+
+# mxmaps no está en CRAN; se instala desde GitHub:
+# install.packages("remotes")
+# remotes::install_github("diegovalle/mxmaps")
+library(mxmaps)
+
+theme_set(theme_minimal(base_size = 18))
+options(width = 90)
+```
+
+## El encargo {.smaller}
+
+**Tiendas 3B**, la cadena de tiendas de variedad y descuento, te contrata como consultor(a) estadístico(a) para analizar su operación en la **Ciudad de México**. Su pregunta es concreta:
+
+> *"Queremos entender qué explica nuestros ingresos mensuales en la CDMX, y si es posible, anticiparnos a lo que viene."*
+
+Te entregan un registro **mensual** de sus operaciones en la ciudad de los últimos 6 años.
+
+::: callout-note
+Todos los datos de esta presentación son **simulados con fines didácticos**. No representan cifras reales ni información financiera de Tiendas 3B.
+:::
+
+::: notes
+Plantear el problema como uno real de consultoría ayuda a que el estudiante entienda que la elección del modelo no es un capricho metodológico, sino que depende de la naturaleza de los datos.
+:::
+
+------------------------------------------------------------------------
+
+## Los datos {.smaller}
+
+Tiendas 3B te entrega dos tablas:
+
+**1. Operación mensual en la CDMX** (72 observaciones, enero 2019 – diciembre 2024)
+
+| Variable | Descripción |
+|-----------------|------------------------------------------------------|
+| `fecha` | Mes al que corresponde el registro (índice temporal) |
+| `ingresos` | Ingresos totales del mes en la CDMX, en millones de pesos |
+| `gasto_publicidad` | Monto invertido en publicidad/marketing ese mes, en millones de pesos |
+| `ticket_promedio` | Ticket promedio de compra por cliente, en pesos |
+| `num_clientes` | Número de transacciones (clientes) registradas ese mes |
+| `temperatura` | Temperatura promedio mensual en la CDMX (proxy de estacionalidad/clima) |
+
+**2. Huella de tiendas por alcaldía** — número de sucursales y desempeño promedio en cada una de las 16 alcaldías de la CDMX.
+
+Nada en la primera tabla te obliga, *a priori*, a tratarla como serie de tiempo: bien podría analizarse fila por fila, como cualquier otro conjunto de datos.
+
+## Generando / cargando los datos {.smaller}
+
+Simulamos un escenario realista para trabajar con él a lo largo de la charla (en la práctica, esta tabla vendría de los sistemas de la empresa):
+
+```{r}
+#| label: datos
+
+set.seed(2024)
+n  <- 72
+t  <- 1:n
+fecha <- seq(as.Date("2019-01-01"), by = "month", length.out = n)
+
+tendencia  <- seq(50, 92, length.out = n)
+estacional <- 9 * sin(2 * pi * t / 12 - 1)
+ruido_ar   <- as.numeric(arima.sim(model = list(ar = 0.75), n = n, sd = 2.5))
+
+gasto_publicidad <- pmax(1.5, 5.2 + 2.6 * sin(2 * pi * t / 12 + 1) + rnorm(n, 0, 0.7))
+ticket_promedio  <- round(180 + cumsum(rnorm(n, 0.15, 1.4)), 1)
+temperatura      <- round(18 + 7.5 * sin(2 * pi * t / 12) + rnorm(n, 0, 1.3), 1)
+num_clientes     <- round(115000 + tendencia * 900 + rnorm(n, 0, 4500))
+
+ingresos <- round(
+  tendencia + estacional +
+    2.4 * gasto_publicidad -
+    0.14 * (ticket_promedio - 180) +
+    0.00014 * num_clientes +
+    ruido_ar,
+  2
+)
+
+ventas <- tibble(fecha, ingresos, gasto_publicidad,
+                  ticket_promedio, num_clientes, temperatura) |>
+  mutate(mes = factor(month.abb[month(fecha)], levels = month.abb))
+
+head(ventas, 4)
+```
+
+# Explorando los datos (EDA interactivo)
+
+## ¿Dónde está Tiendas 3B en la CDMX? {.smaller}
+
+Antes de mirar el tiempo, exploramos el **espacio**: ¿cómo se distribuyen las sucursales entre las 16 alcaldías?
+
+```{r}
+#| label: datos-alcaldias
+
+alcaldias_cdmx <- tribble(
+  ~region,  ~alcaldia,
+  "09002",  "Azcapotzalco",
+  "09003",  "Coyoacán",
+  "09004",  "Cuajimalpa de Morelos",
+  "09005",  "Gustavo A. Madero",
+  "09006",  "Iztacalco",
+  "09007",  "Iztapalapa",
+  "09008",  "La Magdalena Contreras",
+  "09009",  "Milpa Alta",
+  "09010",  "Álvaro Obregón",
+  "09011",  "Tláhuac",
+  "09012",  "Tlalpan",
+  "09013",  "Xochimilco",
+  "09014",  "Benito Juárez",
+  "09015",  "Cuauhtémoc",
+  "09016",  "Miguel Hidalgo",
+  "09017",  "Venustiano Carranza"
+)
+
+set.seed(9)
+
+tiendas_alcaldia <- alcaldias_cdmx |>
+  mutate(
+    num_tiendas         = sample(4:22, n(), replace = TRUE),
+    ingreso_prom_tienda = round(rnorm(n(), 0.85, 0.12), 2))  # millones de pesos/mes
+  
+
+kable(tiendas_alcaldia)
+
+```
+
+```{r}
+library(dplyr)
+
+df_municipios <- df_mxmunicipio_2020 %>% filter(state_name=="Ciudad de México") %>%
+                    mutate(value= sample(4:22, n(), replace = TRUE), ingreso_prom_tienda = round(rnorm(n(), 0.85, 0.12), 2)) 
+  
+```
+
+
+## Mapa interactivo de la operación {.smaller}
+
+```{r}
+#| label: fig-mapa
+#| fig-align: center
+#| fig-width: 8
+#| fig-height: 6.5
+
+Reds <- c("white", brewer.pal(4, "RdYlBu"))
+
+pal <- colorNumeric(Reds, domain = df_municipios$value)
+
+mxmunicipio_leaflet(df_municipios,
+  pal,
+  ~pal(value),
+  opacity = 0.8,
+  fillOpacity = 0.8,
+  zoom = df_municipios$region,
+  popup = sprintf(
+    "Municipio : %s<br/>Cantidad de tiendas: %s",
+    df_municipios$municipio_name,
+    df_municipios$value)) |>
+  addLegend(
+    position = "bottomright", pal = pal,
+    values = df_municipios$value,
+    title = "Cantidad de tiendas") |>
+  addProviderTiles("CartoDB.Positron")
+
+
+
+
+```
+
+Con `mxmaps` obtenemos el contorno real de las alcaldías; con `ggplotly` ganamos **zoom, paneo y tooltips** al pasar el cursor sobre cada alcaldía. Iztapalapa, Gustavo A. Madero y Álvaro Obregón concentran buena parte de la red — información útil para contextualizar los ingresos que veremos después.
+
+## Serie de tiempo interactiva {.smaller}
+
+```{r}
+#| label: fig-serie-interactiva
+#| fig-align: center
+#| fig-width: 9
+#| fig-height: 4.5
+
+p_serie <- ggplot(ventas, aes(
+  x = fecha, y = ingresos,
+  text = paste0("Mes: ", format(fecha, "%b %Y"),
+                "<br>Ingresos: $", comma(ingresos), " mdp")
+)) +
+  geom_line(color = "#c0392b", linewidth = 1) +
+  geom_point(color = "#c0392b", size = 1.4) +
+  scale_y_continuous(labels = label_comma()) +
+  labs(title = "Ingresos mensuales de Tiendas 3B en la CDMX",
+       x = NULL, y = "Ingresos (millones $)")
+
+ggplotly(p_serie, tooltip = "text")
+```
+
+Por ahora, **ignoraremos deliberadamente** que estos datos tienen un orden temporal: los tratamos como una tabla transversal más, tal como en el módulo de regresión lineal múltiple.
+
+## Publicidad vs. ingresos {.smaller}
+
+```{r}
+#| label: fig-scatter
+#| fig-align: center
+#| fig-width: 9
+#| fig-height: 4.5
+
+p_scatter <- ggplot(ventas, aes(
+  x = gasto_publicidad, y = ingresos, color = mes,
+  text = paste0("Mes: ", format(fecha, "%b %Y"),
+                "<br>Publicidad: $", gasto_publicidad, " mdp",
+                "<br>Ingresos: $", comma(ingresos), " mdp")
+)) +
+  geom_point(size = 2.4) +
+  labs(title = "Relación entre gasto en publicidad e ingresos",
+       x = "Gasto en publicidad (millones $)", y = "Ingresos (millones $)",
+       color = "Mes")
+
+ggplotly(p_scatter, tooltip = "text")
+```
+
+## Estacionalidad por mes {.smaller}
+
+```{r}
+#| label: fig-boxplot
+#| fig-align: center
+#| fig-width: 9
+#| fig-height: 4.5
+
+p_box <- ggplot(ventas, aes(mes, ingresos, fill = mes)) +
+  geom_boxplot(show.legend = FALSE) +
+  labs(title = "Distribución de ingresos por mes (2019-2024)",
+       x = NULL, y = "Ingresos (millones $)")
+
+ggplotly(p_box)
+```
+
+Noviembre-diciembre y la temporada de calor muestran ingresos sistemáticamente distintos: un primer indicio de **estacionalidad**.
+
+## Mapa de correlaciones interactivo {.smaller}
+
+```{r}
+#| label: fig-heatmap
+#| fig-align: center
+#| fig-width: 7
+#| fig-height: 5.5
+
+corr <- ventas |>
+  select(ingresos, gasto_publicidad, ticket_promedio, num_clientes, temperatura) |>
+  cor() |>
+  round(2)
+
+plot_ly(
+  x = colnames(corr), y = colnames(corr), z = corr,
+  type = "heatmap", colors = colorRamp(c("#c0392b", "white", "#2980b9")),
+  zmin = -1, zmax = 1
+) |>
+  layout(title = "Correlación entre variables")
+```
+
+# Aplicando lo aprendido: regresión lineal múltiple
+
+## Planteamiento del modelo
+
+Con las herramientas de inferencia clásica y regresión que ya dominas, el camino natural es modelar los ingresos en función de las demás variables:
+
+$$
+\text{ingresos}_i = \beta_0 + \beta_1\,\text{gasto\_publicidad}_i +
+\beta_2\,\text{ticket\_promedio}_i + \beta_3\,\text{num\_clientes}_i +
+\beta_4\,\text{temperatura}_i + \varepsilon_i
+$$
+
+con el supuesto clásico $\varepsilon_i \sim N(0, \sigma^2)$, **independientes** entre sí.
+
+Cada fila $i$ se trata como una unidad experimental intercambiable, sin importar el orden en que llegó.
+
+## Ajustando el modelo {.smaller}
+
+```{r}
+#| label: modelo
+
+modelo <- lm(ingresos ~ gasto_publicidad + ticket_promedio +
+               num_clientes + temperatura, data = ventas)
+summary(modelo)
+```
+
+## Sacándole provecho (I): inferencia sobre coeficientes {.smaller}
+
+```{r}
+#| label: tidy-modelo
+
+tidy(modelo, conf.int = TRUE) |>
+  mutate(across(where(is.numeric), \(x) round(x, 4))) |>
+  kable()
+```
+
+- Todos los coeficientes son **significativos** (p \< 0.05).
+- Podemos construir intervalos de confianza y **contrastar hipótesis** sobre el efecto de cada variable, tal como en el módulo de regresión.
+- Interpretación directa: cada millón de pesos adicional en publicidad se traduce, en promedio, en `r round(coef(modelo)["gasto_publicidad"], 2)` millones más de ingreso, manteniendo lo demás constante.
+
+## Sacándole provecho (II): bondad de ajuste
+
+```{r}
+#| label: r2
+
+glance(modelo) |>
+  select(r.squared, adj.r.squared, sigma, statistic, p.value) |>
+  kable(digits = 3)
+```
+
+Un $R^2$ ajustado alto y un modelo global significativo. Con lo visto en inferencia clásica, **todo indica que el modelo es bueno**.
+
+## Sacándole provecho (III): predicción puntual
+
+Supongamos que el próximo mes Tiendas 3B planea invertir 7 millones en publicidad en la CDMX, con un ticket promedio de 195 pesos, 130,000 clientes esperados y 20°C de temperatura promedio:
+
+```{r}
+#| label: prediccion
+
+nuevo <- tibble(gasto_publicidad = 7, ticket_promedio = 195,
+                 num_clientes = 130000, temperatura = 20)
+
+predict(modelo, newdata = nuevo, interval = "prediction") |>
+  kable(digits = 2)
+```
+
+Con esto, ya podríamos entregarle a Tiendas 3B una estimación puntual **y** un intervalo de predicción. Pareciera que el encargo está resuelto.
+
+## ¿Validamos los supuestos? {.smaller}
+
+Como buenos consultores, antes de entregar el informe revisamos los supuestos clásicos del modelo lineal:
+
+```{r}
+#| label: fig-diag1
+#| fig-align: center
+#| fig-width: 9
+#| fig-height: 4
+
+par(mfrow = c(1, 2))
+plot(modelo, which = 1, caption = "Residuos vs. ajustados")
+plot(modelo, which = 2, caption = "QQ-plot")
+```
+
+A simple vista, no hay señales dramáticas de no-linealidad ni de falta de normalidad. **Todo parece estar en orden.**
+
+## Un supuesto que aún no hemos revisado... {.smaller}
+
+El modelo lineal asume que los errores $\varepsilon_i$ son **independientes** entre sí. Nunca revisamos eso, porque en un conjunto de datos transversal típico no hay un orden natural para hacerlo.
+
+Pero aquí **sí existe** un orden natural: el tiempo. ¿Qué pasa si graficamos los residuos contra la fecha?
+
+```{r}
+#| label: fig-residuos-tiempo
+#| fig-align: center
+#| fig-width: 9
+#| fig-height: 4
+
+ventas$residuos <- resid(modelo)
+
+p_res <- ggplot(ventas, aes(fecha, residuos,
+                            text = paste0("Fecha: ", format(fecha, "%b %Y"),
+                                           "<br>Residuo: ", round(residuos, 2)))) +
+  geom_line(color = "firebrick", linewidth = 1) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  labs(title = "Residuos del modelo a través del tiempo",
+       x = NULL, y = "Residuo")
+
+ggplotly(p_res, tooltip = "text")
+```
+
+## Confirmando la sospecha {.smaller}
+
+Los residuos no se ven como ruido aleatorio: hay rachas, ciclos y un patrón que se repite. Lo confirmamos formalmente:
+
+```{r}
+#| label: pruebas-autocorrelacion
+
+dwtest(modelo)
+Box.test(ventas$residuos, lag = 12, type = "Ljung-Box")
+```
+
+```{r}
+#| label: fig-acf-residuos
+#| fig-align: center
+#| fig-width: 8
+#| fig-height: 3.2
+
+ggAcf(ventas$residuos) +
+  labs(title = "Autocorrelación de los residuos")
+```
+
+Tanto la prueba de Durbin-Watson como la de Ljung-Box **rechazan** la independencia de los errores. Además, varios rezagos del ACF salen de la banda de confianza.
+
+## ¿Qué implica esto? {.smaller}
+
+::: incremental
+- Los **coeficientes** siguen siendo insesgados... pero los **errores estándar** que reporta `lm()` están mal calculados (típicamente subestimados).
+- Eso invalida los **intervalos de confianza** y los **valores p** que usamos para "sacarle provecho" al modelo en los pasos anteriores.
+- El modelo ignora una fuente de información valiosísima: **el propio pasado de los ingresos** ayuda a explicar el presente, y no lo estamos usando.
+- El intervalo de predicción que entregamos asume errores independientes, por lo que probablemente **subestima la incertidumbre real** del pronóstico.
+- No hay forma natural de proyectar varios meses hacia adelante: para predecir necesitamos *conocer* las covariables futuras, lo cual rara vez ocurre en la práctica.
+:::
+
+## Las limitaciones de fondo {.smaller}
+
+La regresión lineal múltiple —tal como la estudiamos— fue diseñada para datos donde las observaciones son **intercambiables**. Cuando el índice es el tiempo, aparecen preguntas que el modelo no está pensado para responder:
+
+| Pregunta de negocio | ¿La resuelve la regresión clásica? |
+|-----------------------------------------------------------|:-----------:|
+| ¿Qué variables explican los ingresos? | Sí |
+| ¿Los errores estándar/intervalos son confiables? | **No**, si hay autocorrelación |
+| ¿Existe una tendencia de largo plazo? | No la modela explícitamente |
+| ¿Hay un patrón estacional (meses altos/bajos)? | No la modela explícitamente |
+| ¿Cuánto dependen los ingresos de sí mismos en el pasado? | No lo captura |
+| ¿Puedo pronosticar *h* meses adelante con incertidumbre creciente y realista? | No, de forma nativa |
+
+# Reconociendo el tiempo
+
+## ¿Qué cambia si modelamos la dependencia temporal?
+
+En vez de tratar cada fila como intercambiable, construimos un objeto que **preserva el orden y la periodicidad** de las observaciones:
+
+```{r}
+#| label: ts-objeto
+
+ingresos_ts <- ts(ventas$ingresos, start = c(2019, 1), frequency = 12)
+ingresos_ts
+```
+
+Ahora el modelo puede "ver" que enero de 2020 sigue a diciembre de 2019, y que ambos son parte de un ciclo anual de 12 meses.
+
+## Descomponiendo la serie {.smaller}
+
+Una primera ganancia inmediata: **descomponer** la serie en tendencia, estacionalidad y componente irregular — algo que la regresión clásica nunca nos mostró de forma explícita.
+
+```{r}
+#| label: fig-stl
+#| fig-align: center
+#| fig-width: 9
+#| fig-height: 5
+
+descomp <- stl(ingresos_ts, s.window = "periodic")
+autoplot(descomp) +
+  labs(title = "Descomposición STL de los ingresos de Tiendas 3B (CDMX)")
+```
+
+## ACF y PACF: herramientas propias de las series de tiempo
+
+```{r}
+#| label: fig-acf-pacf
+#| fig-align: center
+#| fig-width: 9
+#| fig-height: 4
+
+gridExtra::grid.arrange(
+  ggAcf(ingresos_ts)  + labs(title = "ACF de los ingresos"),
+  ggPacf(ingresos_ts) + labs(title = "PACF de los ingresos"),
+  ncol = 2
+)
+```
+
+El ACF/PACF nos permite **ver directamente** cuánto se parece cada mes a los meses anteriores: información que la regresión lineal simplemente no tiene manera de mostrar.
+
+## Modelando la dependencia: regresión + series de tiempo {.smaller}
+
+No se trata de "tirar a la basura" lo aprendido en regresión: los modelos de series de tiempo permiten **combinar** covariables externas con la estructura temporal de los errores (modelos tipo *ARIMAX*):
+
+```{r}
+#| label: arimax
+
+xreg <- as.matrix(ventas[, c("gasto_publicidad", "ticket_promedio",
+                              "num_clientes", "temperatura")])
+
+modelo_ts <- auto.arima(ingresos_ts, xreg = xreg)
+summary(modelo_ts)
+```
+
+## ¿Ahora sí son independientes los errores? {.smaller}
+
+```{r}
+#| label: fig-checkresid
+#| fig-align: center
+#| fig-width: 9
+#| fig-height: 5.5
+
+checkresiduals(modelo_ts)
+```
+
+## Pronosticando con incertidumbre realista {.smaller}
+
+```{r}
+#| label: fig-forecast
+#| fig-align: center
+#| fig-width: 9
+#| fig-height: 4.5
+
+xreg_futuro <- matrix(
+  c(7.0, 7.2, 195, 196, 130000, 131500, 20, 19),
+  nrow = 2, byrow = FALSE
+)
+colnames(xreg_futuro) <- colnames(xreg)
+
+pronostico <- forecast(modelo_ts, xreg = xreg_futuro, h = 2)
+
+autoplot(pronostico) +
+  labs(title = "Pronóstico de ingresos con modelo ARIMAX",
+       x = NULL, y = "Ingresos (millones $)")
+```
+
+Ahora el intervalo de pronóstico **crece con el horizonte**, reflejando que mientras más lejos proyectamos, menos sabemos — algo que la regresión clásica, con errores independientes, no puede representar.
+
+## Regresión clásica vs. modelos de series de tiempo {.smaller}
+
+| Aspecto | Regresión lineal múltiple | Modelos de series de tiempo |
+|------------------------|------------------------|------------------------|
+| Supuesto sobre las observaciones | Intercambiables / independientes | Ordenadas, con posible dependencia |
+| Qué hace con la autocorrelación | La ignora (o la viola) | La modela explícitamente |
+| Tendencia y estacionalidad | No se modelan de forma nativa | Se descomponen y modelan |
+| Pronóstico a *h* pasos | Requiere covariables futuras conocidas | Genera incertidumbre creciente y coherente |
+| Validez de errores estándar/IC | Comprometida si hay autocorrelación | Corregida por el propio modelo |
+| Relación con lo ya aprendido | — | Extiende la regresión (ARIMAX), no la reemplaza |
+
+## Moraleja para Tiendas 3B
+
+::: incremental
+- La regresión lineal múltiple **no estaba mal usada**: siguió correctamente cada paso de inferencia clásica.
+- El problema fue **no reconocer la estructura temporal** de los datos antes de confiar en esa inferencia.
+- Cuando el índice de tus datos es el tiempo, ignorarlo tiene un costo: conclusiones estadísticas inválidas y pronósticos poco confiables.
+- Las series de tiempo no descartan lo aprendido — lo **extienden**, dándote herramientas para tendencia, estacionalidad, dependencia y pronóstico.
+:::
+
+## Lo que viene en el curso {.smaller}
+
+::: incremental
+- Estacionariedad y transformaciones (diferenciación, logaritmos)
+- Autocorrelación: ACF y PACF como herramientas de diagnóstico
+- Descomposición clásica y STL
+- Suavizamiento exponencial (Holt-Winters)
+- Modelos ARIMA / SARIMA y su relación con la regresión
+- Incorporación de covariables externas (ARIMAX)
+- Evaluación y validación de pronósticos
+:::
+
+## ¡Gracias! {.center}
+
+**Preguntas y discusión**
+
+*El caso de Tiendas 3B en la CDMX seguirá acompañándonos a lo largo del curso.*
