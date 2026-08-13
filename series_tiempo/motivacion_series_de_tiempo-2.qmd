@@ -13,6 +13,7 @@ format:
     toc: false
     code-line-numbers: false
     embed-resources: true
+
     
 execute:
   echo: false
@@ -34,56 +35,12 @@ library(scales)
 library(plotly)
 library(RColorBrewer)
 library(leaflet)
-
-# mxmaps no está en CRAN; se instala desde GitHub:
-# install.packages("remotes")
-# remotes::install_github("diegovalle/mxmaps")
 library(mxmaps)
+library(dplyr)
 
 theme_set(theme_minimal(base_size = 18))
 options(width = 90)
 ```
-
-## El encargo {.smaller}
-
-**Tiendas 3B**, la cadena de tiendas de variedad y descuento, te contrata como consultor(a) estadístico(a) para analizar su operación en la **Ciudad de México**. Su pregunta es concreta:
-
-> *"Queremos entender qué explica nuestros ingresos mensuales en la CDMX, y si es posible, anticiparnos a lo que viene."*
-
-Te entregan un registro **mensual** de sus operaciones en la ciudad de los últimos 6 años.
-
-::: callout-note
-Todos los datos de esta presentación son **simulados con fines didácticos**. No representan cifras reales ni información financiera de Tiendas 3B.
-:::
-
-::: notes
-Plantear el problema como uno real de consultoría ayuda a que el estudiante entienda que la elección del modelo no es un capricho metodológico, sino que depende de la naturaleza de los datos.
-:::
-
-------------------------------------------------------------------------
-
-## Los datos {.smaller}
-
-Tiendas 3B te entrega dos tablas:
-
-**1. Operación mensual en la CDMX** (72 observaciones, enero 2019 – diciembre 2024)
-
-| Variable | Descripción |
-|-----------------|------------------------------------------------------|
-| `fecha` | Mes al que corresponde el registro (índice temporal) |
-| `ingresos` | Ingresos totales del mes en la CDMX, en millones de pesos |
-| `gasto_publicidad` | Monto invertido en publicidad/marketing ese mes, en millones de pesos |
-| `ticket_promedio` | Ticket promedio de compra por cliente, en pesos |
-| `num_clientes` | Número de transacciones (clientes) registradas ese mes |
-| `temperatura` | Temperatura promedio mensual en la CDMX (proxy de estacionalidad/clima) |
-
-**2. Huella de tiendas por alcaldía** — número de sucursales y desempeño promedio en cada una de las 16 alcaldías de la CDMX.
-
-Nada en la primera tabla te obliga, *a priori*, a tratarla como serie de tiempo: bien podría analizarse fila por fila, como cualquier otro conjunto de datos.
-
-## Generando / cargando los datos {.smaller}
-
-Simulamos un escenario realista para trabajar con él a lo largo de la charla (en la práctica, esta tabla vendría de los sistemas de la empresa):
 
 ```{r}
 #| label: datos
@@ -115,36 +72,61 @@ ventas <- tibble(fecha, ingresos, gasto_publicidad,
                   ticket_promedio, num_clientes, temperatura) |>
   mutate(mes = factor(month.abb[month(fecha)], levels = month.abb))
 
-head(ventas, 4)
 ```
 
-# Explorando los datos (EDA interactivo)
 
-## ¿Dónde está Tiendas 3B en la CDMX? {.smaller}
 
-Antes de mirar el tiempo, exploramos el **espacio**: ¿cómo se distribuyen las sucursales entre las 16 alcaldías?
+## Planteamiento {.smaller}
+
+La cadena **Tiendas 3B** contrata un servicio de consultoría para analizar su operación en la **Ciudad de México**. Se tiene disponible un registro **mensual** de sus operaciones en la ciudad de los últimos 6 años, así como la huella de tiendas por alcaldía.
+
+<br>
+
+En principio, el objetivo es reportar algunos **business insights** (conclusión relevante que se obtiene al analizar los datos y ayuda a la toma de decisiones) sobre la operación de la empresa y si es posible, realizar un pronóstico de ingresos para los próximos meses.
+
+
+---
+
+Se tiene disponible la siguiente información:
+
+**1. Operación mensual en la CDMX** (72 observaciones, enero 2019 – diciembre 2024)
+
+<br>
+
+| Variable | Descripción |
+|-----------------|------------------------------------------------------|
+| `fecha` | Mes al que corresponde el registro |
+| `ingresos` | Ingresos totales del mes en la CDMX, en millones de pesos |
+| `gasto_publicidad` | Monto invertido en publicidad/marketing ese mes, en millones de pesos |
+| `ticket_promedio` | Ticket promedio de compra por cliente, en pesos |
+| `num_clientes` | Número de transacciones (clientes) registradas ese mes |
+| `temperatura` | Temperatura promedio mensual en la CDMX |
+
+---
+
+**2. Huella de tiendas por alcaldía** (número de sucursales y desempeño promedio en cada una de las 16 alcaldías de la CDMX en MDP)
 
 ```{r}
 #| label: datos-alcaldias
 
 alcaldias_cdmx <- tribble(
-  ~region,  ~alcaldia,
-  "09002",  "Azcapotzalco",
-  "09003",  "Coyoacán",
-  "09004",  "Cuajimalpa de Morelos",
-  "09005",  "Gustavo A. Madero",
-  "09006",  "Iztacalco",
-  "09007",  "Iztapalapa",
-  "09008",  "La Magdalena Contreras",
-  "09009",  "Milpa Alta",
-  "09010",  "Álvaro Obregón",
-  "09011",  "Tláhuac",
-  "09012",  "Tlalpan",
-  "09013",  "Xochimilco",
-  "09014",  "Benito Juárez",
-  "09015",  "Cuauhtémoc",
-  "09016",  "Miguel Hidalgo",
-  "09017",  "Venustiano Carranza"
+    ~Alcaldia,
+   "Azcapotzalco",
+  "Coyoacán",
+  "Cuajimalpa de Morelos",
+  "Gustavo A. Madero",
+  "Iztacalco",
+  "Iztapalapa",
+  "La Magdalena Contreras",
+  "Milpa Alta",
+  "Álvaro Obregón",
+  "Tláhuac",
+  "Tlalpan",
+  "Xochimilco",
+  "Benito Juárez",
+  "Cuauhtémoc",
+  "Miguel Hidalgo",
+  "Venustiano Carranza"
 )
 
 set.seed(9)
@@ -155,26 +137,26 @@ tiendas_alcaldia <- alcaldias_cdmx |>
     ingreso_prom_tienda = round(rnorm(n(), 0.85, 0.12), 2))  # millones de pesos/mes
   
 
-kable(tiendas_alcaldia)
+kable(head(tiendas_alcaldia,5))
 
 ```
 
-```{r}
-library(dplyr)
 
-df_municipios <- df_mxmunicipio_2020 %>% filter(state_name=="Ciudad de México") %>%
-                    mutate(value= sample(4:22, n(), replace = TRUE), ingreso_prom_tienda = round(rnorm(n(), 0.85, 0.12), 2)) 
-  
-```
+# Explorando los datos 
 
+## `¿Dónde está Tiendas 3B en la CDMX?` {.smaller}
 
-## Mapa interactivo de la operación {.smaller}
+Es razonable que el primer acercamiento sea la distribución de las sucursales entre las 16 alcaldías. Para visualizar mapas de México usamos el paquete `mxmaps`, que contiene los contornos de los estados y municipios del país. Para este caso, nos interesa la **CDMX**, que está dividida en 16 alcaldías.
+
 
 ```{r}
 #| label: fig-mapa
 #| fig-align: center
-#| fig-width: 8
-#| fig-height: 6.5
+#| fig-width: 6
+#| fig-height: 4
+
+df_municipios <- df_mxmunicipio_2020 %>% filter(state_name=="Ciudad de México") %>% 
+mutate(value= sample(4:22, n(), replace = TRUE), ingreso_prom_tienda = round(rnorm(n(), 0.85, 0.12), 2)) 
 
 Reds <- c("white", brewer.pal(4, "RdYlBu"))
 
@@ -196,12 +178,9 @@ mxmunicipio_leaflet(df_municipios,
     title = "Cantidad de tiendas") |>
   addProviderTiles("CartoDB.Positron")
 
-
-
-
 ```
 
-Con `mxmaps` obtenemos el contorno real de las alcaldías; con `ggplotly` ganamos **zoom, paneo y tooltips** al pasar el cursor sobre cada alcaldía. Iztapalapa, Gustavo A. Madero y Álvaro Obregón concentran buena parte de la red — información útil para contextualizar los ingresos que veremos después.
+
 
 ## Serie de tiempo interactiva {.smaller}
 
