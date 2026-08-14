@@ -56,7 +56,6 @@ ruido_ar   <- as.numeric(arima.sim(model = list(ar = 0.75), n = n, sd = 2.5))
 
 gasto_publicidad <- pmax(1.5, 5.2 + 2.6 * sin(2 * pi * t / 12 + 1) + rnorm(n, 0, 0.7))
 ticket_promedio  <- round(180 + cumsum(rnorm(n, 0.15, 1.4)), 1)
-temperatura      <- round(18 + 7.5 * sin(2 * pi * t / 12) + rnorm(n, 0, 1.3), 1)
 num_clientes     <- round(115000 + tendencia * 900 + rnorm(n, 0, 4500))
 
 ingresos <- round(
@@ -69,42 +68,40 @@ ingresos <- round(
 )
 
 ventas <- tibble(fecha, ingresos, gasto_publicidad,
-                  ticket_promedio, num_clientes, temperatura) |>
+                  ticket_promedio, num_clientes) |>
   mutate(mes = factor(month.abb[month(fecha)], levels = month.abb))
 
 ```
 
+# Planteamiento
 
-
-## Planteamiento {.smaller}
+## {.smaller}
 
 La cadena **Tiendas 3B** contrata un servicio de consultoría para analizar su operación en la **Ciudad de México**. Se tiene disponible un registro **mensual** de sus operaciones en la ciudad de los últimos 6 años, así como la huella de tiendas por alcaldía.
 
 <br>
 
-En principio, el objetivo es reportar algunos **business insights** (conclusión relevante que se obtiene al analizar los datos y ayuda a la toma de decisiones) sobre la operación de la empresa y si es posible, realizar un pronóstico de ingresos para los próximos meses.
+En principio, el objetivo es reportar algunos **business insights** (información relevante que se obtiene al analizar los datos y ayuda a la toma de decisiones) sobre la operación de la empresa y si es posible, realizar un pronóstico de ingresos para los próximos meses.
 
-
----
+<br>
 
 Se tiene disponible la siguiente información:
 
-**1. Operación mensual en la CDMX** (72 observaciones, enero 2019 – diciembre 2024)
+## **1. Operación mensual en la CDMX** (72 observaciones, enero 2019 – diciembre 2024) {.smaller}
 
 <br>
 
 | Variable | Descripción |
-|-----------------|------------------------------------------------------|
-| `fecha` | Mes al que corresponde el registro |
-| `ingresos` | Ingresos totales del mes en la CDMX, en millones de pesos |
-| `gasto_publicidad` | Monto invertido en publicidad/marketing ese mes, en millones de pesos |
-| `ticket_promedio` | Ticket promedio de compra por cliente, en pesos |
-| `num_clientes` | Número de transacciones (clientes) registradas ese mes |
-| `temperatura` | Temperatura promedio mensual en la CDMX |
+|------------|------------------------------------|
+| `fecha` | Mes al que corresponde el registro. |
+| `ingresos` | Ingresos totales del mes en la CDMX, en millones de pesos. |
+| `gasto_publicidad` | Monto invertido en publicidad/marketing ese mes, en millones de pesos. |
+| `ticket_promedio` | Ticket promedio de compra por cliente, en pesos. |
+| `num_clientes` | Número de transacciones (clientes) registradas ese mes. |
 
----
+## **2. Huella de tiendas por alcaldía**  {.smaller}
 
-**2. Huella de tiendas por alcaldía** (número de sucursales y desempeño promedio en cada una de las 16 alcaldías de la CDMX en MDP)
+Número de sucursales en cada una de las 16 alcaldías de la CDMX en MDP
 
 ```{r}
 #| label: datos-alcaldias
@@ -137,23 +134,26 @@ tiendas_alcaldia <- alcaldias_cdmx |>
     ingreso_prom_tienda = round(rnorm(n(), 0.85, 0.12), 2))  # millones de pesos/mes
   
 
-kable(head(tiendas_alcaldia,5))
+kable(head(tiendas_alcaldia,9))
 
 ```
 
+# Explorando los datos
 
-# Explorando los datos 
+## `La presencia de Tiendas 3B en la CDMX` {.smaller}
 
-## `¿Dónde está Tiendas 3B en la CDMX?` {.smaller}
+Un primer acercamiento a los datos puede ser la distribución de las sucursales entre las 16 alcaldías. Para visualizar mapas de México usamos el paquete `mxmaps`.
 
-Es razonable que el primer acercamiento sea la distribución de las sucursales entre las 16 alcaldías. Para visualizar mapas de México usamos el paquete `mxmaps`, que contiene los contornos de los estados y municipios del país. Para este caso, nos interesa la **CDMX**, que está dividida en 16 alcaldías.
+<br>
 
+::: {style="display: flex; justify-content: center;"}
 
 ```{r}
 #| label: fig-mapa
 #| fig-align: center
 #| fig-width: 6
 #| fig-height: 4
+#| fig-cap: "Mapa de alcaldías de la Ciudad de México con presencia de Tiendas 3B"
 
 df_municipios <- df_mxmunicipio_2020 %>% filter(state_name=="Ciudad de México") %>% 
 mutate(value= sample(4:22, n(), replace = TRUE), ingreso_prom_tienda = round(rnorm(n(), 0.85, 0.12), 2)) 
@@ -179,6 +179,63 @@ mxmunicipio_leaflet(df_municipios,
   addProviderTiles("CartoDB.Positron")
 
 ```
+
+:::
+
+
+## {.smaller}
+
+También podemos visualizar el **ingreso promedio por tienda** en cada alcaldía.
+
+<br>
+<br>
+<br>
+
+::: {style="display: flex; justify-content: center;"}
+
+```{r}
+#| label: fig-mapa2
+#| fig-align: center
+#| fig-width: 6
+#| fig-height: 4
+#| fig-cap: "Mapa de ingresos por alcaldía"
+
+
+pal <- colorNumeric(Reds, domain = df_municipios$ingreso_prom_tienda)
+
+mxmunicipio_leaflet(df_municipios,
+  pal,
+  ~pal(ingreso_prom_tienda),
+  opacity = 0.8,
+  fillOpacity = 0.8,
+  zoom = df_municipios$region,
+  popup = sprintf(
+    "Municipio : %s<br/>Ingreso promedio por tienda: %s",
+    df_municipios$municipio_name,
+    df_municipios$ingreso_prom_tienda)) |>
+  addLegend(
+    position = "bottomright", pal = pal,
+    values = df_municipios$ingreso_prom_tienda,
+    title = "Ingreso promedio") |>
+  addProviderTiles("CartoDB.Positron")
+
+```
+
+:::
+
+
+## {.smaller}
+
+Algunos comentarios:
+
+- Como parte de la visualización es indispensable mantener la dependencia geográfica de los datos, pues zonas cercanas tienden a tener características similares (por ejemplo, alcaldías con mayor poder adquisitivo). Los modelos de estadística espacial (que no veremos) permiten capturar esta dependencia explícitamente.
+
+- En esta etapa, solo nos interesa **describir** patrones interesantes.
+
+<br>
+
+- Una propuesta sería presentar ambos mapas, mencionar los patrones observados (zonas de la ciudad con mayor presencia de tiendas y zonas con mayor ingreso promedio por tienda) y posteriormente tratar de explicar estos patrones con conocimiento del contexto (por ejemplo, las alcaldías con mayor ingreso promedio por tienda no necesariamente son las que tienen más tiendas).
+
 
 
 
@@ -255,7 +312,7 @@ Noviembre-diciembre y la temporada de calor muestran ingresos sistemáticamente 
 #| fig-height: 5.5
 
 corr <- ventas |>
-  select(ingresos, gasto_publicidad, ticket_promedio, num_clientes, temperatura) |>
+  select(ingresos, gasto_publicidad, ticket_promedio, num_clientes) |>
   cor() |>
   round(2)
 
@@ -289,7 +346,7 @@ Cada fila $i$ se trata como una unidad experimental intercambiable, sin importar
 #| label: modelo
 
 modelo <- lm(ingresos ~ gasto_publicidad + ticket_promedio +
-               num_clientes + temperatura, data = ventas)
+               num_clientes, data = ventas)
 summary(modelo)
 ```
 
@@ -415,7 +472,7 @@ Tanto la prueba de Durbin-Watson como la de Ljung-Box **rechazan** la independen
 La regresión lineal múltiple —tal como la estudiamos— fue diseñada para datos donde las observaciones son **intercambiables**. Cuando el índice es el tiempo, aparecen preguntas que el modelo no está pensado para responder:
 
 | Pregunta de negocio | ¿La resuelve la regresión clásica? |
-|-----------------------------------------------------------|:-----------:|
+|--------------------------------------------------------|:--------------:|
 | ¿Qué variables explican los ingresos? | Sí |
 | ¿Los errores estándar/intervalos son confiables? | **No**, si hay autocorrelación |
 | ¿Existe una tendencia de largo plazo? | No la modela explícitamente |
@@ -477,11 +534,7 @@ No se trata de "tirar a la basura" lo aprendido en regresión: los modelos de se
 ```{r}
 #| label: arimax
 
-xreg <- as.matrix(ventas[, c("gasto_publicidad", "ticket_promedio",
-                              "num_clientes", "temperatura")])
 
-modelo_ts <- auto.arima(ingresos_ts, xreg = xreg)
-summary(modelo_ts)
 ```
 
 ## ¿Ahora sí son independientes los errores? {.smaller}
@@ -492,7 +545,6 @@ summary(modelo_ts)
 #| fig-width: 9
 #| fig-height: 5.5
 
-checkresiduals(modelo_ts)
 ```
 
 ## Pronosticando con incertidumbre realista {.smaller}
@@ -503,17 +555,7 @@ checkresiduals(modelo_ts)
 #| fig-width: 9
 #| fig-height: 4.5
 
-xreg_futuro <- matrix(
-  c(7.0, 7.2, 195, 196, 130000, 131500, 20, 19),
-  nrow = 2, byrow = FALSE
-)
-colnames(xreg_futuro) <- colnames(xreg)
 
-pronostico <- forecast(modelo_ts, xreg = xreg_futuro, h = 2)
-
-autoplot(pronostico) +
-  labs(title = "Pronóstico de ingresos con modelo ARIMAX",
-       x = NULL, y = "Ingresos (millones $)")
 ```
 
 Ahora el intervalo de pronóstico **crece con el horizonte**, reflejando que mientras más lejos proyectamos, menos sabemos — algo que la regresión clásica, con errores independientes, no puede representar.
