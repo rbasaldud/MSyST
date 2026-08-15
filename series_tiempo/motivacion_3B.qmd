@@ -75,13 +75,15 @@ ventas <- tibble(fecha, ingresos, gasto_publicidad,
 
 # Planteamiento
 
-## {.smaller}
+![](series_tiempo/Img/logo3B.jpeg){.absolute top="672" left="1186" width="395" height="213"}
+
+##  {.smaller}
 
 La cadena **Tiendas 3B** contrata un servicio de consultoría para analizar su operación en la **Ciudad de México**. Se tiene disponible un registro **mensual** de sus operaciones en la ciudad de los últimos 6 años, así como la huella de tiendas por alcaldía.
 
 <br>
 
-En principio, el objetivo es reportar algunos **business insights** (información relevante que se obtiene al analizar los datos y ayuda a la toma de decisiones) sobre la operación de la empresa y si es posible, realizar un pronóstico de ingresos para los próximos meses.
+En principio, el objetivo es reportar **business insights** (información relevante que se obtiene al analizar los datos y ayuda a la toma de decisiones) sobre la operación de la empresa y si es posible, realizar un pronóstico de ingresos para los próximos meses.
 
 <br>
 
@@ -92,14 +94,14 @@ Se tiene disponible la siguiente información:
 <br>
 
 | Variable | Descripción |
-|------------|------------------------------------|
+|--------------------|----------------------------------------------------|
 | `fecha` | Mes al que corresponde el registro. |
 | `ingresos` | Ingresos totales del mes en la CDMX, en millones de pesos. |
 | `gasto_publicidad` | Monto invertido en publicidad/marketing ese mes, en millones de pesos. |
 | `ticket_promedio` | Ticket promedio de compra por cliente, en pesos. |
 | `num_clientes` | Número de transacciones (clientes) registradas ese mes. |
 
-## **2. Huella de tiendas por alcaldía**  {.smaller}
+## **2. Huella de tiendas por alcaldía** {.smaller}
 
 Número de sucursales en cada una de las 16 alcaldías de la CDMX en MDP
 
@@ -147,7 +149,6 @@ Un primer acercamiento a los datos puede ser la distribución de las sucursales 
 <br>
 
 ::: {style="display: flex; justify-content: center;"}
-
 ```{r}
 #| label: fig-mapa
 #| fig-align: center
@@ -182,17 +183,13 @@ mxmunicipio_leaflet(df_municipios,
 
 :::
 
-
-## {.smaller}
+##  {.smaller}
 
 También podemos visualizar el **ingreso promedio por tienda** en cada alcaldía.
 
-<br>
-<br>
-<br>
+<br> <br> <br>
 
 ::: {style="display: flex; justify-content: center;"}
-
 ```{r}
 #| label: fig-mapa2
 #| fig-align: center
@@ -223,8 +220,7 @@ mxmunicipio_leaflet(df_municipios,
 
 :::
 
-
-## {.smaller}
+##  {.smaller}
 
 Algunos comentarios:
 
@@ -234,36 +230,32 @@ Algunos comentarios:
 
 <br>
 
-- Una propuesta sería presentar ambos mapas, mencionar los patrones observados (zonas de la ciudad con mayor presencia de tiendas y zonas con mayor ingreso promedio por tienda) y posteriormente tratar de explicar estos patrones con conocimiento del contexto (por ejemplo, las alcaldías con mayor ingreso promedio por tienda no necesariamente son las que tienen más tiendas).
+Una propuesta sería presentar ambos mapas, mencionar los patrones observados (zonas de la ciudad con mayor presencia de tiendas y zonas con mayor ingreso promedio por tienda) y posteriormente tratar de explicar estos patrones con conocimiento del contexto (por ejemplo, las alcaldías con mayor ingreso promedio por tienda no necesariamente son las que tienen más tiendas).
 
 
 
-
-## Serie de tiempo interactiva {.smaller}
+## Correlograma {.smaller}
 
 ```{r}
-#| label: fig-serie-interactiva
+#| label: fig-heatmap
 #| fig-align: center
-#| fig-width: 9
-#| fig-height: 4.5
+#| fig-width: 7
+#| fig-height: 5.5
 
-p_serie <- ggplot(ventas, aes(
-  x = fecha, y = ingresos,
-  text = paste0("Mes: ", format(fecha, "%b %Y"),
-                "<br>Ingresos: $", comma(ingresos), " mdp")
-)) +
-  geom_line(color = "#c0392b", linewidth = 1) +
-  geom_point(color = "#c0392b", size = 1.4) +
-  scale_y_continuous(labels = label_comma()) +
-  labs(title = "Ingresos mensuales de Tiendas 3B en la CDMX",
-       x = NULL, y = "Ingresos (millones $)")
+corr <- ventas |>
+  select(ingresos, gasto_publicidad, ticket_promedio, num_clientes) |>
+  cor() |>
+  round(2)
 
-ggplotly(p_serie, tooltip = "text")
+plot_ly(
+  x = colnames(corr), y = colnames(corr), z = corr,
+  type = "heatmap", colors = colorRamp(c("#c0392b", "white", "#2980b9")),
+  zmin = -1, zmax = 1
+) |>
+  layout(title = "Correlación entre variables")
 ```
 
-Por ahora, **ignoraremos deliberadamente** que estos datos tienen un orden temporal: los tratamos como una tabla transversal más, tal como en el módulo de regresión lineal múltiple.
-
-## Publicidad vs. ingresos {.smaller}
+## Publicidad vs. Ingresos {.smaller}
 
 ```{r}
 #| label: fig-scatter
@@ -285,91 +277,71 @@ p_scatter <- ggplot(ventas, aes(
 ggplotly(p_scatter, tooltip = "text")
 ```
 
-## Estacionalidad por mes {.smaller}
 
-```{r}
-#| label: fig-boxplot
-#| fig-align: center
-#| fig-width: 9
-#| fig-height: 4.5
 
-p_box <- ggplot(ventas, aes(mes, ingresos, fill = mes)) +
-  geom_boxplot(show.legend = FALSE) +
-  labs(title = "Distribución de ingresos por mes (2019-2024)",
-       x = NULL, y = "Ingresos (millones $)")
+# Trabajar con lo que hay: Un modelo de regresión lineal múltiple
 
-ggplotly(p_box)
-```
+----
 
-Noviembre-diciembre y la temporada de calor muestran ingresos sistemáticamente distintos: un primer indicio de **estacionalidad**.
+Ante la falta de conocimiento de otros modelos, puede ser tentador tratar de aplicar un modelo de regresión lineal para explicar los ingresos de Tiendas 3B en la CDMX.
 
-## Mapa de correlaciones interactivo {.smaller}
+El modelo de efectos principales sería:
 
-```{r}
-#| label: fig-heatmap
-#| fig-align: center
-#| fig-width: 7
-#| fig-height: 5.5
+<br>
 
-corr <- ventas |>
-  select(ingresos, gasto_publicidad, ticket_promedio, num_clientes) |>
-  cor() |>
-  round(2)
-
-plot_ly(
-  x = colnames(corr), y = colnames(corr), z = corr,
-  type = "heatmap", colors = colorRamp(c("#c0392b", "white", "#2980b9")),
-  zmin = -1, zmax = 1
-) |>
-  layout(title = "Correlación entre variables")
-```
-
-# Aplicando lo aprendido: regresión lineal múltiple
-
-## Planteamiento del modelo
-
-Con las herramientas de inferencia clásica y regresión que ya dominas, el camino natural es modelar los ingresos en función de las demás variables:
-
+::: {.smaller}
 $$
-\text{ingresos}_i = \beta_0 + \beta_1\,\text{gasto\_publicidad}_i +
-\beta_2\,\text{ticket\_promedio}_i + \beta_3\,\text{num\_clientes}_i +
-\beta_4\,\text{temperatura}_i + \varepsilon_i
+\mathbb{E}[\text{ingresos} | \text{gasto_publicidad}, \text{ticket_promedio}, \text{num_clientes}] 
 $$
 
-con el supuesto clásico $\varepsilon_i \sim N(0, \sigma^2)$, **independientes** entre sí.
+$$
+= \beta_0 + \beta_1 \text{gasto_publicidad} + \beta_2 \text{ticket_promedio} + \beta_3 \text{num_clientes}
+$$
 
-Cada fila $i$ se trata como una unidad experimental intercambiable, sin importar el orden en que llegó.
+:::
+
+
+--- 
+
+Este modelo no parece pertinente, pues el correlograma sugiere un problema de multicolinealidad entre las covariables, y tal vez sea necesario realizar una selección de las mismas.
+
+El resumen del modelo:
+
+```{r}
+#| label: modelos
+
+modelo_ep <- lm(ingresos ~ gasto_publicidad + ticket_promedio +
+               num_clientes, data = ventas)
+summary(modelo_ep)
+```
+
+
+
 
 ## Ajustando el modelo {.smaller}
 
-```{r}
-#| label: modelo
 
-modelo <- lm(ingresos ~ gasto_publicidad + ticket_promedio +
-               num_clientes, data = ventas)
-summary(modelo)
-```
 
 ## Sacándole provecho (I): inferencia sobre coeficientes {.smaller}
 
 ```{r}
 #| label: tidy-modelo
 
-tidy(modelo, conf.int = TRUE) |>
+tidy(modelo_ep, conf.int = TRUE) |>
   mutate(across(where(is.numeric), \(x) round(x, 4))) |>
   kable()
 ```
 
 - Todos los coeficientes son **significativos** (p \< 0.05).
 - Podemos construir intervalos de confianza y **contrastar hipótesis** sobre el efecto de cada variable, tal como en el módulo de regresión.
-- Interpretación directa: cada millón de pesos adicional en publicidad se traduce, en promedio, en `r round(coef(modelo)["gasto_publicidad"], 2)` millones más de ingreso, manteniendo lo demás constante.
+- Interpretación directa: cada millón de pesos adicional en publicidad se traduce, en promedio, en `r round(coef(modelo_ep)["gasto_publicidad"], 2)` millones más de ingreso, manteniendo lo demás constante.
 
 ## Sacándole provecho (II): bondad de ajuste
 
 ```{r}
 #| label: r2
 
-glance(modelo) |>
+glance(modelo_ep) |>
   select(r.squared, adj.r.squared, sigma, statistic, p.value) |>
   kable(digits = 3)
 ```
@@ -386,7 +358,7 @@ Supongamos que el próximo mes Tiendas 3B planea invertir 7 millones en publicid
 nuevo <- tibble(gasto_publicidad = 7, ticket_promedio = 195,
                  num_clientes = 130000, temperatura = 20)
 
-predict(modelo, newdata = nuevo, interval = "prediction") |>
+predict(modelo_ep, newdata = nuevo, interval = "prediction") |>
   kable(digits = 2)
 ```
 
@@ -403,8 +375,8 @@ Como buenos consultores, antes de entregar el informe revisamos los supuestos cl
 #| fig-height: 4
 
 par(mfrow = c(1, 2))
-plot(modelo, which = 1, caption = "Residuos vs. ajustados")
-plot(modelo, which = 2, caption = "QQ-plot")
+plot(modelo_ep, which = 1, caption = "Residuos vs. ajustados")
+plot(modelo_ep, which = 2, caption = "QQ-plot")
 ```
 
 A simple vista, no hay señales dramáticas de no-linealidad ni de falta de normalidad. **Todo parece estar en orden.**
@@ -421,7 +393,7 @@ Pero aquí **sí existe** un orden natural: el tiempo. ¿Qué pasa si graficamos
 #| fig-width: 9
 #| fig-height: 4
 
-ventas$residuos <- resid(modelo)
+ventas$residuos <- resid(modelo_ep)
 
 p_res <- ggplot(ventas, aes(fecha, residuos,
                             text = paste0("Fecha: ", format(fecha, "%b %Y"),
@@ -441,7 +413,7 @@ Los residuos no se ven como ruido aleatorio: hay rachas, ciclos y un patrón que
 ```{r}
 #| label: pruebas-autocorrelacion
 
-dwtest(modelo)
+dwtest(modelo_ep)
 Box.test(ventas$residuos, lag = 12, type = "Ljung-Box")
 ```
 
@@ -472,7 +444,7 @@ Tanto la prueba de Durbin-Watson como la de Ljung-Box **rechazan** la independen
 La regresión lineal múltiple —tal como la estudiamos— fue diseñada para datos donde las observaciones son **intercambiables**. Cuando el índice es el tiempo, aparecen preguntas que el modelo no está pensado para responder:
 
 | Pregunta de negocio | ¿La resuelve la regresión clásica? |
-|--------------------------------------------------------|:--------------:|
+|-----------------------------------------------------|:-----------------:|
 | ¿Qué variables explican los ingresos? | Sí |
 | ¿Los errores estándar/intervalos son confiables? | **No**, si hay autocorrelación |
 | ¿Existe una tendencia de largo plazo? | No la modela explícitamente |
@@ -494,6 +466,54 @@ ingresos_ts
 ```
 
 Ahora el modelo puede "ver" que enero de 2020 sigue a diciembre de 2019, y que ambos son parte de un ciclo anual de 12 meses.
+
+## Serie de tiempo interactiva {.smaller}
+
+```{r}
+#| label: fig-serie-interactiva
+#| fig-align: center
+#| fig-width: 9
+#| fig-height: 4.5
+
+p_serie <- ggplot(ventas, aes(
+  x = fecha, y = ingresos,
+  text = paste0("Mes: ", format(fecha, "%b %Y"),
+                "<br>Ingresos: $", comma(ingresos), " mdp")
+)) +
+  geom_line(color = "#c0392b", linewidth = 1) +
+  geom_point(color = "#c0392b", size = 1.4) +
+  scale_y_continuous(labels = label_comma()) +
+  labs(title = "Ingresos mensuales de Tiendas 3B en la CDMX",
+       x = NULL, y = "Ingresos (millones $)")
+
+ggplotly(p_serie, tooltip = "text")
+```
+
+Por ahora, **ignoraremos deliberadamente** que estos datos tienen un orden temporal: los tratamos como una tabla transversal más, tal como en el módulo de regresión lineal múltiple.
+
+
+
+## Estacionalidad por mes {.smaller}
+
+```{r}
+#| label: fig-boxplot
+#| fig-align: center
+#| fig-width: 9
+#| fig-height: 4.5
+
+p_box <- ggplot(ventas, aes(mes, ingresos, fill = mes)) +
+  geom_boxplot(show.legend = FALSE) +
+  labs(title = "Distribución de ingresos por mes (2019-2024)",
+       x = NULL, y = "Ingresos (millones $)")
+
+ggplotly(p_box)
+```
+
+Noviembre-diciembre y la temporada de calor muestran ingresos sistemáticamente distintos: un primer indicio de **estacionalidad**.
+
+
+
+
 
 ## Descomponiendo la serie {.smaller}
 
