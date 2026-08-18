@@ -9,7 +9,7 @@ format:
     slide-number: true
     chalkboard: false
     transition: fade
-    incremental: false
+    incremental: true
     toc: false
     code-line-numbers: false
     embed-resources: true
@@ -37,6 +37,7 @@ library(RColorBrewer)
 library(leaflet)
 library(mxmaps)
 library(dplyr)
+library(patchwork)
 
 theme_set(theme_minimal(base_size = 18))
 options(width = 90)
@@ -75,7 +76,7 @@ ventas <- tibble(fecha, ingresos, gasto_publicidad,
 
 # Planteamiento
 
-![](series_tiempo/Img/logo3B.jpeg){.absolute top="672" left="1186" width="395" height="213"}
+
 
 ##  {.smaller}
 
@@ -103,7 +104,7 @@ Se tiene disponible la siguiente información:
 
 ## **2. Huella de tiendas por alcaldía** {.smaller}
 
-Número de sucursales en cada una de las 16 alcaldías de la CDMX en MDP
+Número de sucursales en cada una de las 16 alcaldías de la CDMX así como el ingreso promedio de sus sucursales (en mdp).
 
 ```{r}
 #| label: datos-alcaldias
@@ -140,11 +141,11 @@ kable(head(tiendas_alcaldia,9))
 
 ```
 
-# Explorando los datos
+# Explorando los datos: `La presencia de Tiendas 3B en la CDMX`
 
-## `La presencia de Tiendas 3B en la CDMX` {.smaller}
+##  {.smaller}
 
-Un primer acercamiento a los datos puede ser la distribución de las sucursales entre las 16 alcaldías. Para visualizar mapas de México usamos el paquete `mxmaps`.
+Un primer acercamiento a los datos puede ser la distribución de las sucursales entre las 16 alcaldías. Para visualizar mapas de México usamos el paquete `mxmaps` de `R`.
 
 <br>
 
@@ -228,19 +229,27 @@ Algunos comentarios:
 
 - En esta etapa, solo nos interesa **describir** patrones interesantes.
 
+
+
 <br>
 
-Una propuesta sería presentar ambos mapas, mencionar los patrones observados (zonas de la ciudad con mayor presencia de tiendas y zonas con mayor ingreso promedio por tienda) y posteriormente tratar de explicar estos patrones con conocimiento del contexto (por ejemplo, las alcaldías con mayor ingreso promedio por tienda no necesariamente son las que tienen más tiendas).
+- Una propuesta sería presentar ambos mapas, mencionar los patrones observados (zonas de la ciudad con mayor presencia de tiendas y zonas con mayor ingreso promedio por tienda) y posteriormente tratar de explicar estos patrones con conocimiento del contexto (por ejemplo, las alcaldías con mayor ingreso promedio por tienda no necesariamente son las que tienen más tiendas).
 
 
 
 ## Correlograma {.smaller}
 
+Analizar las correlaciones puede ayudar a identificar anticipadamente problemas, o si el razonable el uso de técnicas de análisis multivariado para reducir la dimensión de los datos (como PCA).
+Debido a la naturaleza de los datos, era de esperarse que hubiera una fuerte correlación entre ellas.
+
+::: {style="display: flex; justify-content: center;"}
+
+
 ```{r}
 #| label: fig-heatmap
 #| fig-align: center
-#| fig-width: 7
-#| fig-height: 5.5
+#| fig-width: 5
+#| fig-height: 3.5
 
 corr <- ventas |>
   select(ingresos, gasto_publicidad, ticket_promedio, num_clientes) |>
@@ -255,13 +264,20 @@ plot_ly(
   layout(title = "Correlación entre variables")
 ```
 
+:::
+
+
 ## Publicidad vs. Ingresos {.smaller}
+
+Podríamos analizar con mayor detalle la variable que presenta una menor correlación (lineal).
+
+::: {style="display: flex; justify-content: center;"}
 
 ```{r}
 #| label: fig-scatter
 #| fig-align: center
-#| fig-width: 9
-#| fig-height: 4.5
+#| fig-width: 5
+#| fig-height: 3.5
 
 p_scatter <- ggplot(ventas, aes(
   x = gasto_publicidad, y = ingresos, color = mes,
@@ -270,16 +286,22 @@ p_scatter <- ggplot(ventas, aes(
                 "<br>Ingresos: $", comma(ingresos), " mdp")
 )) +
   geom_point(size = 2.4) +
-  labs(title = "Relación entre gasto en publicidad e ingresos",
+  labs(title = "Ingresos vs. Gasto en publicidad",
        x = "Gasto en publicidad (millones $)", y = "Ingresos (millones $)",
        color = "Mes")
 
 ggplotly(p_scatter, tooltip = "text")
 ```
 
+:::
+
+## Propuesta de visualización
 
 
-# Trabajar con lo que hay: Un modelo de regresión lineal múltiple
+
+
+
+# Trabajar con lo que hay: `Un modelo de regresión lineal múltiple`
 
 ----
 
