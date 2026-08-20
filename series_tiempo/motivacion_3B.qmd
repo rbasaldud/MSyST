@@ -2,7 +2,6 @@
 title: "¿Por qué estudiar Series de Tiempo?"
 subtitle: "Un caso de consultoría con Tiendas 3B en la Ciudad de México"
 author: "Rodrigo B."
-date: "Agosto 2026"
 format:
   revealjs:
     theme: simple
@@ -265,7 +264,7 @@ Podríamos analizar con mayor detalle la variable que presenta una menor correla
 ```{r}
 #| label: fig-scatter
 #| fig-align: center
-#| fig-width: 6
+#| fig-width: 7
 #| fig-height: 5.5
 
 p_scatter <- ggplot(ventas, aes(
@@ -436,6 +435,10 @@ Ahora el modelo puede "ver" que enero de 2020 sigue a diciembre de 2019, y que a
 
 ## Visualizando la serie de tiempo  {.smaller}
 
+
+::: {style="display: flex; justify-content: center;"}
+
+
 ```{r}
 #| label: fig-serie-interactiva
 #| fig-align: center
@@ -456,18 +459,21 @@ p_serie <- ggplot(ventas, aes(
 ggplotly(p_serie, tooltip = "text")
 ```
 
+:::
+
 ---
 
 ## Estacionalidad por mes {.smaller}
 
 Si ignoramos que estos datos tienen un orden temporal y creamos a la variable categórica ordinal `mes`.
 
+::: {style="display: flex; justify-content: center;"}
 
 ```{r}
 #| label: fig-boxplot
 #| fig-align: center
-#| fig-width: 8
-#| fig-height: 5.5
+#| fig-width: 9
+#| fig-height: 7
 
 p_box <- ggplot(ventas, aes(mes, ingresos, fill = mes)) +
   geom_boxplot(show.legend = FALSE) +
@@ -476,6 +482,8 @@ p_box <- ggplot(ventas, aes(mes, ingresos, fill = mes)) +
 
 ggplotly(p_box)
 ```
+
+:::
 
 
 ## Descomponiendo la serie {.smaller}
