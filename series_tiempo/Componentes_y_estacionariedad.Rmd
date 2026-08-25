@@ -1,0 +1,317 @@
+---
+title: "Componentes de una Serie de Tiempo y Procesos Estacionarios"
+author: "Rodrigo B."
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    code_folding: show
+    theme: flatly
+---
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(
+	error = F,
+	fig.align = "center",
+	fig.cap = " ",
+	fig.dim = c(8, 6),
+	message = FALSE,
+	warning = FALSE,
+	echo = F,
+	fig.pos="H")
+
+#Limpiamos entorno
+rm(list = ls(all.names = TRUE))
+gc() #Liberamos memoria
+
+```
+
+
+```{r libs, include=FALSE}
+library(tidyverse)
+library(plotly)
+library(gganimate)
+library(forecast)
+```
+
+
+
+# 1. Componentes gráficos de una serie de tiempo
+
+Una serie de tiempo puede descomponerse (de forma aditiva) como:
+
+
+$$ 
+Y_t = T_t + S_t + C_t + \varepsilon_t 
+$$
+
+donde:
+
+- **Tendencia ($T_t$):** movimiento de largo plazo, suave y sostenido (creciente, decreciente o estable) que refleja cambios estructurales de fondo (crecimiento económico, adopción tecnológica, cambios demográficos, etc.).
+
+- **Estacionalidad ($S_t$):** patrón que se repite con **periodicidad fija y conocida**, generalmente ligada al calendario (mensual, trimestral, día de la semana). Su período no cambia con el tiempo.
+
+- **Ciclicidad ($C_t$) (Usualmente se omite):** oscilaciones de subida y bajada **sin período fijo**, normalmente más largas que la estacionalidad (varios años), asociadas a fenómenos como ciclos económicos, crediticios o de negocio. A diferencia de la estacionalidad, su duración y amplitud varían de un ciclo a otro.
+
+- **Ruido/Error ($\varepsilon_t$):** variación residual aleatoria no explicada por los componentes anteriores.
+
+
+# 2. Ingresos mensuales de un comercio en la playa
+
+**Contexto:** Simulamos el número mensual de ingresos (en miles) a un destino turístico de playa entre 2015 y 2024. Esta serie combina de forma realista los tres componentes:
+
+- **Tendencia:** el destino gana popularidad año con año (nuevas rutas aéreas, promoción turística, inversión en infraestructura hotelera).
+
+- **Estacionalidad:** cada año hay temporada alta (vacaciones de invierno/verano) y temporada baja (temporada de huracanes), con un patrón que se repite cada 12 meses.
+
+- **Ciclicidad:** el gasto turístico internacional también responde a ciclos económicos globales (auges y desaceleraciones) que duran varios años y no tienen una duración fija.
+
+```{r construir-serie, echo=FALSE}
+set.seed(2024)
+
+n <- 120  # 10 años de datos mensuales
+t <- 1:n
+fechas <- seq(as.Date("2015-01-01"), by = "month", length.out = n)
+
+tendencia <- 50 + 0.8 * t
+
+estacionalidad <- 15 * sin(2 * pi * (t - 3) / 12)
+
+ciclo <- 10 * sin(2 * pi * t / 54) + 4 * sin(2 * pi * t / 37)
+
+ruido <- rnorm(n, mean = 0, sd = 3)
+
+ingresos <- tendencia + estacionalidad + ciclo + ruido
+
+serie_df <- tibble(
+  fecha = fechas,
+  ingresos = ingresos,
+  tendencia = tendencia,
+  estacionalidad = estacionalidad,
+  ciclo = ciclo
+)
+
+head(serie_df, 12)
+```
+
+## Visualización de la serie completa con `plotly`
+
+
+
+
+```{r plot-serie}
+plot_ly(serie_df, x = ~fecha) %>%
+  add_lines(y = ~ingresos, name = "ingresos observados",
+            line = list(color = "steelblue")) %>%
+  layout(
+    title = "Ingresos mensuales a destino turístico  (2015-2024)",
+    xaxis = list(title = "Fecha", rangeslider = list(visible = FALSE)),
+    yaxis = list(title = "Miles de ingresos"),
+    legend = list(orientation = "h", y = -0.2)
+  )
+```
+## Estimando la tendencia
+
+
+
+
+```{r plot-tendencia}
+
+plot_ly(serie_df, x = ~fecha) %>%
+  add_lines(y = ~ingresos, name = "ingresos observados",
+            line = list(color = "steelblue")) %>%
+  add_lines(y = ~tendencia, name = "Tendencia",
+            line = list(color = "firebrick", width = 3)) %>%
+  layout(
+    title = "Ingresos mensuales a destino turístico (2015-2024)",
+    xaxis = list(title = "Fecha", rangeslider = list(visible = FALSE)),
+    yaxis = list(title = "Miles de ingresos"),
+    legend = list(orientation = "h", y = -0.2)
+  )
+
+```
+
+## Estacionalidad vs Ciclicidad
+
+
+
+
+
+```{r plot-componentes}
+plot_ly(serie_df, x = ~fecha) %>%
+  add_lines(y = ~estacionalidad, name = "Estacionalidad (período fijo = 12 meses)",
+            line = list(color = "darkgreen")) %>%
+  add_lines(y = ~ciclo, name = "Ciclicidad (período variable, varios años)",
+            line = list(color = "purple")) %>%
+  layout(
+    title = "Componentes de estacionalidad y ciclicidad",
+    xaxis = list(title = "Fecha", rangeslider = list(visible = FALSE)),
+    yaxis = list(title = "Valor"),
+    legend = list(orientation = "h", y = -0.2)
+  )
+```
+
+## Interpretación de cada componente en el contexto
+
+
+
+**Tendencia:**
+
+La línea de tendencia pasa de ~50 mil ingresos/mes en 2015 a ~146 mil ingresos/mes en 2024, un crecimiento sostenido de aproximadamente 0.8 mil ingresos adicionales cada mes. 
+
+En el contexto turístico, esto refleja el posicionamiento progresivo del destino: más conectividad aérea, mayor inversión hotelera y mejor reputación internacional, todo lo cual empuja la demanda al alza año tras año, independientemente del mes en que estemos.
+
+**Estacionalidad:**
+
+El patrón oscila con amplitud de ±15 mil ingresos y se repite **exactamente cada 12 meses**: los picos coinciden con la temporada alta (vacaciones de invierno, cuando turistas de climas fríos buscan sol y playa) y los valles con la temporada de huracanes (baja demanda por riesgo climático). 
+
+Este comportamiento es predecible: un operador turístico puede anticipar con certeza en qué meses necesitará más personal y en cuáles deberá ofrecer promociones.
+
+**Ciclicidad:**
+
+A diferencia de la estacionalidad, el componente cíclico tiene una duración que ronda entre 3 y 4.5 años y **no coincide con ningún mes del calendario en particular**. 
+
+Representa cómo el gasto turístico internacional se expande en períodos de bonanza económica global y se contrae en períodos de desaceleración o crisis (por ejemplo, recesiones, crisis cambiarias en los países emisores de turistas). 
+
+A diferencia de la estacionalidad, este componente es mucho más difícil de anticipar con precisión porque su duración y amplitud cambian de un ciclo a otro.
+
+
+# 3. Procesos estocásticos estacionarios
+
+Un proceso $\{Y_t\}$ es **débilmente (o de segundo orden) estacionario** si cumple:
+
+1. $E[Y_t] = \mu$ (media constante, no depende de $t$)
+2. $Var(Y_t) = \sigma^2$ (varianza constante y finita)
+3. $Cov(Y_t, Y_{t+k})$ depende únicamente del rezago $k$, no del tiempo $t$
+
+
+## Ejemplo 1: Ruido blanco gaussiano
+
+El proceso $\{e_{t}\} $ de variables independientes e identicamente distribuidas pertenecientes a la distribución $N(0,\sigma^{2})$
+
+```{r ruido-blanco}
+set.seed(1)
+n2 <- 200
+fechas2 <- seq(as.Date("2020-01-01"), by = "day", length.out = n2)
+
+ruido_blanco <- rnorm(n2, mean = 0, sd = 1)
+df_wn <- tibble(fecha = fechas2, valor = ruido_blanco)
+
+plot_ly(df_wn, x = ~fecha, y = ~valor, type = "scatter", mode = "lines",
+        line = list(color = "gray30")) %>%
+  layout(
+    title = "Ruido blanco gaussiano",
+    xaxis = list(title = "Fecha", rangeslider = list(visible = FALSE)),
+    yaxis = list(title = "Valor")
+  )
+```
+
+```{r ruido-blanco-ventanas,include=FALSE}
+tibble(ventana = rep(1:4, each = 50), valor = ruido_blanco) %>%
+  group_by(ventana) %>%
+  summarise(media = round(mean(valor), 3), varianza = round(var(valor), 3))
+```
+
+## Ejemplo 2: Proceso AR(1) estacionario (|phi| < 1)
+
+El modelo Autoregresivo de orden uno definido como:
+
+$$
+Y_t = 0.7 * Y_{(t-1)} + e_t
+$$
+
+Donde $ \{e_i \} \sim^{iid} N(0,1)$
+
+```{r ar1}
+set.seed(42)
+ar1_sim <- arima.sim(model = list(ar = 0.7), n = n2)
+df_ar1_ts <- tibble(fecha = fechas2, valor = as.numeric(ar1_sim))
+
+plot_ly(df_ar1_ts, x = ~fecha, y = ~valor, type = "scatter", mode = "lines",
+        line = list(color = "steelblue")) %>%
+  layout(
+    title = "Proceso AR(1)",
+    xaxis = list(title = "Fecha", rangeslider = list(visible = FALSE)),
+    yaxis = list(title = "Valor")
+  )
+```
+
+```{r ar1-acf, fig.width=7, fig.height=4}
+ggAcf(ar1_sim) +
+  labs(title = "ACF de un proceso AR(1) con phi = 0.7") +
+  theme_minimal(base_size = 13)
+```
+
+## Ejemplo 3: Caminata aleatoria gaussiana (proceso NO estacionario)
+
+
+
+
+```{r random-walk}
+set.seed(42)
+caminata_aleatoria <- cumsum(rnorm(n2))
+df_rw <- tibble(fecha = fechas2, valor = caminata_aleatoria)
+
+plot_ly(df_rw, x = ~fecha, y = ~valor, type = "scatter", mode = "lines",
+        line = list(color = "firebrick")) %>%
+  layout(
+    title = "Caminata aleatoria gaussiana",
+    xaxis = list(title = "Fecha", rangeslider = list(visible = FALSE)),
+    yaxis = list(title = "Valor")
+  )
+```
+
+## Conclusión
+
+En la caminata aleatoria la varianza crece con $t$ (pues Var$(Y_t) = t\sigma^2$) y no existe un nivel fijo al cual la serie "regrese", por lo que **no** es estacionaria. En cambio, el AR(1) con $|\phi|<1$ siempre "regresa" hacia su media (0 en este caso), lo cual es una característica visual de un proceso estacionario.
+
+# 5. Animación de un proceso estocástico con `gganimate`
+
+
+```{r anim-ar1,cache=TRUE,eval=FALSE}
+df_ar1 <- tibble(t = 1:n2, valor = as.numeric(ar1_sim))
+
+p_anim <- ggplot(df_ar1, aes(t, valor)) +
+  geom_line(color = "steelblue", linewidth = 0.9) +
+  geom_point(color = "steelblue", size = 1.6) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "gray40") +
+  labs(
+    title = "Realización de un proceso AR(1) estacionario (phi = 0.7)",
+    subtitle = "t = {frame_along}",
+    x = "Tiempo", y = "Valor"
+  ) +
+  theme_minimal(base_size = 13) +
+  transition_reveal(along =  t)
+
+animate(p_anim, nframes = nrow(df_ar1), fps = 20, width = 1000, height = 600,
+        renderer = gifski_renderer())
+
+
+
+```
+
+## Estacionario vs No Estacionario
+
+```{r anim-comparacion,cache=TRUE,eval=FALSE}
+df_comparacion <- bind_rows(
+  df_ar1 %>% mutate(proceso = "AR(1) estacionario (phi = 0.7)"),
+  tibble(t = 1:n2, valor = caminata_aleatoria, proceso = "Caminata aleatoria (NO estacionaria)")
+)
+
+p_comp <- ggplot(df_comparacion, aes(t, valor, color = proceso)) +
+  geom_line(linewidth = 0.9) +
+  facet_wrap(~proceso, scales = "free_y", ncol = 1) +
+  labs(
+    title = "Estacionario vs. no estacionario",
+    subtitle = "t = {frame_along}",
+    x = "Tiempo", y = "Valor"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(legend.position = "none") +
+  transition_reveal(along = t)
+
+animate(p_comp, nframes = nrow(df_comparacion), fps = 20, width = 800, height = 650,
+        renderer = gifski_renderer())
+```
+
