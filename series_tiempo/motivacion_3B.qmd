@@ -180,6 +180,7 @@ mxmunicipio_leaflet(df_municipios,
   addProviderTiles("CartoDB.Positron")
 
 ```
+
 :::
 
 ##  {.smaller}
@@ -189,6 +190,7 @@ También podemos visualizar el **ingreso promedio por tienda** en cada alcaldía
 <br> <br> <br>
 
 ::: {style="display: flex; justify-content: center;"}
+
 ```{r}
 #| label: fig-mapa2
 #| fig-align: center
@@ -215,6 +217,7 @@ mxmunicipio_leaflet(df_municipios,
   addProviderTiles("CartoDB.Positron")
 
 ```
+
 :::
 
 ##  {.smaller}
@@ -236,6 +239,7 @@ Algunos comentarios:
 Analizar las correlaciones puede ayudar a identificar anticipadamente problemas, o si el razonable el uso de técnicas de análisis multivariado para reducir la dimensión del dataset (como PCA). Debido a la naturaleza de los datos, era de esperarse que hubiera una fuerte correlación entre ellas.
 
 ::: {style="display: flex; justify-content: center;"}
+
 ```{r}
 #| label: fig-heatmap
 #| fig-align: center
@@ -254,6 +258,7 @@ plot_ly(
 ) |>
   layout(title = "Correlación entre variables")
 ```
+
 :::
 
 ## Publicidad vs. Ingresos {.smaller}
@@ -261,6 +266,7 @@ plot_ly(
 Podríamos analizar con mayor detalle la variable que presenta una menor correlación (lineal).
 
 ::: {style="display: flex; justify-content: center;"}
+
 ```{r}
 #| label: fig-scatter
 #| fig-align: center
@@ -280,6 +286,7 @@ p_scatter <- ggplot(ventas, aes(
 
 ggplotly(p_scatter, tooltip = "text")
 ```
+
 :::
 
 
@@ -433,6 +440,29 @@ head(ingresos_ts,13)
 
 Ahora el modelo puede "ver" que enero de 2020 sigue a diciembre de 2019, y que ambos son parte de un ciclo anual de 12 meses.
 
+## Estacionalidad por mes {.smaller}
+
+Si ignoramos que estos datos tienen un orden temporal y creamos a la variable categórica ordinal `mes`.
+
+::: {style="display: flex; justify-content: center;"}
+
+```{r}
+#| label: fig-boxplot
+#| fig-align: center
+#| fig-width: 9
+#| fig-height: 7
+
+p_box <- ggplot(ventas, aes(mes, ingresos, fill = mes)) +
+  geom_boxplot(show.legend = FALSE) +
+  labs(title = "Distribución de ingresos por mes (2019-2024)",
+       x = NULL, y = "Ingresos (millones $)")
+
+ggplotly(p_box)
+```
+
+:::
+
+
 ## Visualizando la serie de tiempo  {.smaller}
 
 
@@ -461,122 +491,15 @@ ggplotly(p_serie, tooltip = "text")
 
 :::
 
----
-
-## Estacionalidad por mes {.smaller}
-
-Si ignoramos que estos datos tienen un orden temporal y creamos a la variable categórica ordinal `mes`.
-
-::: {style="display: flex; justify-content: center;"}
-
-```{r}
-#| label: fig-boxplot
-#| fig-align: center
-#| fig-width: 9
-#| fig-height: 7
-
-p_box <- ggplot(ventas, aes(mes, ingresos, fill = mes)) +
-  geom_boxplot(show.legend = FALSE) +
-  labs(title = "Distribución de ingresos por mes (2019-2024)",
-       x = NULL, y = "Ingresos (millones $)")
-
-ggplotly(p_box)
-```
-
-:::
-
-
-## Descomponiendo la serie {.smaller}
-
-Una primera ganancia inmediata: **descomponer** la serie en tendencia, estacionalidad y componente irregular.
-
-```{r}
-#| label: fig-stl
-#| fig-align: center
-#| fig-width: 9
-#| fig-height: 5
-
-descomp <- stl(ingresos_ts, s.window = "periodic")
-autoplot(descomp) +
-  labs(title = "Descomposición STL de los ingresos de Tiendas 3B (CDMX)")
-```
-
-## ACF y PACF: herramientas propias de las series de tiempo
-
-```{r}
-#| label: fig-acf-pacf
-#| fig-align: center
-#| fig-width: 9
-#| fig-height: 4
-
-gridExtra::grid.arrange(
-  ggAcf(ingresos_ts)  + labs(title = "ACF de los ingresos"),
-  ggPacf(ingresos_ts) + labs(title = "PACF de los ingresos"),
-  ncol = 2
-)
-```
-
-El ACF/PACF nos permite **ver directamente** cuánto se parece cada mes a los meses anteriores: información que la regresión lineal simplemente no tiene manera de mostrar.
-
-## Modelando la dependencia: regresión + series de tiempo {.smaller}
-
-No se trata de "tirar a la basura" lo aprendido en regresión: los modelos de series de tiempo permiten **combinar** covariables externas con la estructura temporal de los errores (modelos tipo *ARIMAX*):
-
-```{r}
-#| label: arimax
-
-
-```
-
-## ¿Ahora sí son independientes los errores? {.smaller}
-
-```{r}
-#| label: fig-checkresid
-#| fig-align: center
-#| fig-width: 9
-#| fig-height: 5.5
-
-```
-
-## Pronosticando con incertidumbre realista {.smaller}
-
-```{r}
-#| label: fig-forecast
-#| fig-align: center
-#| fig-width: 9
-#| fig-height: 4.5
-
-
-```
-
-Ahora el intervalo de pronóstico **crece con el horizonte**, reflejando que mientras más lejos proyectamos, menos sabemos — algo que la regresión clásica, con errores independientes, no puede representar.
-
-## Regresión clásica vs. modelos de series de tiempo {.smaller}
-
-| Aspecto | Regresión lineal múltiple | Modelos de series de tiempo |
-|------------------------|------------------------|------------------------|
-| Supuesto sobre las observaciones | Intercambiables / independientes | Ordenadas, con posible dependencia |
-| Qué hace con la autocorrelación | La ignora (o la viola) | La modela explícitamente |
-| Tendencia y estacionalidad | No se modelan de forma nativa | Se descomponen y modelan |
-| Pronóstico a *h* pasos | Requiere covariables futuras conocidas | Genera incertidumbre creciente y coherente |
-| Validez de errores estándar/IC | Comprometida si hay autocorrelación | Corregida por el propio modelo |
-| Relación con lo ya aprendido | — | Extiende la regresión (ARIMAX), no la reemplaza |
-
-
-## Lo que viene en el curso {.smaller}
+## Proximamente {.smaller}
 
 ::: incremental
 - Estacionariedad y transformaciones (diferenciación, logaritmos)
 - Autocorrelación: ACF y PACF como herramientas de diagnóstico
-- Descomposición clásica y STL
-- Suavizamiento exponencial (Holt-Winters)
-- Modelos ARIMA / SARIMA y su relación con la regresión
+- Descomposición clásica
+- Suavizamiento y estimación de ciclicidad
+- Modelos ARIMA / SARIMA 
 - Incorporación de covariables externas (ARIMAX)
 - Evaluación y validación de pronósticos
 :::
 
-## ¡Gracias! {.center}
-
-**Preguntas y discusión**
-
-*El caso de Tiendas 3B en la CDMX seguirá acompañándonos a lo largo del curso.*
