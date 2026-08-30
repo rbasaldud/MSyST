@@ -1,0 +1,27 @@
+---
+title: "Modelos de Supervivencia y Series de Tiempo"
+subtitle: "Semestre 2027-1"
+format:
+  html:
+    theme: minimal
+    toc: false
+    page-layout: full
+---
+
+
+
+# Series de tiempo
+
+| Tema | Presentación |
+|:--|:--|
+| Motivación del estudio de Series de Tiempo | [Presentación](series_tiempo/motivacion_3B.qmd) |
+| Ejemplos de visualización en R | [Presentación](series_tiempo/visualizacion.qmd) |
+| Modelo clásico y procesos estacionarios | [Notas](series_tiempo/Componentes_y_estacionariedad.Rmd) |
+
+
+
+
+
+# Repositorio
+
+Los códigos de las presentaciones y ejemplos están disponibles en este [repositorio](https://github.com/rbasaldud/MSyST)

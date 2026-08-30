@@ -1,0 +1,20 @@
+project:
+  type: website
+
+execute:
+    freeze: auto
+
+website:
+  title: "Modelos de Supervivencia y Series de Tiempo"
+  navbar:
+    left:
+      - text: "Inicio"
+        href: index.qmd
+
+  page-footer:
+    center: "Facultad de Ciencias, UNAM"
+
+format:
+  html:
+    theme: minimal
+    toc: false

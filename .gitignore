@@ -1,16 +1,25 @@
 # ── Quarto ──────────────────────────────────────────
 .quarto/
-*_cache/          # caché de chunks de R
-*.html            # outputs renderizados (omite si los quieres versionar)
-*_files/
-**/*_files/visualizacion_files/ # del archivo visualizacion qmd
+_freeze/
 
-# Por si acaso, ignorar libs de htmlwidgets específicamente  
+# Archivos temporales generados por Quarto
+*_cache/
+*_files/
+**/*_files/
+
+# Sitio generado por Quarto
+_site/
+
+# Jupyter / Quarto notebooks
+**/*.quarto_ipynb
+
+
+# ── HTML widgets / recursos temporales ──────────────
 libs/
 **/libs/
 
 
-# ── LaTeX / PDF ──────────────────────────────────────
+# ── LaTeX / PDF ─────────────────────────────────────
 *.aux
 *.log
 *.toc
@@ -22,23 +31,28 @@ libs/
 *.fls
 *.fdb_latexmk
 *.synctex.gz
-*.tex             # omite si tienes .tex fuente que sí quieres versionar
 
-# ── Tipografías y recursos temporales ────────────────
+# Ignorar .tex generado
+*.tex
+
+
+# ── Tipografías ─────────────────────────────────────
 *.ttf
 *.otf
 *.woff
 *.woff2
 
-# ── R ────────────────────────────────────────────────
+
+# ── R ───────────────────────────────────────────────
 .Rhistory
 .RData
 .Rproj.user/
-*.Rproj            # omite si quieres compartir el proyecto de RStudio
 
-# ── YAML generados automáticamente ───────────────────
-_freeze/
+# Descomenta si NO quieres compartir el proyecto RStudio
+# *.Rproj
 
-# ── Sistema operativo ─────────────────────────────────
+
+# ── Sistema operativo ───────────────────────────────
 .DS_Store
 Thumbs.db
+/.quarto/
