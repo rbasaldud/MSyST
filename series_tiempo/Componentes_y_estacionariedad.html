@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.18">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Rodrigo B.">
+
+<title>Componentes de una Serie de Tiempo y Procesos Estacionarios – Modelos de Supervivencia y Series de Tiempo</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-ba8f7c244c1f50cbf6c6a3aa3874339a.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<link href="../site_libs/htmltools-fill-0.5.9/fill.css" rel="stylesheet">
+<script src="../site_libs/htmlwidgets-1.6.4/htmlwidgets.js"></script>
+<script src="../site_libs/plotly-binding-4.12.1/plotly.js"></script>
+<script src="../site_libs/typedarray-0.1/typedarray.min.js"></script>
+<script src="../site_libs/jquery-3.5.1/jquery.min.js"></script>
+<link href="../site_libs/crosstalk-1.2.2/css/crosstalk.min.css" rel="stylesheet">
+<script src="../site_libs/crosstalk-1.2.2/js/crosstalk.min.js"></script>
+<link href="../site_libs/plotly-htmlwidgets-css-2.25.2/plotly-htmlwidgets.css" rel="stylesheet">
+<script src="../site_libs/plotly-main-2.25.2/plotly-latest.min.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-fixed fullcontent quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">Modelos de Supervivencia y Series de Tiempo</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../index.html"> 
+<span class="menu-text">Inicio</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Componentes de una Serie de Tiempo y Procesos Estacionarios</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Rodrigo B. </p>
+          </div>
+  </div>
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="componentes-gráficos-de-una-serie-de-tiempo" class="level1">
+<h1>1. Componentes gráficos de una serie de tiempo</h1>
+<p>Una serie de tiempo puede descomponerse (de forma aditiva) como:</p>
+<p><span class="math display">\[
+Y_t = T_t + S_t + C_t + \varepsilon_t
+\]</span></p>
+<p>donde:</p>
+<ul>
+<li><p><strong>Tendencia (<span class="math inline">\(T_t\)</span>):</strong> movimiento de largo plazo, suave y sostenido (creciente, decreciente o estable) que refleja cambios estructurales de fondo (crecimiento económico, adopción tecnológica, cambios demográficos, etc.).</p></li>
+<li><p><strong>Estacionalidad (<span class="math inline">\(S_t\)</span>):</strong> patrón que se repite con <strong>periodicidad fija y conocida</strong>, generalmente ligada al calendario (mensual, trimestral, día de la semana). Su período no cambia con el tiempo.</p></li>
+<li><p><strong>Ciclicidad (<span class="math inline">\(C_t\)</span>) (Usualmente se omite):</strong> oscilaciones de subida y bajada <strong>sin período fijo</strong>, normalmente más largas que la estacionalidad (varios años), asociadas a fenómenos como ciclos económicos, crediticios o de negocio. A diferencia de la estacionalidad, su duración y amplitud varían de un ciclo a otro.</p></li>
+<li><p><strong>Ruido/Error (<span class="math inline">\(\varepsilon_t\)</span>):</strong> variación residual aleatoria no explicada por los componentes anteriores.</p></li>
+</ul>
+</section>
+<section id="ingresos-mensuales-de-un-comercio-en-la-playa" class="level1">
+<h1>2. Ingresos mensuales de un comercio en la playa</h1>
+<p><strong>Contexto:</strong> Simulamos el número mensual de ingresos (en miles) a un destino turístico de playa entre 2015 y 2024. Esta serie combina de forma realista los tres componentes:</p>
+<ul>
+<li><p><strong>Tendencia:</strong> el destino gana popularidad año con año (nuevas rutas aéreas, promoción turística, inversión en infraestructura hotelera).</p></li>
+<li><p><strong>Estacionalidad:</strong> cada año hay temporada alta (vacaciones de invierno/verano) y temporada baja (temporada de huracanes), con un patrón que se repite cada 12 meses.</p></li>
+<li><p><strong>Ciclicidad:</strong> el gasto turístico internacional también responde a ciclos económicos globales (auges y desaceleraciones) que duran varios años y no tienen una duración fija.</p></li>
+</ul>
+<div class="cell" data-layout-align="center">
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 12 × 5
+   fecha      ingresos tendencia estacionalidad ciclo
+   &lt;date&gt;        &lt;dbl&gt;     &lt;dbl&gt;          &lt;dbl&gt; &lt;dbl&gt;
+ 1 2015-01-01     42.6      50.8      -1.30e+ 1  1.84
+ 2 2015-02-01     49.1      51.6      -7.5 e+ 0  3.64
+ 3 2015-03-01     57.4      52.4       0         5.37
+ 4 2015-04-01     67.1      53.2       7.5 e+ 0  7.00
+ 5 2015-05-01     79.0      54         1.30e+ 1  8.50
+ 6 2015-06-01     83.5      54.8       1.5 e+ 1  9.83
+ 7 2015-07-01     81.2      55.6       1.30e+ 1 11.0 
+ 8 2015-08-01     75.5      56.4       7.5 e+ 0 11.9 
+ 9 2015-09-01     66.2      57.2       1.84e-15 12.7 
+10 2015-10-01     60.3      58        -7.5 e+ 0 13.1 
+11 2015-11-01     54.2      58.8      -1.30e+ 1 13.4 
+12 2015-12-01     59.4      59.6      -1.5 e+ 1 13.4 </code></pre>
+</div>
+</div>
+<section id="visualización-de-la-serie-completa-con-plotly" class="level2">
+<h2 class="anchored" data-anchor-id="visualización-de-la-serie-completa-con-plotly">Visualización de la serie completa con <code>plotly</code></h2>
+<div class="cell" data-layout-align="center">
+<div class="cell-output-display">
+<div class="plotly html-widget html-fill-item" id="htmlwidget-392809669e98fba0084b" style="width:100%;height:487px;"></div>
+<script type="application/json" data-for="htmlwidget-392809669e98fba0084b">{"x":{"visdat":{"5d2a764f7db3":["function () ","plotlyVisDat"]},"cur_data":"5d2a764f7db3","attrs":{"5d2a764f7db3":{"x":{},"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"y":{},"type":"scatter","mode":"lines","name":"ingresos observados","line":{"color":"steelblue"},"inherit":true}},"layout":{"margin":{"b":40,"l":60,"t":25,"r":10},"title":"Ingresos mensuales a destino turístico  (2015-2024)","xaxis":{"domain":[0,1],"automargin":true,"title":"Fecha","rangeslider":{"visible":false}},"yaxis":{"domain":[0,1],"automargin":true,"title":"Miles de ingresos"},"legend":{"orientation":"h","y":-0.20000000000000001},"hovermode":"closest","showlegend":false},"source":"A","config":{"modeBarButtonsToAdd":["hoverclosest","hovercompare"],"showSendToCloud":false},"data":[{"x":["2015-01-01","2015-02-01","2015-03-01","2015-04-01","2015-05-01","2015-06-01","2015-07-01","2015-08-01","2015-09-01","2015-10-01","2015-11-01","2015-12-01","2016-01-01","2016-02-01","2016-03-01","2016-04-01","2016-05-01","2016-06-01","2016-07-01","2016-08-01","2016-09-01","2016-10-01","2016-11-01","2016-12-01","2017-01-01","2017-02-01","2017-03-01","2017-04-01","2017-05-01","2017-06-01","2017-07-01","2017-08-01","2017-09-01","2017-10-01","2017-11-01","2017-12-01","2018-01-01","2018-02-01","2018-03-01","2018-04-01","2018-05-01","2018-06-01","2018-07-01","2018-08-01","2018-09-01","2018-10-01","2018-11-01","2018-12-01","2019-01-01","2019-02-01","2019-03-01","2019-04-01","2019-05-01","2019-06-01","2019-07-01","2019-08-01","2019-09-01","2019-10-01","2019-11-01","2019-12-01","2020-01-01","2020-02-01","2020-03-01","2020-04-01","2020-05-01","2020-06-01","2020-07-01","2020-08-01","2020-09-01","2020-10-01","2020-11-01","2020-12-01","2021-01-01","2021-02-01","2021-03-01","2021-04-01","2021-05-01","2021-06-01","2021-07-01","2021-08-01","2021-09-01","2021-10-01","2021-11-01","2021-12-01","2022-01-01","2022-02-01","2022-03-01","2022-04-01","2022-05-01","2022-06-01","2022-07-01","2022-08-01","2022-09-01","2022-10-01","2022-11-01","2022-12-01","2023-01-01","2023-02-01","2023-03-01","2023-04-01","2023-05-01","2023-06-01","2023-07-01","2023-08-01","2023-09-01","2023-10-01","2023-11-01","2023-12-01","2024-01-01","2024-02-01","2024-03-01","2024-04-01","2024-05-01","2024-06-01","2024-07-01","2024-08-01","2024-09-01","2024-10-01","2024-11-01","2024-12-01"],"y":[42.592459599824437,49.144863006500898,57.447067211861892,67.062237284273579,78.962455423603515,83.511057184112275,81.17961502008005,75.450348725728347,66.182023659255918,60.285708903357374,54.198405933066596,59.426534752071873,63.105258766846738,67.329901873959514,64.2651192069996,81.083167862577028,83.990638165285915,89.762120790450808,81.054067564400896,73.73141018394098,75.000201005789279,64.302299491623202,60.257913569328899,53.765265421911259,56.935375362985312,56.005304700161624,67.277799154028585,76.796768648177803,73.806834440101625,81.539970440257605,75.576891768275203,73.626216080096597,65.943401250273965,64.088230926277987,54.158891141201138,55.632529125986451,58.43945349902188,62.528323507981838,70.972168466769645,82.75279038507071,85.702793951618034,91.740538650812582,92.702727931485612,93.147851078491669,77.659380546088471,75.666479380618838,72.290663189096435,72.801265746948602,76.203211467236855,87.049350608508888,88.483936848456196,96.73660726001556,103.93697382455912,106.12531968431198,106.44783968153848,99.966103025552258,100.69876972520149,91.023202997574259,90.466021018003872,86.562350681446745,94.646208066133326,99.130120791786069,106.85069640157955,114.44029654121742,125.51157473562627,123.35119275477523,116.87539459118014,120.62088319999471,113.52048699798762,99.210577360441761,104.43495560110907,96.303049018237544,103.64244534527784,109.19954248592516,117.69236012307678,124.18937226045217,135.29302307445045,135.38349307393992,128.38266011186778,126.11409376039323,114.78192707415424,113.82486875932148,107.69175151942301,97.482284661512196,104.7927187357342,112.70683733296444,115.83985368145241,122.6284557561458,127.65623821269543,132.43721383293902,123.93388622109535,120.29563823812528,112.09856142627206,108.7713185823029,103.02171105415037,93.514464914652194,98.764512097964598,104.96409882782123,116.87876444988166,129.10866650621844,139.17502800790604,137.49612638637757,139.11456828292131,132.8774823235762,123.37793365134223,123.11423218261042,118.33698156689792,122.91356893757751,122.35287177605551,128.71688560529037,138.34009115416796,155.63843091371095,158.11502783492213,164.49202844308911,162.90207279921896,155.832817089168,161.38075009113822,151.38347452286666,144.9053621752773,147.56591513175132],"type":"scatter","mode":"lines","name":"ingresos observados","line":{"color":"steelblue"},"marker":{"color":"rgba(31,119,180,1)","line":{"color":"rgba(31,119,180,1)"}},"error_y":{"color":"rgba(31,119,180,1)"},"error_x":{"color":"rgba(31,119,180,1)"},"xaxis":"x","yaxis":"y","frame":null}],"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.20000000000000001,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+</section>
+<section id="estimando-la-tendencia" class="level2">
+<h2 class="anchored" data-anchor-id="estimando-la-tendencia">Estimando la tendencia</h2>
+<div class="cell" data-layout-align="center">
+<div class="cell-output-display">
+<div class="plotly html-widget html-fill-item" id="htmlwidget-f1723a3330fbe032c4df" style="width:100%;height:487px;"></div>
+<script type="application/json" data-for="htmlwidget-f1723a3330fbe032c4df">{"x":{"visdat":{"5d2a630346b":["function () ","plotlyVisDat"]},"cur_data":"5d2a630346b","attrs":{"5d2a630346b":{"x":{},"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"y":{},"type":"scatter","mode":"lines","name":"ingresos observados","line":{"color":"steelblue"},"inherit":true},"5d2a630346b.1":{"x":{},"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"y":{},"type":"scatter","mode":"lines","name":"Tendencia","line":{"color":"firebrick","width":3},"inherit":true}},"layout":{"margin":{"b":40,"l":60,"t":25,"r":10},"title":"Ingresos mensuales a destino turístico (2015-2024)","xaxis":{"domain":[0,1],"automargin":true,"title":"Fecha","rangeslider":{"visible":false}},"yaxis":{"domain":[0,1],"automargin":true,"title":"Miles de ingresos"},"legend":{"orientation":"h","y":-0.20000000000000001},"hovermode":"closest","showlegend":true},"source":"A","config":{"modeBarButtonsToAdd":["hoverclosest","hovercompare"],"showSendToCloud":false},"data":[{"x":["2015-01-01","2015-02-01","2015-03-01","2015-04-01","2015-05-01","2015-06-01","2015-07-01","2015-08-01","2015-09-01","2015-10-01","2015-11-01","2015-12-01","2016-01-01","2016-02-01","2016-03-01","2016-04-01","2016-05-01","2016-06-01","2016-07-01","2016-08-01","2016-09-01","2016-10-01","2016-11-01","2016-12-01","2017-01-01","2017-02-01","2017-03-01","2017-04-01","2017-05-01","2017-06-01","2017-07-01","2017-08-01","2017-09-01","2017-10-01","2017-11-01","2017-12-01","2018-01-01","2018-02-01","2018-03-01","2018-04-01","2018-05-01","2018-06-01","2018-07-01","2018-08-01","2018-09-01","2018-10-01","2018-11-01","2018-12-01","2019-01-01","2019-02-01","2019-03-01","2019-04-01","2019-05-01","2019-06-01","2019-07-01","2019-08-01","2019-09-01","2019-10-01","2019-11-01","2019-12-01","2020-01-01","2020-02-01","2020-03-01","2020-04-01","2020-05-01","2020-06-01","2020-07-01","2020-08-01","2020-09-01","2020-10-01","2020-11-01","2020-12-01","2021-01-01","2021-02-01","2021-03-01","2021-04-01","2021-05-01","2021-06-01","2021-07-01","2021-08-01","2021-09-01","2021-10-01","2021-11-01","2021-12-01","2022-01-01","2022-02-01","2022-03-01","2022-04-01","2022-05-01","2022-06-01","2022-07-01","2022-08-01","2022-09-01","2022-10-01","2022-11-01","2022-12-01","2023-01-01","2023-02-01","2023-03-01","2023-04-01","2023-05-01","2023-06-01","2023-07-01","2023-08-01","2023-09-01","2023-10-01","2023-11-01","2023-12-01","2024-01-01","2024-02-01","2024-03-01","2024-04-01","2024-05-01","2024-06-01","2024-07-01","2024-08-01","2024-09-01","2024-10-01","2024-11-01","2024-12-01"],"y":[42.592459599824437,49.144863006500898,57.447067211861892,67.062237284273579,78.962455423603515,83.511057184112275,81.17961502008005,75.450348725728347,66.182023659255918,60.285708903357374,54.198405933066596,59.426534752071873,63.105258766846738,67.329901873959514,64.2651192069996,81.083167862577028,83.990638165285915,89.762120790450808,81.054067564400896,73.73141018394098,75.000201005789279,64.302299491623202,60.257913569328899,53.765265421911259,56.935375362985312,56.005304700161624,67.277799154028585,76.796768648177803,73.806834440101625,81.539970440257605,75.576891768275203,73.626216080096597,65.943401250273965,64.088230926277987,54.158891141201138,55.632529125986451,58.43945349902188,62.528323507981838,70.972168466769645,82.75279038507071,85.702793951618034,91.740538650812582,92.702727931485612,93.147851078491669,77.659380546088471,75.666479380618838,72.290663189096435,72.801265746948602,76.203211467236855,87.049350608508888,88.483936848456196,96.73660726001556,103.93697382455912,106.12531968431198,106.44783968153848,99.966103025552258,100.69876972520149,91.023202997574259,90.466021018003872,86.562350681446745,94.646208066133326,99.130120791786069,106.85069640157955,114.44029654121742,125.51157473562627,123.35119275477523,116.87539459118014,120.62088319999471,113.52048699798762,99.210577360441761,104.43495560110907,96.303049018237544,103.64244534527784,109.19954248592516,117.69236012307678,124.18937226045217,135.29302307445045,135.38349307393992,128.38266011186778,126.11409376039323,114.78192707415424,113.82486875932148,107.69175151942301,97.482284661512196,104.7927187357342,112.70683733296444,115.83985368145241,122.6284557561458,127.65623821269543,132.43721383293902,123.93388622109535,120.29563823812528,112.09856142627206,108.7713185823029,103.02171105415037,93.514464914652194,98.764512097964598,104.96409882782123,116.87876444988166,129.10866650621844,139.17502800790604,137.49612638637757,139.11456828292131,132.8774823235762,123.37793365134223,123.11423218261042,118.33698156689792,122.91356893757751,122.35287177605551,128.71688560529037,138.34009115416796,155.63843091371095,158.11502783492213,164.49202844308911,162.90207279921896,155.832817089168,161.38075009113822,151.38347452286666,144.9053621752773,147.56591513175132],"type":"scatter","mode":"lines","name":"ingresos observados","line":{"color":"steelblue"},"marker":{"color":"rgba(31,119,180,1)","line":{"color":"rgba(31,119,180,1)"}},"error_y":{"color":"rgba(31,119,180,1)"},"error_x":{"color":"rgba(31,119,180,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":["2015-01-01","2015-02-01","2015-03-01","2015-04-01","2015-05-01","2015-06-01","2015-07-01","2015-08-01","2015-09-01","2015-10-01","2015-11-01","2015-12-01","2016-01-01","2016-02-01","2016-03-01","2016-04-01","2016-05-01","2016-06-01","2016-07-01","2016-08-01","2016-09-01","2016-10-01","2016-11-01","2016-12-01","2017-01-01","2017-02-01","2017-03-01","2017-04-01","2017-05-01","2017-06-01","2017-07-01","2017-08-01","2017-09-01","2017-10-01","2017-11-01","2017-12-01","2018-01-01","2018-02-01","2018-03-01","2018-04-01","2018-05-01","2018-06-01","2018-07-01","2018-08-01","2018-09-01","2018-10-01","2018-11-01","2018-12-01","2019-01-01","2019-02-01","2019-03-01","2019-04-01","2019-05-01","2019-06-01","2019-07-01","2019-08-01","2019-09-01","2019-10-01","2019-11-01","2019-12-01","2020-01-01","2020-02-01","2020-03-01","2020-04-01","2020-05-01","2020-06-01","2020-07-01","2020-08-01","2020-09-01","2020-10-01","2020-11-01","2020-12-01","2021-01-01","2021-02-01","2021-03-01","2021-04-01","2021-05-01","2021-06-01","2021-07-01","2021-08-01","2021-09-01","2021-10-01","2021-11-01","2021-12-01","2022-01-01","2022-02-01","2022-03-01","2022-04-01","2022-05-01","2022-06-01","2022-07-01","2022-08-01","2022-09-01","2022-10-01","2022-11-01","2022-12-01","2023-01-01","2023-02-01","2023-03-01","2023-04-01","2023-05-01","2023-06-01","2023-07-01","2023-08-01","2023-09-01","2023-10-01","2023-11-01","2023-12-01","2024-01-01","2024-02-01","2024-03-01","2024-04-01","2024-05-01","2024-06-01","2024-07-01","2024-08-01","2024-09-01","2024-10-01","2024-11-01","2024-12-01"],"y":[50.799999999999997,51.600000000000001,52.399999999999999,53.200000000000003,54,54.799999999999997,55.600000000000001,56.399999999999999,57.200000000000003,58,58.799999999999997,59.600000000000001,60.399999999999999,61.200000000000003,62,62.799999999999997,63.600000000000001,64.400000000000006,65.200000000000003,66,66.799999999999997,67.599999999999994,68.400000000000006,69.200000000000003,70,70.799999999999997,71.599999999999994,72.400000000000006,73.200000000000003,74,74.799999999999997,75.599999999999994,76.400000000000006,77.200000000000003,78,78.799999999999997,79.599999999999994,80.400000000000006,81.200000000000003,82,82.800000000000011,83.599999999999994,84.400000000000006,85.200000000000003,86,86.800000000000011,87.599999999999994,88.400000000000006,89.200000000000003,90,90.800000000000011,91.599999999999994,92.400000000000006,93.200000000000003,94,94.800000000000011,95.599999999999994,96.400000000000006,97.200000000000003,98,98.800000000000011,99.599999999999994,100.40000000000001,101.2,102,102.80000000000001,103.59999999999999,104.40000000000001,105.2,106,106.80000000000001,107.59999999999999,108.40000000000001,109.2,110,110.80000000000001,111.59999999999999,112.40000000000001,113.2,114,114.8,115.60000000000001,116.40000000000001,117.2,118,118.8,119.60000000000001,120.40000000000001,121.2,122,122.8,123.60000000000001,124.40000000000001,125.2,126,126.80000000000001,127.60000000000001,128.40000000000001,129.19999999999999,130,130.80000000000001,131.60000000000002,132.40000000000001,133.19999999999999,134,134.80000000000001,135.60000000000002,136.40000000000001,137.19999999999999,138,138.80000000000001,139.60000000000002,140.40000000000001,141.19999999999999,142,142.80000000000001,143.60000000000002,144.40000000000001,145.19999999999999,146],"type":"scatter","mode":"lines","name":"Tendencia","line":{"color":"firebrick","width":3},"marker":{"color":"rgba(255,127,14,1)","line":{"color":"rgba(255,127,14,1)"}},"error_y":{"color":"rgba(255,127,14,1)"},"error_x":{"color":"rgba(255,127,14,1)"},"xaxis":"x","yaxis":"y","frame":null}],"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.20000000000000001,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+</section>
+<section id="estacionalidad-vs-ciclicidad" class="level2">
+<h2 class="anchored" data-anchor-id="estacionalidad-vs-ciclicidad">Estacionalidad vs Ciclicidad</h2>
+<div class="cell" data-layout-align="center">
+<div class="cell-output-display">
+<div class="plotly html-widget html-fill-item" id="htmlwidget-7de498ae0818c0cc5ef3" style="width:100%;height:487px;"></div>
+<script type="application/json" data-for="htmlwidget-7de498ae0818c0cc5ef3">{"x":{"visdat":{"5d2a3f3e5b49":["function () ","plotlyVisDat"]},"cur_data":"5d2a3f3e5b49","attrs":{"5d2a3f3e5b49":{"x":{},"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"y":{},"type":"scatter","mode":"lines","name":"Estacionalidad (período fijo = 12 meses)","line":{"color":"darkgreen"},"inherit":true},"5d2a3f3e5b49.1":{"x":{},"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"y":{},"type":"scatter","mode":"lines","name":"Ciclicidad (período variable, varios años)","line":{"color":"purple"},"inherit":true}},"layout":{"margin":{"b":40,"l":60,"t":25,"r":10},"title":"Componentes de estacionalidad y ciclicidad","xaxis":{"domain":[0,1],"automargin":true,"title":"Fecha","rangeslider":{"visible":false}},"yaxis":{"domain":[0,1],"automargin":true,"title":"Valor"},"legend":{"orientation":"h","y":-0.20000000000000001},"hovermode":"closest","showlegend":true},"source":"A","config":{"modeBarButtonsToAdd":["hoverclosest","hovercompare"],"showSendToCloud":false},"data":[{"x":["2015-01-01","2015-02-01","2015-03-01","2015-04-01","2015-05-01","2015-06-01","2015-07-01","2015-08-01","2015-09-01","2015-10-01","2015-11-01","2015-12-01","2016-01-01","2016-02-01","2016-03-01","2016-04-01","2016-05-01","2016-06-01","2016-07-01","2016-08-01","2016-09-01","2016-10-01","2016-11-01","2016-12-01","2017-01-01","2017-02-01","2017-03-01","2017-04-01","2017-05-01","2017-06-01","2017-07-01","2017-08-01","2017-09-01","2017-10-01","2017-11-01","2017-12-01","2018-01-01","2018-02-01","2018-03-01","2018-04-01","2018-05-01","2018-06-01","2018-07-01","2018-08-01","2018-09-01","2018-10-01","2018-11-01","2018-12-01","2019-01-01","2019-02-01","2019-03-01","2019-04-01","2019-05-01","2019-06-01","2019-07-01","2019-08-01","2019-09-01","2019-10-01","2019-11-01","2019-12-01","2020-01-01","2020-02-01","2020-03-01","2020-04-01","2020-05-01","2020-06-01","2020-07-01","2020-08-01","2020-09-01","2020-10-01","2020-11-01","2020-12-01","2021-01-01","2021-02-01","2021-03-01","2021-04-01","2021-05-01","2021-06-01","2021-07-01","2021-08-01","2021-09-01","2021-10-01","2021-11-01","2021-12-01","2022-01-01","2022-02-01","2022-03-01","2022-04-01","2022-05-01","2022-06-01","2022-07-01","2022-08-01","2022-09-01","2022-10-01","2022-11-01","2022-12-01","2023-01-01","2023-02-01","2023-03-01","2023-04-01","2023-05-01","2023-06-01","2023-07-01","2023-08-01","2023-09-01","2023-10-01","2023-11-01","2023-12-01","2024-01-01","2024-02-01","2024-03-01","2024-04-01","2024-05-01","2024-06-01","2024-07-01","2024-08-01","2024-09-01","2024-10-01","2024-11-01","2024-12-01"],"y":[-12.990381056766578,-7.4999999999999991,0,7.4999999999999991,12.990381056766578,15,12.99038105676658,7.4999999999999991,1.83697019872103e-15,-7.4999999999999964,-12.990381056766577,-15,-12.990381056766578,-7.5000000000000071,-3.67394039744206e-15,7.5,12.990381056766577,15,12.990381056766587,7.4999999999999964,5.5109105961630888e-15,-7.4999999999999876,-12.99038105676658,-15,-12.990381056766587,-7.5000000000000213,-7.3478807948841199e-15,7.500000000000008,12.99038105676658,15,12.990381056766589,7.5,3.5830203584608906e-14,-7.499999999999984,-12.990381056766566,-15,-12.990381056766577,-7.5000000000000018,-1.1021821192326178e-14,7.4999999999999822,12.990381056766566,15,12.990381056766577,7.5000000000000497,1.2858791391047208e-14,-7.4999999999999805,-12.990381056766564,-15,-12.990381056766603,-7.5000000000000053,-1.469576158976824e-14,7.4999999999999796,12.990381056766589,15,12.990381056766578,7.5000000000000071,1.653273178848927e-14,-7.5000000000000231,-12.990381056766562,-15,-12.990381056766578,-7.500000000000008,-7.1660407169217811e-14,7.499999999999976,12.990381056766562,15,12.990381056766607,7.5000000000000098,-3.3084032996076183e-14,-7.4999999999999751,-12.990381056766587,-15,-12.990381056766582,-7.4999999999999654,-2.2043642384652355e-14,7.4999999999999272,12.990381056766559,15,12.990381056766608,7.5000000000000133,7.7171317765380906e-14,-7.4999999999999716,-12.990381056766585,-15,-12.990381056766637,-7.499999999999968,-2.5717582782094416e-14,7.5000000000000169,12.990381056766557,15,12.99038105676661,7.5000000000000169,-2.5736152201192068e-14,-7.499999999999968,-12.99038105676653,-15,-12.990381056766585,-7.4999999999999716,-2.939152317953648e-14,7.4999999999999201,12.990381056766555,15,12.990381056766559,7.5000000000000187,8.4519198560265027e-14,-7.4999999999999654,-12.990381056766582,-15,-12.990381056766587,-7.5000000000000666,-3.306546357697854e-14,7.4999999999999174,12.990381056766607,15,12.990381056766614,7.5000000000000213,8.8193138957707082e-14,-7.5000000000000533,-12.990381056766578,-15],"type":"scatter","mode":"lines","name":"Estacionalidad (período fijo = 12 meses)","line":{"color":"darkgreen"},"marker":{"color":"rgba(31,119,180,1)","line":{"color":"rgba(31,119,180,1)"}},"error_y":{"color":"rgba(31,119,180,1)"},"error_x":{"color":"rgba(31,119,180,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":["2015-01-01","2015-02-01","2015-03-01","2015-04-01","2015-05-01","2015-06-01","2015-07-01","2015-08-01","2015-09-01","2015-10-01","2015-11-01","2015-12-01","2016-01-01","2016-02-01","2016-03-01","2016-04-01","2016-05-01","2016-06-01","2016-07-01","2016-08-01","2016-09-01","2016-10-01","2016-11-01","2016-12-01","2017-01-01","2017-02-01","2017-03-01","2017-04-01","2017-05-01","2017-06-01","2017-07-01","2017-08-01","2017-09-01","2017-10-01","2017-11-01","2017-12-01","2018-01-01","2018-02-01","2018-03-01","2018-04-01","2018-05-01","2018-06-01","2018-07-01","2018-08-01","2018-09-01","2018-10-01","2018-11-01","2018-12-01","2019-01-01","2019-02-01","2019-03-01","2019-04-01","2019-05-01","2019-06-01","2019-07-01","2019-08-01","2019-09-01","2019-10-01","2019-11-01","2019-12-01","2020-01-01","2020-02-01","2020-03-01","2020-04-01","2020-05-01","2020-06-01","2020-07-01","2020-08-01","2020-09-01","2020-10-01","2020-11-01","2020-12-01","2021-01-01","2021-02-01","2021-03-01","2021-04-01","2021-05-01","2021-06-01","2021-07-01","2021-08-01","2021-09-01","2021-10-01","2021-11-01","2021-12-01","2022-01-01","2022-02-01","2022-03-01","2022-04-01","2022-05-01","2022-06-01","2022-07-01","2022-08-01","2022-09-01","2022-10-01","2022-11-01","2022-12-01","2023-01-01","2023-02-01","2023-03-01","2023-04-01","2023-05-01","2023-06-01","2023-07-01","2023-08-01","2023-09-01","2023-10-01","2023-11-01","2023-12-01","2024-01-01","2024-02-01","2024-03-01","2024-04-01","2024-05-01","2024-06-01","2024-07-01","2024-08-01","2024-09-01","2024-10-01","2024-11-01","2024-12-01"],"y":[1.8369324225396988,3.6387178863926319,5.3709812085112256,7.0008717911871905,8.4977790017189569,9.8339926477986381,10.985292524916526,11.931452883341182,12.656649902663112,13.149762809838247,13.404562062111893,13.419780962720353,13.199070104180445,12.750837058622867,12.087976674672463,11.227500116130861,10.190073314343241,8.9994777357464244,7.6820082296484049,6.2658241701899877,4.7802711038894214,3.2551906361576823,1.7202363260944393,0.2042129117889262,-1.2655447251738701,-2.6637377977047043,-3.967601741035506,-5.1573250060710274,-6.2163796632151449,-7.1317575424427204,-7.8941083529378684,-8.4977790017189587,-8.940756086047962,-9.2245161909850228,-9.353791106518667,-9.3362573191317821,-9.182161068802742,-8.9038918418674946,-8.515518351153851,-8.0323018074581434,-7.4702015935301143,-6.8453883091111827,-6.1737785722216456,-5.4706049596167059,-4.7500330820536405,-4.0248360627317146,-3.3061346746949782,-2.6032091579083927,-1.9233863481097915,-1.2720032805368606,-0.65244595734650845,-0.066259562874014577,0.48667585172366867,1.0079122455405018,1.5001528391543433,1.9669350095223639,2.4122891877161861,2.8403868090286473,3.255190636157677,3.6601206209552011,4.057747894262727,4.4495284949521654,4.8355870988873839,5.2145593277672333,5.5834992583361611,5.9378565743313345,6.2715254735266424,6.576965031779439,6.8453883091111827,7.0670151339723191,7.2313812935482007,7.3276948588761561,7.3452286462630401,7.273736415730486,7.1038793781527998,6.8276489596762922,6.4387715772591596,5.9330814224392538,5.3088479284352932,4.5670456921855553,3.7115561091860387,2.7492918145384584,1.6902371573943191,0.54740030777881099,-0.6633248630476154,-1.9233863481097848,-3.2118875753976193,-4.5059809398202901,-5.7813327830000549,-7.0126490448684171,-8.1742488232622286,-9.240671425252847,-10.187301228024104,-10.990993828253183,-11.630686575688653,-12.087976674672465,-12.347650599065068,-12.398149590270503,-12.231957470442659,-11.845898866507444,-11.241338156765995,-10.424271961684131,-9.405310736498814,-8.1995479111906473,-6.8263179841899326,-5.3088479284352932,-3.6738091304348881,-1.9507797752545495,-0.17163003771595142,1.630155426137005,3.4202014332566759,5.1639950832920123,6.8276489596762762,8.3786558721199107,9.7866164049130653,11.023921148561335,12.066370588777628,12.893717177988769,13.490116078945631,13.844473394940803],"type":"scatter","mode":"lines","name":"Ciclicidad (período variable, varios años)","line":{"color":"purple"},"marker":{"color":"rgba(255,127,14,1)","line":{"color":"rgba(255,127,14,1)"}},"error_y":{"color":"rgba(255,127,14,1)"},"error_x":{"color":"rgba(255,127,14,1)"},"xaxis":"x","yaxis":"y","frame":null}],"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.20000000000000001,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+</section>
+<section id="interpretación-de-cada-componente-en-el-contexto" class="level2">
+<h2 class="anchored" data-anchor-id="interpretación-de-cada-componente-en-el-contexto">Interpretación de cada componente en el contexto</h2>
+<p><strong>Tendencia:</strong></p>
+<p>La línea de tendencia pasa de ~50 mil ingresos/mes en 2015 a ~146 mil ingresos/mes en 2024, un crecimiento sostenido de aproximadamente 0.8 mil ingresos adicionales cada mes.</p>
+<p>En el contexto turístico, esto refleja el posicionamiento progresivo del destino: más conectividad aérea, mayor inversión hotelera y mejor reputación internacional, todo lo cual empuja la demanda al alza año tras año, independientemente del mes en que estemos.</p>
+<p><strong>Estacionalidad:</strong></p>
+<p>El patrón oscila con amplitud de ±15 mil ingresos y se repite <strong>exactamente cada 12 meses</strong>: los picos coinciden con la temporada alta (vacaciones de invierno, cuando turistas de climas fríos buscan sol y playa) y los valles con la temporada de huracanes (baja demanda por riesgo climático).</p>
+<p>Este comportamiento es predecible: un operador turístico puede anticipar con certeza en qué meses necesitará más personal y en cuáles deberá ofrecer promociones.</p>
+<p><strong>Ciclicidad:</strong></p>
+<p>A diferencia de la estacionalidad, el componente cíclico tiene una duración que ronda entre 3 y 4.5 años y <strong>no coincide con ningún mes del calendario en particular</strong>.</p>
+<p>Representa cómo el gasto turístico internacional se expande en períodos de bonanza económica global y se contrae en períodos de desaceleración o crisis (por ejemplo, recesiones, crisis cambiarias en los países emisores de turistas).</p>
+<p>A diferencia de la estacionalidad, este componente es mucho más difícil de anticipar con precisión porque su duración y amplitud cambian de un ciclo a otro.</p>
+</section>
+</section>
+<section id="procesos-estocásticos-estacionarios" class="level1">
+<h1>3. Procesos estocásticos estacionarios</h1>
+<p>Un proceso <span class="math inline">\(\{Y_t\}\)</span> es <strong>débilmente (o de segundo orden) estacionario</strong> si cumple:</p>
+<ol type="1">
+<li><span class="math inline">\(E[Y_t] = \mu\)</span> (media constante, no depende de <span class="math inline">\(t\)</span>)</li>
+<li><span class="math inline">\(Var(Y_t) = \sigma^2\)</span> (varianza constante y finita)</li>
+<li><span class="math inline">\(Cov(Y_t, Y_{t+k})\)</span> depende únicamente del rezago <span class="math inline">\(k\)</span>, no del tiempo <span class="math inline">\(t\)</span></li>
+</ol>
+<section id="ejemplo-1-ruido-blanco-gaussiano" class="level2">
+<h2 class="anchored" data-anchor-id="ejemplo-1-ruido-blanco-gaussiano">Ejemplo 1: Ruido blanco gaussiano</h2>
+<p>El proceso ${e_{t}} $ de variables independientes e identicamente distribuidas pertenecientes a la distribución <span class="math inline">\(N(0,\sigma^{2})\)</span></p>
+<div class="cell" data-layout-align="center">
+<div class="cell-output-display">
+<div class="plotly html-widget html-fill-item" id="htmlwidget-19cb6b9c8609ba6ad2f4" style="width:100%;height:487px;"></div>
+<script type="application/json" data-for="htmlwidget-19cb6b9c8609ba6ad2f4">{"x":{"visdat":{"5d2a5228f1e5":["function () ","plotlyVisDat"]},"cur_data":"5d2a5228f1e5","attrs":{"5d2a5228f1e5":{"x":{},"y":{},"mode":"lines","line":{"color":"gray30"},"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"type":"scatter"}},"layout":{"margin":{"b":40,"l":60,"t":25,"r":10},"title":"Ruido blanco gaussiano","xaxis":{"domain":[0,1],"automargin":true,"title":"Fecha","rangeslider":{"visible":false}},"yaxis":{"domain":[0,1],"automargin":true,"title":"Valor"},"hovermode":"closest","showlegend":false},"source":"A","config":{"modeBarButtonsToAdd":["hoverclosest","hovercompare"],"showSendToCloud":false},"data":[{"x":["2020-01-01","2020-01-02","2020-01-03","2020-01-04","2020-01-05","2020-01-06","2020-01-07","2020-01-08","2020-01-09","2020-01-10","2020-01-11","2020-01-12","2020-01-13","2020-01-14","2020-01-15","2020-01-16","2020-01-17","2020-01-18","2020-01-19","2020-01-20","2020-01-21","2020-01-22","2020-01-23","2020-01-24","2020-01-25","2020-01-26","2020-01-27","2020-01-28","2020-01-29","2020-01-30","2020-01-31","2020-02-01","2020-02-02","2020-02-03","2020-02-04","2020-02-05","2020-02-06","2020-02-07","2020-02-08","2020-02-09","2020-02-10","2020-02-11","2020-02-12","2020-02-13","2020-02-14","2020-02-15","2020-02-16","2020-02-17","2020-02-18","2020-02-19","2020-02-20","2020-02-21","2020-02-22","2020-02-23","2020-02-24","2020-02-25","2020-02-26","2020-02-27","2020-02-28","2020-02-29","2020-03-01","2020-03-02","2020-03-03","2020-03-04","2020-03-05","2020-03-06","2020-03-07","2020-03-08","2020-03-09","2020-03-10","2020-03-11","2020-03-12","2020-03-13","2020-03-14","2020-03-15","2020-03-16","2020-03-17","2020-03-18","2020-03-19","2020-03-20","2020-03-21","2020-03-22","2020-03-23","2020-03-24","2020-03-25","2020-03-26","2020-03-27","2020-03-28","2020-03-29","2020-03-30","2020-03-31","2020-04-01","2020-04-02","2020-04-03","2020-04-04","2020-04-05","2020-04-06","2020-04-07","2020-04-08","2020-04-09","2020-04-10","2020-04-11","2020-04-12","2020-04-13","2020-04-14","2020-04-15","2020-04-16","2020-04-17","2020-04-18","2020-04-19","2020-04-20","2020-04-21","2020-04-22","2020-04-23","2020-04-24","2020-04-25","2020-04-26","2020-04-27","2020-04-28","2020-04-29","2020-04-30","2020-05-01","2020-05-02","2020-05-03","2020-05-04","2020-05-05","2020-05-06","2020-05-07","2020-05-08","2020-05-09","2020-05-10","2020-05-11","2020-05-12","2020-05-13","2020-05-14","2020-05-15","2020-05-16","2020-05-17","2020-05-18","2020-05-19","2020-05-20","2020-05-21","2020-05-22","2020-05-23","2020-05-24","2020-05-25","2020-05-26","2020-05-27","2020-05-28","2020-05-29","2020-05-30","2020-05-31","2020-06-01","2020-06-02","2020-06-03","2020-06-04","2020-06-05","2020-06-06","2020-06-07","2020-06-08","2020-06-09","2020-06-10","2020-06-11","2020-06-12","2020-06-13","2020-06-14","2020-06-15","2020-06-16","2020-06-17","2020-06-18","2020-06-19","2020-06-20","2020-06-21","2020-06-22","2020-06-23","2020-06-24","2020-06-25","2020-06-26","2020-06-27","2020-06-28","2020-06-29","2020-06-30","2020-07-01","2020-07-02","2020-07-03","2020-07-04","2020-07-05","2020-07-06","2020-07-07","2020-07-08","2020-07-09","2020-07-10","2020-07-11","2020-07-12","2020-07-13","2020-07-14","2020-07-15","2020-07-16","2020-07-17","2020-07-18"],"y":[-0.62645381074233242,0.18364332422208227,-0.83562861241004716,1.5952808021377916,0.32950777181536051,-0.82046838411801548,0.48742905242848528,0.73832470512921722,0.57578135165349209,-0.30538838715635602,1.5117811684508478,0.38984323641143104,-0.62124058054180387,-2.2146998871774999,1.1249309181431082,-0.044933609015230851,-0.016190263098946084,0.94383621068529922,0.82122119509808855,0.59390132121750872,0.91897737160821824,0.78213630073106699,0.074564983365190601,-1.9893516958633728,0.61982574789471023,-0.056128739529000764,-0.1557955067053293,-1.4707523838992744,-0.47815005510862041,0.41794156019970241,1.3586795515290442,-0.10278772734299552,0.38767161155936924,-0.053805040582905118,-1.3770595568286068,-0.41499456329967976,-0.39428995371034931,-0.05931339671118567,1.1000253719838828,0.76317574845754421,-0.1645235962535869,-0.25336168013650751,0.69696337540473752,0.55666319867365732,-0.6887556945495199,-0.70749515696211962,0.36458196213683031,0.76853292451541577,-0.11234621215022805,0.88110772645421498,0.39810588036706801,-0.61202639325077124,0.34111969142442483,-1.1293630960807926,1.4330237017010372,1.98039989850586,-0.36722147646650916,-1.0441346263165303,0.56971962744241289,-0.13505460388082438,2.4016177605047768,-0.039240002733169244,0.68973936245077661,0.028002158780666062,-0.74327320888240533,0.18879229951434284,-1.8049586288910378,1.4655548615628862,0.15325333821189771,2.1726116703621523,0.47550952889966253,-0.7099464309218142,0.61072635348905469,-0.93409763164425152,-1.2536334002391023,0.29144623551746296,-0.44329187321843289,0.0011053516316241311,0.074341324151664057,-0.58952094618807205,-0.56866873281850205,-0.13517861512383206,1.1780869965732044,-1.523566800429762,0.59394618762842155,0.33295037121351828,1.0630998372763627,-0.30418392363430063,0.37001880991628816,0.26709879077223103,-0.54252003099165047,1.2078678059831724,1.1604026156949516,0.70021364951499832,1.5868334545408456,0.55848642556530403,-1.2765922084580363,-0.57326541423688615,-1.2246126148983558,-0.47340063643931157,-0.62036667722412397,0.04211587314423524,-0.91092164855244551,0.15802877240407498,-0.65458464391881777,1.7672872693726465,0.71670747601720575,0.91017422949522708,0.38418535782634461,1.6821760805194184,-0.63573645394897682,-0.46164473036056602,1.4322822385416627,-0.65069635331036679,-0.20738074360196543,-0.39280792944198389,-0.31999286854850673,-0.27911330297655895,0.49418833126782702,-0.17733048226960638,-0.50595746211425729,1.3430388251704113,-0.21457940854686872,-0.17955653004338712,-0.10019074121356196,0.71266630705140532,-0.073564404126326324,-0.037634171467047908,-0.68166047875565683,-0.32427027224631916,0.060160440434515162,-0.58889448625966379,0.53149619263257242,-1.5183940817867871,0.3065578607897656,-1.5364498235375861,-0.30097612683661074,-0.52827990444500617,-0.65209478068099891,-0.056896777847392568,-1.9143594256800121,1.1765833120185623,-1.6649724362120033,-0.46353040147238567,-1.1159201050428456,-0.75081900119344791,2.0871665456283468,0.017395619693251662,-1.2863005304343256,-1.6406055344185784,0.4501871012726556,-0.018559832714637976,-0.3180683745438444,-0.92936214745370227,-1.4874603101414847,-1.0751922966156808,1.000028803713914,-0.62126669479682339,-1.3844268473844912,1.8692906224235806,0.42510037737244794,-0.23864710091303279,1.0584830487090204,0.88642265137493603,-0.61924304823114695,2.2061024645404674,-0.25502703014101524,-1.4244946502128084,-0.14439960195421936,0.20753833923234472,2.3079783990593614,0.10580236789371146,0.45699880542341342,-0.077152935356531005,-0.33400084236654448,-0.034726028311276184,0.787639605630162,2.0752450086522849,1.0273924387637678,1.2079083983867038,-1.231323421558044,0.98389557005337935,0.21992480366065134,-1.467250029092243,0.52102274264813853,-0.15875460471601593,1.4645873119697974,-0.76608199960466483,-0.43021175392854644,-0.9261094973774372,-0.17710396143654025,0.40201177948633787,-0.73174817311960616,0.83037316798167393,-1.208082786304465,-1.0479844128077418,1.4411577068442809,-1.0158474653046492,0.41197471231751492,-0.38107605110891957],"mode":"lines","line":{"color":"gray30"},"type":"scatter","marker":{"color":"rgba(31,119,180,1)","line":{"color":"rgba(31,119,180,1)"}},"error_y":{"color":"rgba(31,119,180,1)"},"error_x":{"color":"rgba(31,119,180,1)"},"xaxis":"x","yaxis":"y","frame":null}],"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.20000000000000001,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+</section>
+<section id="ejemplo-2-proceso-ar1-estacionario-phi-1" class="level2">
+<h2 class="anchored" data-anchor-id="ejemplo-2-proceso-ar1-estacionario-phi-1">Ejemplo 2: Proceso AR(1) estacionario (|phi| &lt; 1)</h2>
+<p>El modelo Autoregresivo de orden uno definido como:</p>
+<p><span class="math display">\[
+Y_t = 0.7 * Y_{(t-1)} + e_t
+\]</span></p>
+<p>Donde $ {e_i } ^{iid} N(0,1)$</p>
+<div class="cell" data-layout-align="center">
+<div class="cell-output-display">
+<div class="plotly html-widget html-fill-item" id="htmlwidget-9d79358a7f61988f64d3" style="width:100%;height:487px;"></div>
+<script type="application/json" data-for="htmlwidget-9d79358a7f61988f64d3">{"x":{"visdat":{"5d2a4a503342":["function () ","plotlyVisDat"]},"cur_data":"5d2a4a503342","attrs":{"5d2a4a503342":{"x":{},"y":{},"mode":"lines","line":{"color":"steelblue"},"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"type":"scatter"}},"layout":{"margin":{"b":40,"l":60,"t":25,"r":10},"title":"Proceso AR(1)","xaxis":{"domain":[0,1],"automargin":true,"title":"Fecha","rangeslider":{"visible":false}},"yaxis":{"domain":[0,1],"automargin":true,"title":"Valor"},"hovermode":"closest","showlegend":false},"source":"A","config":{"modeBarButtonsToAdd":["hoverclosest","hovercompare"],"showSendToCloud":false},"data":[{"x":["2020-01-01","2020-01-02","2020-01-03","2020-01-04","2020-01-05","2020-01-06","2020-01-07","2020-01-08","2020-01-09","2020-01-10","2020-01-11","2020-01-12","2020-01-13","2020-01-14","2020-01-15","2020-01-16","2020-01-17","2020-01-18","2020-01-19","2020-01-20","2020-01-21","2020-01-22","2020-01-23","2020-01-24","2020-01-25","2020-01-26","2020-01-27","2020-01-28","2020-01-29","2020-01-30","2020-01-31","2020-02-01","2020-02-02","2020-02-03","2020-02-04","2020-02-05","2020-02-06","2020-02-07","2020-02-08","2020-02-09","2020-02-10","2020-02-11","2020-02-12","2020-02-13","2020-02-14","2020-02-15","2020-02-16","2020-02-17","2020-02-18","2020-02-19","2020-02-20","2020-02-21","2020-02-22","2020-02-23","2020-02-24","2020-02-25","2020-02-26","2020-02-27","2020-02-28","2020-02-29","2020-03-01","2020-03-02","2020-03-03","2020-03-04","2020-03-05","2020-03-06","2020-03-07","2020-03-08","2020-03-09","2020-03-10","2020-03-11","2020-03-12","2020-03-13","2020-03-14","2020-03-15","2020-03-16","2020-03-17","2020-03-18","2020-03-19","2020-03-20","2020-03-21","2020-03-22","2020-03-23","2020-03-24","2020-03-25","2020-03-26","2020-03-27","2020-03-28","2020-03-29","2020-03-30","2020-03-31","2020-04-01","2020-04-02","2020-04-03","2020-04-04","2020-04-05","2020-04-06","2020-04-07","2020-04-08","2020-04-09","2020-04-10","2020-04-11","2020-04-12","2020-04-13","2020-04-14","2020-04-15","2020-04-16","2020-04-17","2020-04-18","2020-04-19","2020-04-20","2020-04-21","2020-04-22","2020-04-23","2020-04-24","2020-04-25","2020-04-26","2020-04-27","2020-04-28","2020-04-29","2020-04-30","2020-05-01","2020-05-02","2020-05-03","2020-05-04","2020-05-05","2020-05-06","2020-05-07","2020-05-08","2020-05-09","2020-05-10","2020-05-11","2020-05-12","2020-05-13","2020-05-14","2020-05-15","2020-05-16","2020-05-17","2020-05-18","2020-05-19","2020-05-20","2020-05-21","2020-05-22","2020-05-23","2020-05-24","2020-05-25","2020-05-26","2020-05-27","2020-05-28","2020-05-29","2020-05-30","2020-05-31","2020-06-01","2020-06-02","2020-06-03","2020-06-04","2020-06-05","2020-06-06","2020-06-07","2020-06-08","2020-06-09","2020-06-10","2020-06-11","2020-06-12","2020-06-13","2020-06-14","2020-06-15","2020-06-16","2020-06-17","2020-06-18","2020-06-19","2020-06-20","2020-06-21","2020-06-22","2020-06-23","2020-06-24","2020-06-25","2020-06-26","2020-06-27","2020-06-28","2020-06-29","2020-06-30","2020-07-01","2020-07-02","2020-07-03","2020-07-04","2020-07-05","2020-07-06","2020-07-07","2020-07-08","2020-07-09","2020-07-10","2020-07-11","2020-07-12","2020-07-13","2020-07-14","2020-07-15","2020-07-16","2020-07-17","2020-07-18"],"y":[-4.1194868020506936,-1.5635274157052934,-1.4011077850721798,-2.7620838835305261,-2.1053760742309895,-0.2590885527890936,1.7138314743125997,0.76921290041262014,0.28117964751990443,-1.5663373319308471,-0.63633877752032153,-1.0854320202243444,-0.30435229091582167,0.491790733587744,1.3793570354813431,0.35662354942972874,0.75459160789878033,-1.1887945535441968,-1.616615195860434,-1.9825382312788222,-3.8019844118418078,-2.6252664813970097,-1.6316879367776529,-1.5032388542930231,-0.29410396230559904,-0.93257760069049445,-2.0210853649026408,-0.98194172954313141,-1.4987523868668635,0.39497459091444836,-0.1549639889732316,0.54717309112094448,0.7049464289886076,-0.29037644058835016,1.3724640113801323,1.6036241136834091,1.212297526177992,1.1251590156160574,1.466900126986511,1.1166629754696393,-2.2114260003241872,-1.2631152466962716,-1.2514153154283654,-0.69076015593424633,0.098291618211534509,1.4685409600407522,0.30068661255406148,1.5130232608319867,1.3949644023344649,2.0149811803317466,2.3312153945228689,2.3527289390328705,0.60379131875515424,0.33246753651790123,0.85624543756207439,-0.35415155147889193,-0.79073490060908114,0.027482067255325617,0.78741618491331888,1.0149589179794904,-0.17530505482403619,-1.2224944370246809,0.65696090388765149,0.71779407025338682,0.59089607833695712,0.29273071729678052,-0.98941739305278187,-0.080595277096560336,-0.27355653971411309,-0.37424628413180083,0.67137392967889953,1.2917348612834787,2.2963307788327061,1.1312576221282198,1.4422288962160588,2.4006706837412417,0.56968059917097025,-0.46201616745816315,-1.4551499980744842,-2.4778189981545347,-1.654490745467013,-0.50493918217771905,0.8475079480740908,1.6380066508195887,0.14339600873386404,1.9488591077864514,0.6974279666926988,0.5937133891409585,-0.0066565094701851162,-0.12700972858410087,0.099286224492627279,0.18866131514184548,0.10697036973188895,0.18295198675435487,-0.35736884511861933,-0.75437532227093695,-2.1891618055044679,-1.9147469907269457,-1.8529731513866623,1.4048097943741338,-0.37874937512782525,-0.12786834403087077,-1.5831329081379,-2.5786287771333263,-1.6803377577963214,-2.172875565341462,-1.5228355100437314,-1.4942437384564273,-1.6596422233689943,-3.1864274017774035,-3.4552471316041684,-2.2391565510049798,-0.99978899127995069,-1.1927296474494402,-0.83484786914925702,0.53849613497548654,1.8168030374590305,0.17464835781549962,0.0049342902206729105,1.2049524040741721,0.37373710228561957,0.20914648666093738,0.060295242425566629,-0.84547234820853479,-1.0365146486307124,-0.75500513312973683,-0.94237244224873928,0.45372531379408593,-0.1633851219981218,-0.54753861799941428,0.31358554395251265,-0.83685853240414931,-0.62649944783411937,-1.9900944358314732,-0.22589655584634918,-0.43177329046652507,-0.7700866279988211,-1.7773129675853896,-1.2518811110870993,-1.6765989557126288,-1.7071115989492767,0.092697126320095205,-0.11063788181806074,-1.1492289014233183,-0.64125334852894045,-0.81161575959820809,0.021882516268593003,1.4477396891190046,0.0207252712738101,0.46915798747194964,0.41330864990885202,1.1848816372007411,0.59963900709425222,1.25636637342659,-0.86559939993808044,1.0835393413567171,1.6232555174682799,0.985502873342048,-0.75915511879973407,0.11160011688216792,0.56131394563228509,0.38656413552121083,0.422050787727272,-0.28867341894071397,0.16673533937174234,0.41136907727973521,0.0086989807532395699,-1.3301473683658862,-0.23035433941608605,0.39294858468277333,-0.56124258352347367,-1.9874579704726745,-1.1862619987432381,-1.1754713770931564,-0.57021826060075476,-1.6931552479050815,-2.1443791179139202,-0.41529052885984324,0.11307153451382367,0.66563761087897433,2.2811747737692349,1.7256437702408474,-0.79297859856291797,-0.22130782156047235,1.0164096522664638,2.771025998885829,0.56285660097955892,-0.75685594494141439,-1.2356205562191112,-1.9189901714305693,-1.9890368431438898,-1.5777037578772262,-2.3056146812540432,0.42304189010531984,0.40390406795927059,0.19862474706590874,0.63465696455073006,0.48167506130347637,0.20508450595652353,1.6203465777216632],"mode":"lines","line":{"color":"steelblue"},"type":"scatter","marker":{"color":"rgba(31,119,180,1)","line":{"color":"rgba(31,119,180,1)"}},"error_y":{"color":"rgba(31,119,180,1)"},"error_x":{"color":"rgba(31,119,180,1)"},"xaxis":"x","yaxis":"y","frame":null}],"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.20000000000000001,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+<div class="cell" data-layout-align="center">
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="Componentes_y_estacionariedad_files/figure-html/ar1-acf-1.png" class="img-fluid quarto-figure quarto-figure-center figure-img" data-fig-pos="H" width="768"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="ejemplo-3-caminata-aleatoria-gaussiana-proceso-no-estacionario" class="level2">
+<h2 class="anchored" data-anchor-id="ejemplo-3-caminata-aleatoria-gaussiana-proceso-no-estacionario">Ejemplo 3: Caminata aleatoria gaussiana (proceso NO estacionario)</h2>
+<div class="cell" data-layout-align="center">
+<div class="cell-output-display">
+<div class="plotly html-widget html-fill-item" id="htmlwidget-86b769791612f40d6b59" style="width:100%;height:487px;"></div>
+<script type="application/json" data-for="htmlwidget-86b769791612f40d6b59">{"x":{"visdat":{"5d2a1097adfd":["function () ","plotlyVisDat"]},"cur_data":"5d2a1097adfd","attrs":{"5d2a1097adfd":{"x":{},"y":{},"mode":"lines","line":{"color":"firebrick"},"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"type":"scatter"}},"layout":{"margin":{"b":40,"l":60,"t":25,"r":10},"title":"Caminata aleatoria gaussiana","xaxis":{"domain":[0,1],"automargin":true,"title":"Fecha","rangeslider":{"visible":false}},"yaxis":{"domain":[0,1],"automargin":true,"title":"Valor"},"hovermode":"closest","showlegend":false},"source":"A","config":{"modeBarButtonsToAdd":["hoverclosest","hovercompare"],"showSendToCloud":false},"data":[{"x":["2020-01-01","2020-01-02","2020-01-03","2020-01-04","2020-01-05","2020-01-06","2020-01-07","2020-01-08","2020-01-09","2020-01-10","2020-01-11","2020-01-12","2020-01-13","2020-01-14","2020-01-15","2020-01-16","2020-01-17","2020-01-18","2020-01-19","2020-01-20","2020-01-21","2020-01-22","2020-01-23","2020-01-24","2020-01-25","2020-01-26","2020-01-27","2020-01-28","2020-01-29","2020-01-30","2020-01-31","2020-02-01","2020-02-02","2020-02-03","2020-02-04","2020-02-05","2020-02-06","2020-02-07","2020-02-08","2020-02-09","2020-02-10","2020-02-11","2020-02-12","2020-02-13","2020-02-14","2020-02-15","2020-02-16","2020-02-17","2020-02-18","2020-02-19","2020-02-20","2020-02-21","2020-02-22","2020-02-23","2020-02-24","2020-02-25","2020-02-26","2020-02-27","2020-02-28","2020-02-29","2020-03-01","2020-03-02","2020-03-03","2020-03-04","2020-03-05","2020-03-06","2020-03-07","2020-03-08","2020-03-09","2020-03-10","2020-03-11","2020-03-12","2020-03-13","2020-03-14","2020-03-15","2020-03-16","2020-03-17","2020-03-18","2020-03-19","2020-03-20","2020-03-21","2020-03-22","2020-03-23","2020-03-24","2020-03-25","2020-03-26","2020-03-27","2020-03-28","2020-03-29","2020-03-30","2020-03-31","2020-04-01","2020-04-02","2020-04-03","2020-04-04","2020-04-05","2020-04-06","2020-04-07","2020-04-08","2020-04-09","2020-04-10","2020-04-11","2020-04-12","2020-04-13","2020-04-14","2020-04-15","2020-04-16","2020-04-17","2020-04-18","2020-04-19","2020-04-20","2020-04-21","2020-04-22","2020-04-23","2020-04-24","2020-04-25","2020-04-26","2020-04-27","2020-04-28","2020-04-29","2020-04-30","2020-05-01","2020-05-02","2020-05-03","2020-05-04","2020-05-05","2020-05-06","2020-05-07","2020-05-08","2020-05-09","2020-05-10","2020-05-11","2020-05-12","2020-05-13","2020-05-14","2020-05-15","2020-05-16","2020-05-17","2020-05-18","2020-05-19","2020-05-20","2020-05-21","2020-05-22","2020-05-23","2020-05-24","2020-05-25","2020-05-26","2020-05-27","2020-05-28","2020-05-29","2020-05-30","2020-05-31","2020-06-01","2020-06-02","2020-06-03","2020-06-04","2020-06-05","2020-06-06","2020-06-07","2020-06-08","2020-06-09","2020-06-10","2020-06-11","2020-06-12","2020-06-13","2020-06-14","2020-06-15","2020-06-16","2020-06-17","2020-06-18","2020-06-19","2020-06-20","2020-06-21","2020-06-22","2020-06-23","2020-06-24","2020-06-25","2020-06-26","2020-06-27","2020-06-28","2020-06-29","2020-06-30","2020-07-01","2020-07-02","2020-07-03","2020-07-04","2020-07-05","2020-07-06","2020-07-07","2020-07-08","2020-07-09","2020-07-10","2020-07-11","2020-07-12","2020-07-13","2020-07-14","2020-07-15","2020-07-16","2020-07-17","2020-07-18"],"y":[1.3709584471466685,0.80626027575057968,1.1693886870879189,1.8022512920489593,2.2065196151899582,2.1003950990984741,3.6119170965374128,3.5172580581243151,5.5356817720013565,5.4729676729489354,6.7778373271724206,9.0644827198735278,7.6756220187611888,7.3968332519438178,7.2635119155501595,7.8994623136202335,7.6152093922041608,4.9587539712993847,2.5182870427238657,3.8384003884540574,3.5317617943755826,1.7504533603955821,1.5785360046359607,2.7932107038085596,4.6884041650735249,4.2579350334673256,4.0006656506983962,2.237502565503616,2.6975999203348873,2.057605044374768,2.5130551676159874,3.2178925048448064,4.2529960268147287,3.6440696514075173,4.1490247747054871,2.4320160956321439,1.6475570872526477,0.79664949307612931,-1.6175581568705031,-1.5814355499782475,-1.3754369497779937,-1.7364942483266599,-0.97833101262714284,-1.705035839703718,-3.0733168841230123,-2.6404988582342952,-3.4518920344209669,-2.007790772699714,-2.4392369753130594,-1.7835890919108528,-1.4616638267069062,-2.2455027675872818,-0.66977524779530451,-0.026875942077988046,0.062884704521617596,0.33943545181308055,1.0187242678683512,1.1085571544474329,-1.8845329287055019,-1.5996499751748425,-1.9668846179158179,-1.7816540530502085,-1.1998303256847016,0.19990650160797641,-0.52738555786648855,0.775157074177655,1.1110051939297294,2.1495112926273503,3.0702398609179964,3.791118023784859,2.7479990852170042,2.6578126986062975,3.2813308606058413,2.3278075028334975,1.7849786882596406,2.3659751859413229,3.134153923775914,3.597921512316081,2.7121452149064016,1.6123643162585461,3.1250713260634742,3.3829927635955048,3.4714329927550911,3.3505364552160017,2.1562075600554733,2.7682044580958602,2.5510646123493395,2.3683079060174177,3.301654234588578,4.1234273450968271,5.515543721031098,5.0393697979764234,5.689718358702728,7.0808288150927288,5.9700399356448299,5.1092473487669876,3.9775086679132174,2.5182946684108218,2.5982772216519829,3.2514815613011727,4.4524469368996673,5.4971980240673926,4.4939893772275443,6.3424712789002911,5.6756978701424741,5.7812116825985438,5.3589558007296878,5.2366056287747167,5.4247986632762144,5.5439596212732205,5.5188670704058174,5.6269397983478502,5.1415045625011828,4.6372874318132791,2.9761883518984673,2.5938546250246493,2.0812043671468485,4.7830953674916454,3.4209791363019266,3.5582353548605337,2.0646102875442431,0.59417454610744658,0.71887693230445338,-0.27776220257958373,-0.27958481688429193,-0.70784369831010729,-1.3215153047596024,-3.3461931501787099,-4.570941100538696,-4.3914246594207578,-3.8238040649972227,-4.3166814185506972,-4.3166185344853458,-3.1937288911053794,-1.7538731481291894,-2.8509869165350112,-2.9683064767851879,-1.7668080758654867,-2.2365376564317874,-2.2890071413707838,-2.3751144396078732,-3.2627934575143045,-3.7074774623990425,-3.7369223414872805,-4.1507911905452044,-3.0374051671770008,-3.5183980088309825,-3.9515670414317117,-3.2547044648796088,-4.311072878050517,-4.3517713532017321,-5.903316175549322,-4.7361466263136398,-5.0097923276877205,-5.4776376523599737,-6.7158899803461889,-6.7236520141235152,-7.523934192075175,-8.0574265220256116,-6.7697512764410224,-6.94527714668315,-8.0170595308338264,-7.8538526483664439,-8.2165910639943931,-7.6265775160070541,-6.1941555882760646,-7.1868480993855579,-6.7321978018052757,-6.6472997431267888,-5.7517341608622443,-5.9815122998085108,-5.144893231347897,-6.8899490926845903,-5.2004901713712171,-4.3357121928526388,-4.4864881817383866,-5.9354953118775544,-5.2924866118355727,-4.8092927480208054,-4.8156483744421941,-4.6641924815797697,-5.2483014519295743,-4.8794947192993323,-4.5848403795798163,-4.8640997529223915,-6.200336407815545,-5.4995875893755111,-4.9453909671014777,-5.7816975599028924,-7.3762857219091353,-7.1713271413215018,-7.5164151192943915,-7.2638034159299369,-8.5578058814144899,-9.5169763257948539,-8.4312014721149531,-8.0274265673992389,-7.4409390306799414,-5.6257105845259883,-5.4968891559236051],"mode":"lines","line":{"color":"firebrick"},"type":"scatter","marker":{"color":"rgba(31,119,180,1)","line":{"color":"rgba(31,119,180,1)"}},"error_y":{"color":"rgba(31,119,180,1)"},"error_x":{"color":"rgba(31,119,180,1)"},"xaxis":"x","yaxis":"y","frame":null}],"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.20000000000000001,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+</section>
+<section id="conclusión" class="level2">
+<h2 class="anchored" data-anchor-id="conclusión">Conclusión</h2>
+<p>En la caminata aleatoria la varianza crece con <span class="math inline">\(t\)</span> (pues Var<span class="math inline">\((Y_t) = t\sigma^2\)</span>) y no existe un nivel fijo al cual la serie “regrese”, por lo que <strong>no</strong> es estacionaria. En cambio, el AR(1) con <span class="math inline">\(|\phi|&lt;1\)</span> siempre “regresa” hacia su media (0 en este caso), lo cual es una característica visual de un proceso estacionario.</p>
+</section>
+</section>
+<section id="animación-de-un-proceso-estocástico-con-gganimate" class="level1">
+<h1>5. Animación de un proceso estocástico con <code>gganimate</code></h1>
+<section id="estacionario-vs-no-estacionario" class="level2">
+<h2 class="anchored" data-anchor-id="estacionario-vs-no-estacionario">Estacionario vs No Estacionario</h2>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+      &nbsp;
+    </div>   
+    <div class="nav-footer-center">
+<p>Facultad de Ciencias, UNAM</p>
+</div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>

@@ -1,0 +1,254 @@
+[
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Modelos de Supervivencia y Series de Tiempo",
+    "section": "",
+    "text": "Series de tiempo\n\n\n\nTema\nPresentación\n\n\n\n\nMotivación del estudio de Series de Tiempo\nPresentación\n\n\nEjemplos de visualización en R\nPresentación\n\n\nModelo clásico y procesos estacionarios\nNotas\n\n\nMedidas de dependencia\nNotas\n\n\n\n\n\nRepositorio\nLos códigos de las presentaciones y ejemplos están disponibles en este repositorio"
+  },
+  {
+    "objectID": "series_tiempo/Dependencia.html",
+    "href": "series_tiempo/Dependencia.html",
+    "title": "Covarianza, Correlación y Dependencia Temporal",
+    "section": "",
+    "text": "Cuando tenemos dos variables aleatorias \\(X\\) y \\(Y\\), una de las primeras preguntas naturales es si se mueven juntas, es decir: Si \\(X\\) aumenta, ¿\\(Y\\) tiende a aumentar, a disminuir, o no hay relación aparente? La covarianza es la primera herramienta que responde esto de forma cuantitativa:\n\\[ Cov(X,Y) = E\\big[(X-\\mu_X)(Y-\\mu_Y)\\big] \\]\nLa covarianza tiene un defecto importante: su magnitud depende de las unidades/magnitudes de las variables, lo que la hace difícil de interpretar o comparar entre distintos pares de variables.\nPor ejemplo, supongamos que tenemos registros de estatura (en cm) y peso (en kg). Si pasamos la estatura a metros, la covarianza con los registros del peso cambiará, sin embargo la correlación no.\n\n\n# A tibble: 2 × 3\n  Unidad_de_altura Cov_AlturaPeso Corr_AlturaPeso\n  &lt;chr&gt;                     &lt;dbl&gt;           &lt;dbl&gt;\n1 Centímetros              43.2             0.677\n2 Metros                    0.432           0.677\n\n\nEsto es porque la correlación normaliza la covarianza con las desviaciones estándar de cada variable:\n\\[ Corr(X,Y) = \\rho_{X,Y} = \\frac{Cov(X,Y)}{\\sigma_X \\, \\sigma_Y} \\]\nEsta normalización hace que \\(\\rho_{X,Y} \\in [-1, 1]\\) siempre, sin importar las unidades, lo cual la vuelve comparable e interpretable: \\(\\rho\\) cercano a \\(\\pm1\\) indica relación lineal fuerte, cercano a 0 indica relación lineal débil o nula.\nPodemos tener una confirmación gráfica si realizamos el scatter-plot con ambas versiones de la variable estatura, la forma de la nube de puntos no cambia."
+  },
+  {
+    "objectID": "series_tiempo/Dependencia.html#para-vectores-gaussianos-sigma-tiene-la-estructura-de-dependencia",
+    "href": "series_tiempo/Dependencia.html#para-vectores-gaussianos-sigma-tiene-la-estructura-de-dependencia",
+    "title": "Covarianza, Correlación y Dependencia Temporal",
+    "section": "Para vectores gaussianos, \\(\\Sigma\\) tiene la estructura de dependencia",
+    "text": "Para vectores gaussianos, \\(\\Sigma\\) tiene la estructura de dependencia\nSi \\(\\mathbf{X}\\) sigue una distribución normal multivariada, su distribución completa queda determinada únicamente por su vector de medias \\(\\boldsymbol{\\mu}\\) y su matriz de covarianzas \\(\\Sigma\\):\n\\[ \\mathbf{X} \\sim N(\\boldsymbol{\\mu}, \\Sigma) \\]\nSe puede ver cómo cambia la forma de la nube de puntos de una normal bivariada conforme variamos su matriz de covarianzas con gganimate\nConforme \\(\\rho\\) pasa de negativo a positivo, la nube de puntos rota: de una elipse orientada hacia abajo (correlación negativa), pasa por una nube circular (independencia, \\(\\rho=0\\)), hasta una elipse orientada hacia arriba (correlación positiva). La orientación y la excentricidad de esa elipse están completamente determinadas por \\(\\Sigma\\)."
+  },
+  {
+    "objectID": "series_tiempo/Dependencia.html#y-si-el-vector-no-es-gaussiano",
+    "href": "series_tiempo/Dependencia.html#y-si-el-vector-no-es-gaussiano",
+    "title": "Covarianza, Correlación y Dependencia Temporal",
+    "section": "¿Y si el vector NO es gaussiano?",
+    "text": "¿Y si el vector NO es gaussiano?\n\\(\\Sigma\\) contiene toda la información de dependencia si el vector es de la familia gaussiana (más generalmente, de las distribuciones elípticas). Para vectores no gaussianos, dos distribuciones pueden compartir prácticamente la misma matriz de covarianzas y aun así verse completamente distintas.\nComparamos tres vectores aleatorios construidos para tener aproximadamente la misma covarianza (\\(\\rho \\approx 0.7\\)):\n\n\n# A tibble: 3 × 3\n  Distribucion          Cov_x1x2 Cor_x1x2\n  &lt;chr&gt;                    &lt;dbl&gt;    &lt;dbl&gt;\n1 Normal                   0.730    0.700\n2 t-multivariada (df=3)    0.495    0.681\n3 Mezcla bimodal           0.707    0.729\n\n\n\n\n\n\n\n\nLas tres nubes de puntos tienen una covarianza/correlación muestral muy similar (alrededor de 0.7 o su análogo), pero sus formas son completamente distintas: la normal multivariada es elíptica y compacta, la t-multivariada tiene colas más pesadas, y la mezcla bivariada tiene dos grupos claramente separados.\nEsto muestra que \\(\\Sigma\\) ya no resume toda la estructura de dependencia, y se necesita conocer la distribución conjunta completa, no solo sus dos primeros momentos. Esta idea ayuda a entender mejor por qué la estacionaridad débil (que solo condiciona a los primeros dos momentos) es menos restrictiva que la estacionaridad (todas las distribuciones finito dimensionales del proceso estocástico subyascente son invariantes ante traslaciones)."
+  },
+  {
+    "objectID": "series_tiempo/Dependencia.html#motivación-el-clima-tiene-memoria",
+    "href": "series_tiempo/Dependencia.html#motivación-el-clima-tiene-memoria",
+    "title": "Covarianza, Correlación y Dependencia Temporal",
+    "section": "Motivación: El clima tiene memoria",
+    "text": "Motivación: El clima tiene memoria\nPensemos en la temperatura diaria de una ciudad. Es intuitivo que:\n\nLa temperatura de hoy se parece mucho a la de ayer (persistencia de corto plazo)\nLa temperatura de este mes se parece a la del mismo mes hace un año (patrón estacional)\n\nEs decir, el valor de la serie en el tiempo \\(t\\) está relacionado con sus propios valores pasados. Para cuantificar exactamente esa relación, usamos la función de autocovarianza (ACV) y la función de autocorrelación (ACF), que son simplemente la covarianza y la correlación aplicadas a la propia serie, comparada consigo misma desplazada \\(k\\) periodos (rezagos o “lags”):\n\\[ \\gamma(k) = Cov(Y_t, Y_{t+k}) \\qquad \\qquad \\rho(k) = \\frac{\\gamma(k)}{\\gamma(0)} = Corr(Y_t, Y_{t+k}) \\]\nPara que \\(\\gamma(k)\\) y \\(\\rho(k)\\) tengan sentido (que no dependan de en qué \\(t\\) nos paramos, solo del rezago \\(k\\)), necesitamos que la serie sea estacionaria de segundo orden."
+  },
+  {
+    "objectID": "series_tiempo/Dependencia.html#temperatura-mensual-en-nottingham",
+    "href": "series_tiempo/Dependencia.html#temperatura-mensual-en-nottingham",
+    "title": "Covarianza, Correlación y Dependencia Temporal",
+    "section": "Temperatura mensual en Nottingham",
+    "text": "Temperatura mensual en Nottingham\nUsamos el dataset nottem de R base: temperaturas promedio mensuales (°F) en Nottingham, Inglaterra, de 1920 a 1939.\n\n\n\n\n\n\n\n\n\n\n\n\nEl ACF de nottem muestra picos claros y repetidos cada 12 rezagos (12, 24, 36 meses), lo que es consecuencia de la estacionalidad anual. También se ve una fuerte autocorrelación en los primeros rezagos (1-2 meses), reflejo de que el clima no cambia bruscamente de un mes a otro. Este es exactamente el tipo de estructura que la ACF está diseñada para revelar."
+  },
+  {
+    "objectID": "series_tiempo/Dependencia.html#proceso-ar1",
+    "href": "series_tiempo/Dependencia.html#proceso-ar1",
+    "title": "Covarianza, Correlación y Dependencia Temporal",
+    "section": "Proceso AR(1)",
+    "text": "Proceso AR(1)\n\n\n\n\n\n\n\n\n\n\n\n\nPara un AR(1) estacionario, la teoría predice un decaimiento exponencial: \\(\\rho(k) = \\phi^k\\). Con \\(\\phi = 0.7 &gt; 0\\), el decaimiento es monótono, y la ACF cae por debajo de la banda de significancia relativamente rápido."
+  },
+  {
+    "objectID": "series_tiempo/Dependencia.html#proceso-ar3",
+    "href": "series_tiempo/Dependencia.html#proceso-ar3",
+    "title": "Covarianza, Correlación y Dependencia Temporal",
+    "section": "Proceso AR(3)",
+    "text": "Proceso AR(3)\n\n\n\n\n\n\n\n\n\n\n\n\nEl AR(3) puede mostrar un decaimiento más complejo (oscilaciones o “rebotes” antes de apagarse). Esto refleja una dependencia temporal más compleja: el valor de hoy no solo depende del de ayer, sino de una combinación de los últimos tres periodos."
+  },
+  {
+    "objectID": "series_tiempo/Dependencia.html#ejemplo-1-y-x2",
+    "href": "series_tiempo/Dependencia.html#ejemplo-1-y-x2",
+    "title": "Covarianza, Correlación y Dependencia Temporal",
+    "section": "Ejemplo 1: \\(Y = X^2\\)",
+    "text": "Ejemplo 1: \\(Y = X^2\\)\nSi tomamos los valores no negativos de \\(X\\) su correlación (lineal) es prácticamente cero pero como la relación es monótona, el coeficiente de Spearman capturaría una correlación fuerte. Al tomar los valores negativos de \\(X\\) también, la relación ya no es monótona y por ende no se capturaría una correlación sin embargo es obvio que siguen siendo dependientes pues \\(Y\\) está completamente determinada por \\(X\\)."
+  },
+  {
+    "objectID": "series_tiempo/motivacion_3B.html#section",
+    "href": "series_tiempo/motivacion_3B.html#section",
+    "title": "¿Por qué estudiar Series de Tiempo?",
+    "section": "",
+    "text": "La cadena Tiendas 3B contrata un servicio de consultoría para analizar su operación en la Ciudad de México. Se tiene disponible un registro mensual de sus operaciones en la ciudad de los últimos 6 años, así como la huella de tiendas por alcaldía.\n\nEn principio, el objetivo es reportar business insights (información relevante que se obtiene al analizar los datos y ayuda a la toma de decisiones) sobre la operación de la empresa y si es posible, realizar un pronóstico de ingresos para los próximos meses.\n\nSe tiene disponible la siguiente información:"
+  },
+  {
+    "objectID": "series_tiempo/motivacion_3B.html#operación-mensual-en-la-cdmx-72-observaciones-enero-2019-diciembre-2024",
+    "href": "series_tiempo/motivacion_3B.html#operación-mensual-en-la-cdmx-72-observaciones-enero-2019-diciembre-2024",
+    "title": "¿Por qué estudiar Series de Tiempo?",
+    "section": "1. Operación mensual en la CDMX (72 observaciones, enero 2019 – diciembre 2024)",
+    "text": "1. Operación mensual en la CDMX (72 observaciones, enero 2019 – diciembre 2024)\n\n\n\n\n\n\n\n\nVariable\nDescripción\n\n\n\n\nfecha\nMes al que corresponde el registro.\n\n\ningresos\nIngresos totales del mes en la CDMX, en millones de pesos.\n\n\ngasto_publicidad\nMonto invertido en publicidad/marketing ese mes, en millones de pesos.\n\n\nticket_promedio\nTicket promedio de compra por cliente, en pesos.\n\n\nnum_clientes\nNúmero de transacciones (clientes) registradas ese mes."
+  },
+  {
+    "objectID": "series_tiempo/motivacion_3B.html#huella-de-tiendas-por-alcaldía",
+    "href": "series_tiempo/motivacion_3B.html#huella-de-tiendas-por-alcaldía",
+    "title": "¿Por qué estudiar Series de Tiempo?",
+    "section": "2. Huella de tiendas por alcaldía",
+    "text": "2. Huella de tiendas por alcaldía\nNúmero de sucursales en cada una de las 16 alcaldías de la CDMX así como el ingreso promedio de sus sucursales (en mdp).\n\n\n\n\n\nAlcaldia\nnum_tiendas\ningreso_prom_tienda\n\n\n\n\nAzcapotzalco\n9\n0.81\n\n\nCoyoacán\n22\n0.97\n\n\nCuajimalpa de Morelos\n6\n1.08\n\n\nGustavo A. Madero\n15\n1.00\n\n\nIztacalco\n19\n0.99\n\n\nIztapalapa\n15\n1.04\n\n\nLa Magdalena Contreras\n8\n0.93\n\n\nMilpa Alta\n21\n0.92\n\n\nÁlvaro Obregón\n8\n0.74"
+  },
+  {
+    "objectID": "series_tiempo/motivacion_3B.html#section-1",
+    "href": "series_tiempo/motivacion_3B.html#section-1",
+    "title": "¿Por qué estudiar Series de Tiempo?",
+    "section": "",
+    "text": "Un primer acercamiento a los datos puede ser la distribución de las sucursales entre las 16 alcaldías. Para visualizar mapas de México usamos el paquete mxmaps de R.\n\n\n\n\n\n\n\n\n\n\nFigure 1: Mapa de alcaldías de la Ciudad de México con presencia de Tiendas 3B"
+  },
+  {
+    "objectID": "series_tiempo/motivacion_3B.html#section-2",
+    "href": "series_tiempo/motivacion_3B.html#section-2",
+    "title": "¿Por qué estudiar Series de Tiempo?",
+    "section": "",
+    "text": "También podemos visualizar el ingreso promedio por tienda en cada alcaldía.\n  \n\n\n\n\n\n\n\n\n\nFigure 2: Mapa de ingresos por alcaldía"
+  },
+  {
+    "objectID": "series_tiempo/motivacion_3B.html#section-3",
+    "href": "series_tiempo/motivacion_3B.html#section-3",
+    "title": "¿Por qué estudiar Series de Tiempo?",
+    "section": "",
+    "text": "Algunos comentarios:\n\nComo parte de la visualización es indispensable mantener la dependencia geográfica de los datos, pues zonas cercanas tienden a tener características similares (por ejemplo, alcaldías con mayor poder adquisitivo). Los modelos de estadística espacial (que no veremos) permiten capturar esta dependencia explícitamente.\n\n\n\nEn esta etapa, solo nos interesa describir patrones interesantes.\n\n\n\nUna propuesta sería presentar ambos mapas, mencionar los patrones observados (zonas de la ciudad con mayor presencia de tiendas y zonas con mayor ingreso promedio por tienda) y posteriormente tratar de explicar estos patrones con conocimiento del contexto (por ejemplo, las alcaldías con mayor ingreso promedio por tienda no necesariamente son las que tienen más tiendas)."
+  },
+  {
+    "objectID": "series_tiempo/motivacion_3B.html#correlograma",
+    "href": "series_tiempo/motivacion_3B.html#correlograma",
+    "title": "¿Por qué estudiar Series de Tiempo?",
+    "section": "Correlograma",
+    "text": "Correlograma\nAnalizar las correlaciones puede ayudar a identificar anticipadamente problemas, o si el razonable el uso de técnicas de análisis multivariado para reducir la dimensión del dataset (como PCA). Debido a la naturaleza de los datos, era de esperarse que hubiera una fuerte correlación entre ellas.\n\n\n\n\n\n\n\n\n\nFigure 3"
+  },
+  {
+    "objectID": "series_tiempo/motivacion_3B.html#publicidad-vs.-ingresos",
+    "href": "series_tiempo/motivacion_3B.html#publicidad-vs.-ingresos",
+    "title": "¿Por qué estudiar Series de Tiempo?",
+    "section": "Publicidad vs. Ingresos",
+    "text": "Publicidad vs. Ingresos\nPodríamos analizar con mayor detalle la variable que presenta una menor correlación (lineal).\n\n\n\n\n\n\n\n\n\nFigure 4"
+  },
+  {
+    "objectID": "series_tiempo/motivacion_3B.html#sacándole-provecho-inferencia-sobre-coeficientes",
+    "href": "series_tiempo/motivacion_3B.html#sacándole-provecho-inferencia-sobre-coeficientes",
+    "title": "¿Por qué estudiar Series de Tiempo?",
+    "section": "Sacándole provecho: Inferencia sobre coeficientes",
+    "text": "Sacándole provecho: Inferencia sobre coeficientes\n\nLas estimaciones de los parámetros del modelo \\(\\beta_0\\) y \\(\\beta_1\\) son fáciles de interpretar. Podría ser de interés plantear pruebas de hipótesis avanzadas con la Prueba Lineal General.\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nterm\nestimate\nstd.error\nstatistic\np.value\nconf.low\nconf.high\n\n\n\n\n(Intercept)\n-67.1211\n15.7544\n-4.2605\n1e-04\n-98.5424\n-35.6999\n\n\nnum_clientes\n0.0010\n0.0001\n11.0029\n0e+00\n0.0008\n0.0011"
+  },
+  {
+    "objectID": "series_tiempo/motivacion_3B.html#métricas-de-evaluación",
+    "href": "series_tiempo/motivacion_3B.html#métricas-de-evaluación",
+    "title": "¿Por qué estudiar Series de Tiempo?",
+    "section": "Métricas de evaluación",
+    "text": "Métricas de evaluación\n\nAlgunas métricas como la \\(R^2\\) ayudan a evaluar el porcentaje de varianza explicada por el modelo, mientras que el AIC y BIC ayuda a realizar comparación entre modelos.\n\n\n\n\n\n\nr.squared\nadj.r.squared\np.value\nAIC\nBIC\n\n\n\n\n0.6336\n0.6284\n0\n526.113\n532.943"
+  },
+  {
+    "objectID": "series_tiempo/motivacion_3B.html#predicción",
+    "href": "series_tiempo/motivacion_3B.html#predicción",
+    "title": "¿Por qué estudiar Series de Tiempo?",
+    "section": "Predicción",
+    "text": "Predicción\nEl equipo de marketing de Tiendas 3B espera que el próximo mes haya 130,000 clientes en toda la CDMX, nuestro modelo permite incorporar el efecto del número de clientes en la predicción de los ingresos.\n\n\n\n\n\nfit\nlwr\nupr\n\n\n\n\n58.1024\n37.904\n78.3009"
+  },
+  {
+    "objectID": "series_tiempo/motivacion_3B.html#validamos-los-supuestos",
+    "href": "series_tiempo/motivacion_3B.html#validamos-los-supuestos",
+    "title": "¿Por qué estudiar Series de Tiempo?",
+    "section": "¿Validamos los supuestos?",
+    "text": "¿Validamos los supuestos?\nExisten herramientas gráicas que ayudan a diagnosticar el modelo, así como pruebas de hipótesis para la homocedasticidad, normalidad de los errores e independencia.\n\n\nFigure 5"
+  },
+  {
+    "objectID": "series_tiempo/motivacion_3B.html#las-limitaciones-de-fondo",
+    "href": "series_tiempo/motivacion_3B.html#las-limitaciones-de-fondo",
+    "title": "¿Por qué estudiar Series de Tiempo?",
+    "section": "Las limitaciones de fondo",
+    "text": "Las limitaciones de fondo\n¿Lo resuelve la regresión clásica?\n\n\n¿Qué variables explican los ingresos? Sí\n¿Existe una tendencia de largo plazo? No la modela explícitamente\n¿Hay un patrón estacional (meses altos/bajos)? No la modela explícitamente\n¿Cuánto dependen los ingresos de sí mismos en el pasado? No lo captura\n¿Puedo pronosticar h meses adelante con un margen de incertidumbre? No"
+  },
+  {
+    "objectID": "series_tiempo/motivacion_3B.html#qué-cambia-si-modelamos-la-dependencia-temporal",
+    "href": "series_tiempo/motivacion_3B.html#qué-cambia-si-modelamos-la-dependencia-temporal",
+    "title": "¿Por qué estudiar Series de Tiempo?",
+    "section": "¿Qué cambia si modelamos la dependencia temporal?",
+    "text": "¿Qué cambia si modelamos la dependencia temporal?\nEn vez de tratar cada fila como intercambiable, construimos un objeto que preserva el orden y la periodicidad de las observaciones:\n\n\n       Jan   Feb   Mar   Apr   May   Jun   Jul   Aug   Sep   Oct   Nov   Dec\n2019 88.33 87.52 93.47 90.19 91.37 92.26 84.00 80.62 75.85 76.09 75.67 88.09\n2020 92.13                                                                  \n\n\nAhora el modelo puede “ver” que enero de 2020 sigue a diciembre de 2019, y que ambos son parte de un ciclo anual de 12 meses."
+  },
+  {
+    "objectID": "series_tiempo/motivacion_3B.html#estacionalidad-por-mes",
+    "href": "series_tiempo/motivacion_3B.html#estacionalidad-por-mes",
+    "title": "¿Por qué estudiar Series de Tiempo?",
+    "section": "Estacionalidad por mes",
+    "text": "Estacionalidad por mes\nSi ignoramos que estos datos tienen un orden temporal y creamos a la variable categórica ordinal mes.\n\n\n\n\n\n\n\n\n\nFigure 6"
+  },
+  {
+    "objectID": "series_tiempo/motivacion_3B.html#visualizando-la-serie-de-tiempo",
+    "href": "series_tiempo/motivacion_3B.html#visualizando-la-serie-de-tiempo",
+    "title": "¿Por qué estudiar Series de Tiempo?",
+    "section": "Visualizando la serie de tiempo",
+    "text": "Visualizando la serie de tiempo\n\n\n\n\n\n\n\n\n\nFigure 7"
+  },
+  {
+    "objectID": "series_tiempo/motivacion_3B.html#proximamente",
+    "href": "series_tiempo/motivacion_3B.html#proximamente",
+    "title": "¿Por qué estudiar Series de Tiempo?",
+    "section": "Proximamente",
+    "text": "Proximamente\n\nEstacionariedad y transformaciones (diferenciación, logaritmos)\nAutocorrelación: ACF y PACF como herramientas de diagnóstico\nDescomposición clásica\nSuavizamiento y estimación de ciclicidad\nModelos ARIMA / SARIMA\nIncorporación de covariables externas (ARIMAX)\nEvaluación y validación de pronósticos"
+  },
+  {
+    "objectID": "series_tiempo/Componentes_y_estacionariedad.html",
+    "href": "series_tiempo/Componentes_y_estacionariedad.html",
+    "title": "Componentes de una Serie de Tiempo y Procesos Estacionarios",
+    "section": "",
+    "text": "Una serie de tiempo puede descomponerse (de forma aditiva) como:\n\\[\nY_t = T_t + S_t + C_t + \\varepsilon_t\n\\]\ndonde:\n\nTendencia (\\(T_t\\)): movimiento de largo plazo, suave y sostenido (creciente, decreciente o estable) que refleja cambios estructurales de fondo (crecimiento económico, adopción tecnológica, cambios demográficos, etc.).\nEstacionalidad (\\(S_t\\)): patrón que se repite con periodicidad fija y conocida, generalmente ligada al calendario (mensual, trimestral, día de la semana). Su período no cambia con el tiempo.\nCiclicidad (\\(C_t\\)) (Usualmente se omite): oscilaciones de subida y bajada sin período fijo, normalmente más largas que la estacionalidad (varios años), asociadas a fenómenos como ciclos económicos, crediticios o de negocio. A diferencia de la estacionalidad, su duración y amplitud varían de un ciclo a otro.\nRuido/Error (\\(\\varepsilon_t\\)): variación residual aleatoria no explicada por los componentes anteriores."
+  },
+  {
+    "objectID": "series_tiempo/Componentes_y_estacionariedad.html#visualización-de-la-serie-completa-con-plotly",
+    "href": "series_tiempo/Componentes_y_estacionariedad.html#visualización-de-la-serie-completa-con-plotly",
+    "title": "Componentes de una Serie de Tiempo y Procesos Estacionarios",
+    "section": "Visualización de la serie completa con plotly",
+    "text": "Visualización de la serie completa con plotly"
+  },
+  {
+    "objectID": "series_tiempo/Componentes_y_estacionariedad.html#estimando-la-tendencia",
+    "href": "series_tiempo/Componentes_y_estacionariedad.html#estimando-la-tendencia",
+    "title": "Componentes de una Serie de Tiempo y Procesos Estacionarios",
+    "section": "Estimando la tendencia",
+    "text": "Estimando la tendencia"
+  },
+  {
+    "objectID": "series_tiempo/Componentes_y_estacionariedad.html#estacionalidad-vs-ciclicidad",
+    "href": "series_tiempo/Componentes_y_estacionariedad.html#estacionalidad-vs-ciclicidad",
+    "title": "Componentes de una Serie de Tiempo y Procesos Estacionarios",
+    "section": "Estacionalidad vs Ciclicidad",
+    "text": "Estacionalidad vs Ciclicidad"
+  },
+  {
+    "objectID": "series_tiempo/Componentes_y_estacionariedad.html#interpretación-de-cada-componente-en-el-contexto",
+    "href": "series_tiempo/Componentes_y_estacionariedad.html#interpretación-de-cada-componente-en-el-contexto",
+    "title": "Componentes de una Serie de Tiempo y Procesos Estacionarios",
+    "section": "Interpretación de cada componente en el contexto",
+    "text": "Interpretación de cada componente en el contexto\nTendencia:\nLa línea de tendencia pasa de ~50 mil ingresos/mes en 2015 a ~146 mil ingresos/mes en 2024, un crecimiento sostenido de aproximadamente 0.8 mil ingresos adicionales cada mes.\nEn el contexto turístico, esto refleja el posicionamiento progresivo del destino: más conectividad aérea, mayor inversión hotelera y mejor reputación internacional, todo lo cual empuja la demanda al alza año tras año, independientemente del mes en que estemos.\nEstacionalidad:\nEl patrón oscila con amplitud de ±15 mil ingresos y se repite exactamente cada 12 meses: los picos coinciden con la temporada alta (vacaciones de invierno, cuando turistas de climas fríos buscan sol y playa) y los valles con la temporada de huracanes (baja demanda por riesgo climático).\nEste comportamiento es predecible: un operador turístico puede anticipar con certeza en qué meses necesitará más personal y en cuáles deberá ofrecer promociones.\nCiclicidad:\nA diferencia de la estacionalidad, el componente cíclico tiene una duración que ronda entre 3 y 4.5 años y no coincide con ningún mes del calendario en particular.\nRepresenta cómo el gasto turístico internacional se expande en períodos de bonanza económica global y se contrae en períodos de desaceleración o crisis (por ejemplo, recesiones, crisis cambiarias en los países emisores de turistas).\nA diferencia de la estacionalidad, este componente es mucho más difícil de anticipar con precisión porque su duración y amplitud cambian de un ciclo a otro."
+  },
+  {
+    "objectID": "series_tiempo/Componentes_y_estacionariedad.html#ejemplo-1-ruido-blanco-gaussiano",
+    "href": "series_tiempo/Componentes_y_estacionariedad.html#ejemplo-1-ruido-blanco-gaussiano",
+    "title": "Componentes de una Serie de Tiempo y Procesos Estacionarios",
+    "section": "Ejemplo 1: Ruido blanco gaussiano",
+    "text": "Ejemplo 1: Ruido blanco gaussiano\nEl proceso ${e_{t}} $ de variables independientes e identicamente distribuidas pertenecientes a la distribución \\(N(0,\\sigma^{2})\\)"
+  },
+  {
+    "objectID": "series_tiempo/Componentes_y_estacionariedad.html#ejemplo-2-proceso-ar1-estacionario-phi-1",
+    "href": "series_tiempo/Componentes_y_estacionariedad.html#ejemplo-2-proceso-ar1-estacionario-phi-1",
+    "title": "Componentes de una Serie de Tiempo y Procesos Estacionarios",
+    "section": "Ejemplo 2: Proceso AR(1) estacionario (|phi| < 1)",
+    "text": "Ejemplo 2: Proceso AR(1) estacionario (|phi| &lt; 1)\nEl modelo Autoregresivo de orden uno definido como:\n\\[\nY_t = 0.7 * Y_{(t-1)} + e_t\n\\]\nDonde $ {e_i } ^{iid} N(0,1)$"
+  },
+  {
+    "objectID": "series_tiempo/Componentes_y_estacionariedad.html#ejemplo-3-caminata-aleatoria-gaussiana-proceso-no-estacionario",
+    "href": "series_tiempo/Componentes_y_estacionariedad.html#ejemplo-3-caminata-aleatoria-gaussiana-proceso-no-estacionario",
+    "title": "Componentes de una Serie de Tiempo y Procesos Estacionarios",
+    "section": "Ejemplo 3: Caminata aleatoria gaussiana (proceso NO estacionario)",
+    "text": "Ejemplo 3: Caminata aleatoria gaussiana (proceso NO estacionario)"
+  },
+  {
+    "objectID": "series_tiempo/Componentes_y_estacionariedad.html#conclusión",
+    "href": "series_tiempo/Componentes_y_estacionariedad.html#conclusión",
+    "title": "Componentes de una Serie de Tiempo y Procesos Estacionarios",
+    "section": "Conclusión",
+    "text": "Conclusión\nEn la caminata aleatoria la varianza crece con \\(t\\) (pues Var\\((Y_t) = t\\sigma^2\\)) y no existe un nivel fijo al cual la serie “regrese”, por lo que no es estacionaria. En cambio, el AR(1) con \\(|\\phi|&lt;1\\) siempre “regresa” hacia su media (0 en este caso), lo cual es una característica visual de un proceso estacionario."
+  },
+  {
+    "objectID": "series_tiempo/Componentes_y_estacionariedad.html#estacionario-vs-no-estacionario",
+    "href": "series_tiempo/Componentes_y_estacionariedad.html#estacionario-vs-no-estacionario",
+    "title": "Componentes de una Serie de Tiempo y Procesos Estacionarios",
+    "section": "Estacionario vs No Estacionario",
+    "text": "Estacionario vs No Estacionario"
+  }
+]
