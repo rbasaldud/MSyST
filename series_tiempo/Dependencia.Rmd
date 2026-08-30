@@ -1,0 +1,382 @@
+---
+title: "Covarianza, Correlación y Dependencia Temporal"
+author: "Rodrigo B."
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    code_folding: show
+    theme: flatly
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+	error = F,
+	fig.align = "center",
+	fig.cap = " ",
+	fig.dim = c(8, 6),
+	message = FALSE,
+	warning = FALSE,
+	echo = F,
+	fig.pos="H")
+#Limpiamos entorno
+rm(list = ls(all.names = TRUE))
+gc() #Liberamos memoria
+```
+```{r libs, include=FALSE}
+library(tidyverse)
+library(plotly)
+library(gganimate)
+library(forecast)
+library(MASS)   
+library(patchwork)
+```
+
+# Covarianza y correlación entre dos variables aleatorias
+
+Cuando tenemos dos variables aleatorias $X$ y $Y$, una de las primeras preguntas naturales es si se mueven juntas, es decir: Si $X$ aumenta, ¿$Y$ tiende a aumentar, a disminuir, o no hay relación aparente? La **covarianza** es la primera herramienta que responde esto de forma cuantitativa:
+
+$$ Cov(X,Y) = E\big[(X-\mu_X)(Y-\mu_Y)\big] $$
+
+
+La covarianza tiene un defecto importante: **su magnitud depende de las unidades/magnitudes de las variables**, lo que la hace difícil de interpretar o comparar entre distintos pares de variables. 
+
+Por ejemplo, supongamos que tenemos registros de estatura (en cm) y peso (en kg). Si pasamos la estatura a metros, la covarianza con los registros del peso cambiará, sin embargo la correlación no.
+
+```{r motivacion-cov-cor}
+set.seed(123)
+n <- 200
+
+altura_cm <- rnorm(n, mean = 170, sd = 10)
+peso_kg   <- 0.5 * altura_cm + rnorm(n, mean = 0, sd = 5) - 35
+
+df_altura <- tibble(altura_cm, peso_kg, altura_m = altura_cm / 100)
+
+tabla_comparacion <- tibble(
+  Unidad_de_altura = c("Centímetros", "Metros"),
+  Cov_AlturaPeso = c(
+    cov(df_altura$altura_cm, df_altura$peso_kg),
+    cov(df_altura$altura_m, df_altura$peso_kg)
+  ),
+  Corr_AlturaPeso = c(
+    cor(df_altura$altura_cm, df_altura$peso_kg),
+    cor(df_altura$altura_m, df_altura$peso_kg)
+  )
+)
+
+tabla_comparacion
+```
+
+Esto es porque la correlación normaliza la covarianza con las desviaciones estándar de cada variable:
+
+$$ Corr(X,Y) = \rho_{X,Y} = \frac{Cov(X,Y)}{\sigma_X \, \sigma_Y} $$
+
+Esta normalización hace que $\rho_{X,Y} \in [-1, 1]$ siempre, sin importar las unidades, lo cual la vuelve **comparable e interpretable**: $\rho$ cercano a $\pm1$ indica relación lineal fuerte, cercano a 0 indica relación lineal débil o nula.
+
+
+Podemos tener una confirmación gráfica si realizamos el scatter-plot con ambas versiones de la variable estatura, la forma de la nube de puntos no cambia.
+
+```{r motivacion-scatter}
+plot_ly(df_altura, x = ~altura_cm, y = ~peso_kg, type = "scatter", mode = "markers",
+        marker = list(color = "steelblue", opacity = 0.6)) %>%
+  layout(title = "Relación estatura (cm) vs. peso (kg)",
+         xaxis = list(title = "Estatura (cm)"),
+         yaxis = list(title = "Peso (kg)"))
+
+
+plot_ly(df_altura, x = ~altura_m, y = ~peso_kg, type = "scatter", mode = "markers",
+        marker = list(color = "red", opacity = 0.6)) %>%
+  layout(title = "Relación estatura (metros) vs. peso (kg)",
+         xaxis = list(title = "Estatura (metros)"),
+         yaxis = list(title = "Peso (kg)"))
+
+
+```
+
+
+# 2. La matriz de covarianzas de un vector aleatorio
+
+Para un vector aleatorio $\mathbf{X} = (X_1, X_2, \dots, X_p)^\top$, la matriz de covarianzas $\Sigma$ definida como:
+
+
+$$ \Sigma = \begin{pmatrix}
+Var(X_1) & Cov(X_1,X_2) & \cdots & Cov(X_1,X_p) \\
+Cov(X_2,X_1) & Var(X_2) & \cdots & Cov(X_2,X_p) \\
+\vdots & \vdots & \ddots & \vdots \\
+Cov(X_p,X_1) & Cov(X_p,X_2) & \cdots & Var(X_p)
+\end{pmatrix} $$
+
+Es una matriz **simétrica y semidefinida positiva**.
+
+
+## Para vectores gaussianos, $\Sigma$ tiene la estructura de dependencia
+
+Si $\mathbf{X}$ sigue una distribución **normal multivariada**, su distribución completa queda determinada únicamente por su vector de medias $\boldsymbol{\mu}$ y su matriz de covarianzas $\Sigma$:
+
+$$ \mathbf{X} \sim N(\boldsymbol{\mu}, \Sigma) $$
+
+Se puede ver cómo cambia la forma de la nube de puntos de una normal bivariada conforme variamos su matriz de covarianzas con `gganimate`
+
+```{r bivariada-anim-setup}
+set.seed(42)
+n_sim <- 400
+rhos <- seq(-1, 1, by = 0.1)
+
+generar_bivariada <- function(rho, n = n_sim) {
+  Sigma <- matrix(c(1, rho, rho, 1), nrow = 2)
+  datos <- MASS::mvrnorm(n, mu = c(0, 0), Sigma = Sigma)
+  tibble(x = datos[,1], y = datos[,2], rho = rho)
+}
+
+df_anim <- map_dfr(rhos, generar_bivariada)
+```
+
+```{r bivariada-anim, fig.width=6, fig.height=6,eval=FALSE}
+p_biv_anim <- ggplot(df_anim, aes(x, y)) +
+  geom_point(color = "steelblue", alpha = 0.6) +
+  coord_fixed(xlim = c(-4,4), ylim = c(-4,4)) +
+  labs(title = "Normal bivariada: rho = {closest_state}",
+       x = expression(X[1]), y = expression(X[2])) +
+  theme_minimal(base_size = 13) +
+  transition_states(rho, transition_length = 1, state_length = 1) +
+  ease_aes('cubic-in-out')
+
+animate(p_biv_anim, nframes = 120, fps = 5, width = 600, height = 600)
+```
+
+Conforme $\rho$ pasa de negativo a positivo, la nube de puntos rota: de una elipse orientada hacia abajo (correlación negativa), pasa por una nube circular (independencia, $\rho=0$), hasta una elipse orientada hacia arriba (correlación positiva). **La orientación y la excentricidad de esa elipse están completamente determinadas por $\Sigma$.**
+
+
+## ¿Y si el vector NO es gaussiano?
+
+$\Sigma$ contiene toda la información de dependencia **si el vector es de la familia gaussiana** (más generalmente, de las distribuciones elípticas). Para vectores **no gaussianos**, dos distribuciones pueden compartir *prácticamente la misma matriz de covarianzas* y aun así verse completamente distintas.
+
+
+Comparamos tres vectores aleatorios construidos para tener aproximadamente la misma covarianza ($\rho \approx 0.7$):
+
+```{r no-gaussiano}
+set.seed(99)
+n_ng <- 500
+Sigma_obj <- matrix(c(1, 0.7, 0.7, 1), 2)  # matriz de covarianzas de los 3
+
+# Normal bivariada 
+datos_normal <- MASS::mvrnorm(n_ng, mu = c(0,0), Sigma = Sigma_obj)
+
+# t-multivariada con colas pesadas (misma correlación, df=3)
+# Nota: si T = Z / sqrt(W/df) con Z ~ N(0,Sigma_obj), la covarianza REAL de T es
+# Sigma_obj * df/(df-2), no Sigma_obj. Reescalamos para que quede en la misma escala que los otros dos casos y así sean comparables en la tabla
+df_t <- 3
+Z <- MASS::mvrnorm(n_ng, mu = c(0,0), Sigma = Sigma_obj)
+W <- rchisq(n_ng, df = df_t)
+datos_t <- (Z / sqrt(W / df_t)) * sqrt((df_t - 2) / df_t)
+
+# Mezcla bimodal de dos gaussianas, construida para que la covarianza TOTAL
+# (dentro de cada clúster + entre clústers) coincida EXACTAMENTE con Sigma_obj.
+# Con dos clústers de igual peso 0.5 en (-a,-a) y (a,a):
+#   Sigma_total = Sigma_dentro + a^2 * [[1,1],[1,1]]
+# por lo que despejamos Sigma_dentro = Sigma_obj - a^2 * [[1,1],[1,1]]
+
+a <- 0.9
+Sigma_dentro <- Sigma_obj - a^2 * matrix(c(1,1,1,1), 2)
+
+mezcla_ind <- rbinom(n_ng, 1, 0.5)
+datos_mix <- rbind(
+  MASS::mvrnorm(sum(mezcla_ind==0), mu = c(-a,-a), Sigma = Sigma_dentro),
+  MASS::mvrnorm(sum(mezcla_ind==1), mu = c(a, a),  Sigma = Sigma_dentro)
+)
+
+covs_reales <- tibble(
+  Distribucion = c("Normal", "t-multivariada (df=3)", "Mezcla bimodal"),
+  Cov_x1x2 = c(cov(datos_normal)[1,2], cov(datos_t)[1,2], cov(datos_mix)[1,2]),
+  Cor_x1x2 = c(cor(datos_normal)[1,2], cor(datos_t)[1,2], cor(datos_mix)[1,2])
+)
+covs_reales
+```
+
+```{r no-gaussiano-plot}
+crear_scatter <- function(datos, nombre, rango = c(-6,6)) {
+  df <- tibble(x = datos[,1], y = datos[,2])
+  plot_ly(df, x = ~x, y = ~y, type = "scatter", mode = "markers",
+          marker = list(color = "darkorange", opacity = 0.5, size = 5)) %>%
+    layout(xaxis = list(title = nombre, range = rango), yaxis = list(range = rango))
+}
+
+subplot(
+  crear_scatter(datos_normal, "Normal"),
+  crear_scatter(datos_t, "t-multivariada (colas pesadas)"),
+  crear_scatter(datos_mix, "Mezcla bimodal", rango = c(-6,6)),
+  nrows = 1, margin = 0.05
+) %>% layout(title = "Misma covarianza teórica, formas muy distintas",
+             showlegend = FALSE)
+```
+
+Las tres nubes de puntos tienen una covarianza/correlación muestral muy similar (alrededor de 0.7 o su análogo), pero sus formas son completamente distintas: la normal multivariada es elíptica y compacta, la t-multivariada tiene colas más pesadas, y la mezcla bivariada tiene dos grupos claramente separados. 
+
+**Esto muestra que $\Sigma$ ya no resume toda la estructura de dependencia**, y se necesita conocer la distribución conjunta completa, no solo sus dos primeros momentos. Esta idea ayuda a entender mejor por qué la estacionaridad débil (que solo condiciona a los primeros dos momentos) es menos restrictiva que la estacionaridad (todas las distribuciones finito dimensionales del proceso estocástico subyascente son invariantes ante traslaciones). 
+
+
+
+# 3. Autocovarianza y autocorrelación de una serie de tiempo
+
+## Motivación: El clima tiene memoria
+
+Pensemos en la temperatura diaria de una ciudad. Es intuitivo que:
+
+- La temperatura de **hoy** se parece mucho a la de **ayer** (persistencia de corto plazo)
+- La temperatura de **este mes** se parece a la del **mismo mes hace un año** (patrón estacional)
+
+Es decir, el valor de la serie en el tiempo $t$ está relacionado con sus propios valores pasados. Para cuantificar exactamente esa relación, usamos la **función de autocovarianza (ACV)** y la **función de autocorrelación (ACF)**, que son simplemente la covarianza y la correlación aplicadas a la propia serie, comparada consigo misma desplazada $k$ periodos (rezagos o "lags"):
+
+$$ \gamma(k) = Cov(Y_t, Y_{t+k}) \qquad \qquad \rho(k) = \frac{\gamma(k)}{\gamma(0)} = Corr(Y_t, Y_{t+k}) $$
+
+Para que $\gamma(k)$ y $\rho(k)$ tengan sentido (que no dependan de en qué $t$ nos paramos, solo del rezago $k$), necesitamos que la serie sea **estacionaria de segundo orden**.
+
+## Temperatura mensual en Nottingham
+
+Usamos el dataset `nottem` de R base: temperaturas promedio mensuales (°F) en Nottingham, Inglaterra, de 1920 a 1939.
+
+```{r nottem-serie}
+data("nottem")
+fechas_nottem <- seq(as.Date("1920-01-01"), by = "month", length.out = length(nottem))
+df_nottem <- tibble(fecha = fechas_nottem, temperatura = as.numeric(nottem))
+
+plot_ly(df_nottem, x = ~fecha, y = ~temperatura, type = "scatter", mode = "lines",
+        line = list(color = "darkred")) %>%
+  layout(title = "Temperatura mensual en Nottingham (1920-1939)",
+         xaxis = list(title = "Fecha", rangeslider = list(visible = FALSE)),
+         yaxis = list(title = "Temperatura (°F)"))
+```
+
+```{r acf-helper}
+plot_acf_interactivo <- function(serie, lag.max = 24, type = "correlation",
+                                  titulo = "ACF", color_barra = "steelblue") {
+  n_obs <- length(serie)
+  res <- acf(serie, plot = FALSE, lag.max = lag.max, type = type)
+  df <- tibble(lag = as.numeric(res$lag), valor = as.numeric(res$acf))
+
+  p <- plot_ly(df, x = ~lag, y = ~valor, type = "bar",
+               marker = list(color = color_barra), name = titulo) %>%
+    add_markers(x = ~lag, y = ~valor,
+                marker = list(color = "black", size = 5), showlegend = FALSE)
+
+  shapes_list <- list(
+    list(type = "line", x0 = min(df$lag), x1 = max(df$lag), y0 = 0, y1 = 0,
+         line = list(color = "black", width = 1))
+  )
+
+  if (type == "correlation") {
+    ci <- 1.96 / sqrt(n_obs)
+    shapes_list <- append(shapes_list, list(
+      list(type = "line", x0 = min(df$lag), x1 = max(df$lag), y0 = ci, y1 = ci,
+           line = list(dash = "dash", color = "gray50")),
+      list(type = "line", x0 = min(df$lag), x1 = max(df$lag), y0 = -ci, y1 = -ci,
+           line = list(dash = "dash", color = "gray50"))
+    ))
+  }
+
+  p %>% layout(title = titulo, shapes = shapes_list,
+               xaxis = list(title = "Rezago (lag)"),
+               yaxis = list(title = ifelse(type == "correlation",
+                                            "Autocorrelación", "Autocovarianza")))
+}
+```
+
+```{r nottem-acf}
+plot_acf_interactivo(nottem, lag.max = 36, type = "correlation",
+                     titulo = "ACF de la temperatura mensual en Nottingham")
+```
+
+El ACF de `nottem` muestra picos claros y repetidos cada 12 rezagos (12, 24, 36 meses), lo que es consecuencia de la estacionalidad anual. También se ve una fuerte autocorrelación en los primeros rezagos (1-2 meses), reflejo de que el clima no cambia bruscamente de un mes a otro. Este es exactamente el tipo de estructura que la ACF está diseñada para revelar.
+
+# 4. ACV y ACF de procesos AR
+
+También podemos analizar el ACV Y ACF para algunos procesos autoregresivos.
+
+
+## Proceso AR(1)
+
+```{r ar1-simular}
+set.seed(10)
+n_ar <- 500
+phi1 <- 0.7
+ar1_serie <- arima.sim(model = list(ar = phi1), n = n_ar)
+```
+
+```{r ar1-serie-plot}
+plot_ly(x = 1:n_ar, y = as.numeric(ar1_serie), type = "scatter", mode = "lines",
+        line = list(color = "steelblue")) %>%
+  layout(title = paste0("Serie simulada AR(1), phi = ", phi1),
+         xaxis = list(title = "Tiempo"), yaxis = list(title = "Valor"))
+```
+
+```{r ar1-acvf-acf}
+subplot(
+  plot_acf_interactivo(ar1_serie, lag.max = 20, type = "covariance",
+                       titulo = "ACVF del AR(1)", color_barra = "darkorange"),
+  plot_acf_interactivo(ar1_serie, lag.max = 20, type = "correlation",
+                       titulo = "ACF del AR(1)", color_barra = "steelblue"),
+  nrows = 1, margin = 0.08, titleX = TRUE, titleY = TRUE
+) %>% layout(showlegend = FALSE)
+```
+
+Para un AR(1) estacionario, la teoría predice un decaimiento **exponencial**: $\rho(k) = \phi^k$. Con $\phi = 0.7 > 0$, el decaimiento es monótono, y la ACF cae por debajo de la banda de significancia relativamente rápido.
+
+## Proceso AR(3)
+
+```{r ar3-simular}
+set.seed(11)
+ar3_coefs <- c(0.5, 0.2, -0.35)
+
+# Verificamos estacionariedad: las raíces del polinomio característico
+# deben caer FUERA del círculo unitario
+raices <- polyroot(c(1, -ar3_coefs))
+es_estacionario <- all(Mod(raices) > 1)
+
+ar3_serie <- arima.sim(model = list(ar = ar3_coefs), n = n_ar)
+```
+
+
+
+```{r ar3-serie-plot}
+plot_ly(x = 1:n_ar, y = as.numeric(ar3_serie), type = "scatter", mode = "lines",
+        line = list(color = "purple")) %>%
+  layout(title = paste0("Serie simulada AR(3), phi = (", paste(ar3_coefs, collapse=", "), ")"),
+         xaxis = list(title = "Tiempo"), yaxis = list(title = "Valor"))
+```
+
+```{r ar3-acvf-acf}
+subplot(
+  plot_acf_interactivo(ar3_serie, lag.max = 20, type = "covariance",
+                       titulo = "ACVF del AR(3)", color_barra = "darkorange"),
+  plot_acf_interactivo(ar3_serie, lag.max = 20, type = "correlation",
+                       titulo = "ACF del AR(3)", color_barra = "purple"),
+  nrows = 1, margin = 0.08, titleX = TRUE, titleY = TRUE
+) %>% layout(showlegend = FALSE)
+```
+
+El AR(3) puede mostrar un decaimiento más complejo (oscilaciones o "rebotes" antes de apagarse). Esto refleja una dependencia temporal más compleja: el valor de hoy no solo depende del de ayer, sino de una combinación de los últimos tres periodos.
+
+# 5. Cuando NO hay correlación pero SÍ hay dependencia
+
+La correlación de Pearson **solo mide si hay una relación lineal entre las variables**, y algunos coeficientes de correlación como Spearman o Kendall logran capturar la relaciones monótonas, sin embargo es posible que dos variables sean dependientes (una determina a la otra) y aun así tengan correlación cero, si esa dependencia no es lineal o monótona.
+
+## Ejemplo 1: $Y = X^2$
+
+Si tomamos los valores no negativos de $X$ su correlación (lineal) es prácticamente cero pero como la relación es monótona, el coeficiente de Spearman capturaría una correlación fuerte. Al tomar los valores negativos de $X$ también, la relación ya no es monótona y por ende no se capturaría una correlación sin embargo es obvio que siguen siendo dependientes pues $Y$ está **completamente determinada** por $X$.
+
+```{r no-corr-cuadratica}
+set.seed(5)
+n_ej <- 500
+X <- rnorm(n_ej, 0, 1)
+Y <- X^2
+
+```
+
+```{r no-corr-cuadratica-plot}
+plot_ly(x = X, y = Y, type = "scatter", mode = "markers",
+        marker = list(color = "seagreen", opacity = 0.5)) %>%
+  layout(title = "Y = X^2",
+         xaxis = list(title = "X"), yaxis = list(title = "Y = X^2"))
+```
+
+
+

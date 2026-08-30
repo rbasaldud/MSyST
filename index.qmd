@@ -17,6 +17,8 @@ format:
 | Motivación del estudio de Series de Tiempo | [Presentación](series_tiempo/motivacion_3B.qmd) |
 | Ejemplos de visualización en R | [Presentación](series_tiempo/visualizacion.qmd) |
 | Modelo clásico y procesos estacionarios | [Notas](series_tiempo/Componentes_y_estacionariedad.Rmd) |
+| Medidas de dependencia | [Notas](series_tiempo/Dependencia.Rmd) |
+
 
 
 
