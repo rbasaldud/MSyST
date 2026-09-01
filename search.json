@@ -186,28 +186,28 @@
     "href": "series_tiempo/Componentes_y_estacionariedad.html",
     "title": "Componentes de una Serie de Tiempo y Procesos Estacionarios",
     "section": "",
-    "text": "Una serie de tiempo puede descomponerse (de forma aditiva) como:\n\\[\nY_t = T_t + S_t + C_t + \\varepsilon_t\n\\]\ndonde:\n\nTendencia (\\(T_t\\)): movimiento de largo plazo, suave y sostenido (creciente, decreciente o estable) que refleja cambios estructurales de fondo (crecimiento económico, adopción tecnológica, cambios demográficos, etc.).\nEstacionalidad (\\(S_t\\)): patrón que se repite con periodicidad fija y conocida, generalmente ligada al calendario (mensual, trimestral, día de la semana). Su período no cambia con el tiempo.\nCiclicidad (\\(C_t\\)) (Usualmente se omite): oscilaciones de subida y bajada sin período fijo, normalmente más largas que la estacionalidad (varios años), asociadas a fenómenos como ciclos económicos, crediticios o de negocio. A diferencia de la estacionalidad, su duración y amplitud varían de un ciclo a otro.\nRuido/Error (\\(\\varepsilon_t\\)): variación residual aleatoria no explicada por los componentes anteriores."
+    "text": "Una serie de tiempo puede descomponerse (de forma aditiva) como:\n\\[\nY_t = m_t + s_t + C_t + \\varepsilon_t\n\\]\ndonde:\n\nTendencia (\\(m_t\\)): Movimiento a largo plazo, suave y sostenido (creciente, decreciente o estable).\nEstacionalidad (\\(s_t\\)): patrón que se repite con periodicidad fija y conocida, generalmente ligada al calendario (mensual, trimestral, día de la semana). Su período no cambia con el tiempo.\nCiclicidad (\\(C_t\\)) (Usualmente se omite): oscilaciones de subida y bajada sin período fijo, normalmente más largas que la estacionalidad (varios años), asociadas a fenómenos como ciclos económicos, crediticios o de negocio. A diferencia de la estacionalidad, su duración y amplitud varían de un ciclo a otro.\nRuido/Error (\\(\\varepsilon_t\\)): Variación residual aleatoria no explicada por los componentes anteriores."
   },
   {
     "objectID": "series_tiempo/Componentes_y_estacionariedad.html#visualización-de-la-serie-completa-con-plotly",
     "href": "series_tiempo/Componentes_y_estacionariedad.html#visualización-de-la-serie-completa-con-plotly",
     "title": "Componentes de una Serie de Tiempo y Procesos Estacionarios",
     "section": "Visualización de la serie completa con plotly",
-    "text": "Visualización de la serie completa con plotly"
+    "text": "Visualización de la serie completa con plotly\nNo es ninguna sospresa que al visualizar la serie, podemos identificar los componentes de tendencia y estacionalidad, el componente cíclico es más difícil de identificar a simple vista.\n\n\n\n\n\n\n\\\nUna interpretación de cada componente en el contexto turístico podría ser la siguiente:\n\nTendencia: El destino gana popularidad año con año (publicidad, inversión en infraestructura hotelera).\nEstacionalidad: Cada año hay temporada alta (vacaciones de invierno/verano) y temporada baja (temporada de huracanes), con un patrón que se repite cada 12 meses.\nCiclicidad: El turismo internacional responde a factores económicos, políticos y socialesque duran varios años y no tienen una duración fija.\n\nUna vez que hemos identificado los componentes, podemos estimarlos y analizarlos por separado para entender mejor el comportamiento de la serie."
   },
   {
     "objectID": "series_tiempo/Componentes_y_estacionariedad.html#estimando-la-tendencia",
     "href": "series_tiempo/Componentes_y_estacionariedad.html#estimando-la-tendencia",
     "title": "Componentes de una Serie de Tiempo y Procesos Estacionarios",
     "section": "Estimando la tendencia",
-    "text": "Estimando la tendencia"
+    "text": "Estimando la tendencia\nHay diversas forma de estimar la tendencia de una serie de tiempo cuando hay presencia de estacionalidad. Una de las más simples es mediante un filtro de Medias Móviles y en este caso utilizaremos una ventana de tiempo de 12 meses. Otro método es mediante regresión lineal simple o Mínimos Cuadrados Ordinarios y finalmente podemos utilizar una regresión polinómica para capturar una ligera curvatura en la tendencia. En este caso es de utilidad complementar la comparativa con métricas de evaluación como el RMSE y el MAE para determinar cuál de los métodos es más adecuado para estimar la tendencia de la serie.\n\n\n# A tibble: 3 × 3\n  metodo       RMSE   MAE\n  &lt;chr&gt;       &lt;dbl&gt; &lt;dbl&gt;\n1 tend_lineal  1.76  1.51\n2 tend_poly    2.91  2.19\n3 mm_12        6.47  5.59\n\n\n\n\n\n\n\n\n\n\n\n\n\\"
   },
   {
     "objectID": "series_tiempo/Componentes_y_estacionariedad.html#estacionalidad-vs-ciclicidad",
     "href": "series_tiempo/Componentes_y_estacionariedad.html#estacionalidad-vs-ciclicidad",
     "title": "Componentes de una Serie de Tiempo y Procesos Estacionarios",
     "section": "Estacionalidad vs Ciclicidad",
-    "text": "Estacionalidad vs Ciclicidad"
+    "text": "Estacionalidad vs Ciclicidad\n\n\n\n\n\n\n\\"
   },
   {
     "objectID": "series_tiempo/Componentes_y_estacionariedad.html#interpretación-de-cada-componente-en-el-contexto",

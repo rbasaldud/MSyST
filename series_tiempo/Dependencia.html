@@ -116,7 +116,7 @@ window.Quarto = {
 
 </head>
 
-<body class="nav-fixed fullcontent quarto-light">
+<body class="nav-fixed quarto-light">
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
@@ -148,7 +148,34 @@ window.Quarto = {
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#covarianza-y-correlación-entre-dos-variables-aleatorias" id="toc-covarianza-y-correlación-entre-dos-variables-aleatorias" class="nav-link active" data-scroll-target="#covarianza-y-correlación-entre-dos-variables-aleatorias">Covarianza y correlación entre dos variables aleatorias</a></li>
+  <li><a href="#la-matriz-de-covarianzas-de-un-vector-aleatorio" id="toc-la-matriz-de-covarianzas-de-un-vector-aleatorio" class="nav-link" data-scroll-target="#la-matriz-de-covarianzas-de-un-vector-aleatorio">2. La matriz de covarianzas de un vector aleatorio</a>
+  <ul class="collapse">
+  <li><a href="#para-vectores-gaussianos-sigma-tiene-la-estructura-de-dependencia" id="toc-para-vectores-gaussianos-sigma-tiene-la-estructura-de-dependencia" class="nav-link" data-scroll-target="#para-vectores-gaussianos-sigma-tiene-la-estructura-de-dependencia">Para vectores gaussianos, <span class="math inline">\(\Sigma\)</span> tiene la estructura de dependencia</a></li>
+  <li><a href="#y-si-el-vector-no-es-gaussiano" id="toc-y-si-el-vector-no-es-gaussiano" class="nav-link" data-scroll-target="#y-si-el-vector-no-es-gaussiano">¿Y si el vector NO es gaussiano?</a></li>
+  </ul></li>
+  <li><a href="#autocovarianza-y-autocorrelación-de-una-serie-de-tiempo" id="toc-autocovarianza-y-autocorrelación-de-una-serie-de-tiempo" class="nav-link" data-scroll-target="#autocovarianza-y-autocorrelación-de-una-serie-de-tiempo">3. Autocovarianza y autocorrelación de una serie de tiempo</a>
+  <ul class="collapse">
+  <li><a href="#motivación-el-clima-tiene-memoria" id="toc-motivación-el-clima-tiene-memoria" class="nav-link" data-scroll-target="#motivación-el-clima-tiene-memoria">Motivación: El clima tiene memoria</a></li>
+  <li><a href="#temperatura-mensual-en-nottingham" id="toc-temperatura-mensual-en-nottingham" class="nav-link" data-scroll-target="#temperatura-mensual-en-nottingham">Temperatura mensual en Nottingham</a></li>
+  </ul></li>
+  <li><a href="#acv-y-acf-de-procesos-ar" id="toc-acv-y-acf-de-procesos-ar" class="nav-link" data-scroll-target="#acv-y-acf-de-procesos-ar">4. ACV y ACF de procesos AR</a>
+  <ul class="collapse">
+  <li><a href="#proceso-ar1" id="toc-proceso-ar1" class="nav-link" data-scroll-target="#proceso-ar1">Proceso AR(1)</a></li>
+  <li><a href="#proceso-ar3" id="toc-proceso-ar3" class="nav-link" data-scroll-target="#proceso-ar3">Proceso AR(3)</a></li>
+  </ul></li>
+  <li><a href="#cuando-no-hay-correlación-pero-sí-hay-dependencia" id="toc-cuando-no-hay-correlación-pero-sí-hay-dependencia" class="nav-link" data-scroll-target="#cuando-no-hay-correlación-pero-sí-hay-dependencia">5. Cuando NO hay correlación pero SÍ hay dependencia</a>
+  <ul class="collapse">
+  <li><a href="#ejemplo-1-y-x2" id="toc-ejemplo-1-y-x2" class="nav-link" data-scroll-target="#ejemplo-1-y-x2">Ejemplo 1: <span class="math inline">\(Y = X^2\)</span></a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
@@ -406,7 +433,7 @@ Cov(X_p,X_1) &amp; Cov(X_p,X_2) &amp; \cdots &amp; Var(X_p)
     }
       var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
       var mailtoRegex = new RegExp(/^mailto:/);
-        var filterRegex = new RegExp('/' + window.location.host + '/');
+        var filterRegex = new RegExp("https:\/\/rbasaldud\.github\.io\/MSyST\/");
       var isInternal = (href) => {
           return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
       }
