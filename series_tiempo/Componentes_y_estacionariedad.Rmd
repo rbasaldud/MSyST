@@ -35,6 +35,8 @@ library(gganimate)
 library(forecast)
 library(zoo)
 library(mFilter)
+library(patchwork)
+library(ggplot2)
 ```
 
 
@@ -139,8 +141,6 @@ Una vez que hemos identificado los componentes, podemos estimarlos y analizarlos
 Hay diversas forma de estimar la tendencia de una serie de tiempo cuando hay presencia de estacionalidad. Una de las más simples es mediante un  **filtro de Medias Móviles**, otro método es mediante **regresión lineal simple o Mínimos Cuadrados Ordinarios** y finalmente podemos utilizar una **regresión polinómica** para capturar una ligera curvatura en la tendencia, también existe el método de **suavizamiento exponencial**.
 
 
-
-
 ### Filtro de Medias Móviles
 
 La idea de este método es tomar ventanas de tiempo con radio $q$ y calcular el promedio de cada ventana. 
@@ -149,59 +149,15 @@ $$
 w_t = \frac{1}{2q + 1} \sum_{j=-q}^{q} Y_{t+j} \quad t = q+1, \ldots, n-q
 $$
 
+Este proceso se puede ver a continuación:
+
+![](media_movil.gif)
+
+
 La fórmula anterior no está definida para los primeros y últimos $q$ puntos de la serie, se puede optar por mantener constante el valor de la media móvil en los extremos, o dejarlo como NA. 
 
-A continuación el proceso de forma manual.
 
-```{r filtro-mm-manual, echo=TRUE}
-
-media_movil_manual <- function(x, k, tipo = c("centrada", "trailing")) {
-  tipo <- match.arg(tipo)
-  n <- length(x)
-  ma <- rep(NA_real_, n)
- 
-  if (tipo == "trailing") {
-    for (i in k:n) {
-      suma <- 0
-      for (j in (i - k + 1):i) suma <- suma + x[j]   # suma manual de la ventana
-      ma[i] <- suma / k
-    }
-  } else {
-    if (k %% 2 == 0) stop("Para 'centrada' usa un k impar (simplifica la ventana simétrica)")
-    half <- k %/% 2
-    for (i in (half + 1):(n - half)) {
-      suma <- 0
-      for (j in (i - half):(i + half)) suma <- suma + x[j]  # suma manual de la ventana
-      ma[i] <- suma / k
-    }
-  }
-  ma
-}
- 
-k    <- 12              # ventana impar -> centrada, fácil de visualizar
-half <- k %/% 2
- 
-serie_df$ma_manual <- media_movil_manual(serie_df$ingresos, k = k, tipo = "trailing")
- 
-# rango de "centros" válidos para la ventana centrada
-centros_validos <- (half + 1):(n - half)
- 
-
-plot(serie_df$ma_manual) 
-# ---------------------------------------------------------------
-# 3. Construcción de los "frames" para la animación
-#    (patrón de acumulación: en el frame f se revela todo lo
-#     calculado hasta ese punto, más la ventana actual resaltada)
-# ---------------------------------------------------------------
- 
-
-```
-
-
-
-
-En este caso es de utilidad complementar la comparativa con métricas de evaluación como el RMSE y el MAE para determinar cuál de los métodos es más adecuado para estimar la tendencia de la serie.
-
+Ya que tenemos varios métodos, es de utilidad complementar la comparativa con métricas de evaluación como el RMSE y el MAE para determinar cuál de los métodos es más adecuado para estimar la tendencia de la serie.
 
 ```{r estimar-tendencia, fig.dim=c(8,8)}
 
@@ -260,7 +216,6 @@ fig <- plot_ly(serie_df, x = ~fecha) %>%
  
 fig
 ```
-
 
 
 ```{r plot-tendencia}
@@ -324,11 +279,6 @@ Representa cómo el gasto turístico internacional se expande en períodos de bo
 A diferencia de la estacionalidad, este componente es mucho más difícil de anticipar con precisión porque su duración y amplitud cambian de un ciclo a otro.
 
 
-
-
-
-
-
 # 3. Procesos estocásticos estacionarios
 
 Un proceso $\{Y_t\}$ es **débilmente (o de segundo orden) estacionario** si cumple:
@@ -338,9 +288,16 @@ Un proceso $\{Y_t\}$ es **débilmente (o de segundo orden) estacionario** si cum
 3. $Cov(Y_t, Y_{t+k})$ depende únicamente del rezago $k$, no del tiempo $t$
 
 
-## Ejemplo 1: Ruido blanco gaussiano
 
-El proceso $\{e_{t}\} $ de variables independientes e identicamente distribuidas pertenecientes a la distribución $N(0,\sigma^{2})$
+## Ruido blanco 
+
+Definimos un **ruido blanco** como una colección de variables aleatorias identicamente distribuidas con media cero y varianza $\sigma^2$, que además $cov(e_t, e_{k}) = \sigma^2$ si $t=k$ y $cov(e_t, e_{k}) = 0$ en otro caso. Hay que notar que no se está especificando la distribución y tampoco si las variables son independientes, solo que no hay correlación entre ellas. 
+En general, correlación cero no implica independencia, pero si las variables son independientes entonces sí hay correlación cero.
+
+## Ejemplo 1: Ruido blanco **gaussiano**
+
+La colección de variables aleatorias $e_1,...,e_n$  de variables independientes e identicamente distribuidas pertenecientes a la distribución $N(0,\sigma^{2})$ es un ruido blanco gaussiano. En este caso, es muy fácil notar que se trata de un proceso estacionario.
+Un proceso con esta característica nos permitirá modelar fenómenos más complejos.
 
 ```{r ruido-blanco}
 set.seed(1)
@@ -359,11 +316,7 @@ plot_ly(df_wn, x = ~fecha, y = ~valor, type = "scatter", mode = "lines",
   )
 ```
 
-```{r ruido-blanco-ventanas,include=FALSE}
-tibble(ventana = rep(1:4, each = 50), valor = ruido_blanco) %>%
-  group_by(ventana) %>%
-  summarise(media = round(mean(valor), 3), varianza = round(var(valor), 3))
-```
+
 
 ## Ejemplo 2: Proceso AR(1) estacionario (|phi| < 1)
 
@@ -373,7 +326,7 @@ $$
 Y_t = 0.7 * Y_{(t-1)} + e_t
 $$
 
-Donde $ \{e_i \} \sim^{iid} N(0,1)$
+Donde $e_1,...,e_n$ es una muestra aleatoria de la distribución $N(0,1)$
 
 ```{r ar1}
 set.seed(42)
@@ -395,12 +348,22 @@ ggAcf(ar1_sim) +
   theme_minimal(base_size = 13)
 ```
 
-## Ejemplo 3: Caminata aleatoria gaussiana (proceso NO estacionario)
+## Ejemplo 3: Caminata aleatoria gaussiana (sin tendencia)
+
+La caminata aleatoria gaussiana es un proceso estocástico definido como:
+
+$$
+Y_t = Y_{(t-1)} + e_t = \sum_{i=1}^{t} e_i
+$$
+
+Donde $e_1,...,e_n$ es una muestra aleatoria de la distribución $N(0,1)$ y $Y_0 = 0$. En este caso, la varianza crece con el tiempo y no existe un nivel fijo al cual la serie "regrese", por lo que **no** es estacionaria.
+
+En el caso con tendencia resulta casi inmediato notar que la serie no es estacionaria, por el término $\delta t$.
 
 
 ```{r random-walk}
 set.seed(42)
-caminata_aleatoria <- cumsum(rnorm(n2))
+caminata_aleatoria <- cumsum(rnorm(n2)) 
 df_rw <- tibble(fecha = fechas2, valor = caminata_aleatoria)
 
 plot_ly(df_rw, x = ~fecha, y = ~valor, type = "scatter", mode = "lines",
@@ -412,12 +375,8 @@ plot_ly(df_rw, x = ~fecha, y = ~valor, type = "scatter", mode = "lines",
   )
 ```
 
-## Conclusión
-
-En la caminata aleatoria la varianza crece con $t$ (pues Var$(Y_t) = t\sigma^2$) y no existe un nivel fijo al cual la serie "regrese", por lo que **no** es estacionaria. En cambio, el AR(1) con $|\phi|<1$ siempre "regresa" hacia su media (0 en este caso), lo cual es una característica visual de un proceso estacionario.
 
 # 5. Animación de un proceso estocástico con `gganimate`
-
 
 ```{r anim-ar1,eval=FALSE}
 df_ar1 <- tibble(t = 1:n2, valor = as.numeric(ar1_sim))
@@ -433,10 +392,6 @@ p_anim <- ggplot(df_ar1, aes(t, valor)) +
   ) +
   theme_minimal(base_size = 13) +
   transition_reveal(along =  t)
-
-
-
-
 ```
 
 ## Estacionario vs No Estacionario
