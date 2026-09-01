@@ -33,6 +33,8 @@ library(tidyverse)
 library(plotly)
 library(gganimate)
 library(forecast)
+library(zoo)
+library(mFilter)
 ```
 
 
@@ -43,14 +45,14 @@ Una serie de tiempo puede descomponerse (de forma aditiva) como:
 
 
 $$ 
-Y_t = T_t + S_t + C_t + \varepsilon_t 
+Y_t = m_t + s_t + C_t + \varepsilon_t 
 $$
 
 donde:
 
-- **Tendencia ($T_t$):** movimiento de largo plazo, suave y sostenido (creciente, decreciente o estable) que refleja cambios estructurales de fondo (crecimiento económico, adopción tecnológica, cambios demográficos, etc.).
+- **Tendencia ($m_t$):** movimiento de largo plazo, suave y sostenido (creciente, decreciente o estable) que refleja cambios estructurales de fondo (crecimiento económico, adopción tecnológica, cambios demográficos, etc.).
 
-- **Estacionalidad ($S_t$):** patrón que se repite con **periodicidad fija y conocida**, generalmente ligada al calendario (mensual, trimestral, día de la semana). Su período no cambia con el tiempo.
+- **Estacionalidad ($s_t$):** patrón que se repite con **periodicidad fija y conocida**, generalmente ligada al calendario (mensual, trimestral, día de la semana). Su período no cambia con el tiempo.
 
 - **Ciclicidad ($C_t$) (Usualmente se omite):** oscilaciones de subida y bajada **sin período fijo**, normalmente más largas que la estacionalidad (varios años), asociadas a fenómenos como ciclos económicos, crediticios o de negocio. A diferencia de la estacionalidad, su duración y amplitud varían de un ciclo a otro.
 
@@ -59,16 +61,22 @@ donde:
 
 # 2. Ingresos mensuales de un comercio en la playa
 
-**Contexto:** Simulamos el número mensual de ingresos (en miles) a un destino turístico de playa entre 2015 y 2024. Esta serie combina de forma realista los tres componentes:
+Supongamos que nos interesa analizar los ingresos mensuales (en miles de pesos) de un destino turístico de playa entre 2015 y 2024. Nuestra serie será construida artificialmente con el objetivo de ilustrar algunas ideas.
 
-- **Tendencia:** el destino gana popularidad año con año (nuevas rutas aéreas, promoción turística, inversión en infraestructura hotelera).
+- La tendencia será lineal y creciente, dada por la ecuación $m_t = 50 + 0.8t$ (en miles de pesos).
+- La estacionalidad será sinusoidal con amplitud de 15 mil pesos y período de 12 meses, representando la temporada alta y baja del turismo.
+- La ciclicidad será una combinación de dos ondas sinusoidales con períodos de 54 y 37 meses, representando ciclos económicos globales.
+- El ruido será generado a partir de una distribución normal con media cero y desviación estándar de 3 mil pesos.
 
-- **Estacionalidad:** cada año hay temporada alta (vacaciones de invierno/verano) y temporada baja (temporada de huracanes), con un patrón que se repite cada 12 meses.
+Además la serie de ingresos mensuales tendrá la descomposición aditiva:
 
-- **Ciclicidad:** el gasto turístico internacional también responde a ciclos económicos globales (auges y desaceleraciones) que duran varios años y no tienen una duración fija.
+$$
+Y_t = m_t + s_t + C_t + \varepsilon_t
+$$
 
-```{r construir-serie, echo=FALSE}
-set.seed(2024)
+
+```{r construir-serie, echo=TRUE}
+set.seed(2026)
 
 n <- 120  # 10 años de datos mensuales
 t <- 1:n
@@ -95,10 +103,11 @@ serie_df <- tibble(
 head(serie_df, 12)
 ```
 
+\\
+
 ## Visualización de la serie completa con `plotly`
 
-
-
+No es ninguna sospresa que al visualizar la serie, podemos identificar los componentes de tendencia, estacionalidad y ciclicidad.
 
 ```{r plot-serie}
 plot_ly(serie_df, x = ~fecha) %>%
@@ -111,8 +120,103 @@ plot_ly(serie_df, x = ~fecha) %>%
     legend = list(orientation = "h", y = -0.2)
   )
 ```
+
+\\
+
+Una interpretación de cada componente en el contexto turístico podría ser la siguiente:
+
+- **Tendencia:** El destino gana popularidad año con año (publicidad, inversión en infraestructura hotelera).
+
+- **Estacionalidad:** Cada año hay temporada alta (vacaciones de invierno/verano) y temporada baja (temporada de huracanes), con un patrón que se repite cada 12 meses.
+
+- **Ciclicidad:** El turismo internacional responde a factores económicos, políticos y socialesque duran varios años y no tienen una duración fija.
+
+Una vez que hemos identificado los componentes, podemos estimarlos y analizarlos por separado para entender mejor el comportamiento de la serie.
+
+
 ## Estimando la tendencia
 
+Hay diversas forma de estimar la tendencia de una serie de tiempo cuando hay presencia de estacionalidad. Una de las más simples es mediante un  **filtro de Medias Móviles**. En este caso utilizaremos una ventana de tiempo de 12 meses. 
+
+```{r estimar-tendencia}
+
+## a) Media móvil centrada (ventana de 12 meses, filtro simple)
+serie_df$mm_12 <- rollmean(ingresos, k = 12, fill = NA, align = "center")
+ 
+## b) Regresión lineal simple: ingresos ~ t
+mod_lineal <- lm(ingresos ~ t, data = serie_df)
+serie_df$tend_lineal <- predict(mod_lineal)
+ 
+## c) Regresión polinómica (grado 3) para capturar ligera curvatura
+mod_poly <- lm(ingresos ~ poly(t, 3), data = serie_df)
+serie_df$tend_poly <- predict(mod_poly)
+ 
+## d) LOESS (suavizado local, span moderado)
+mod_loess <- loess(ingresos ~ t, data = serie_df, span = 0.3, degree = 2)
+serie_df$tend_loess <- predict(mod_loess)
+ 
+## e) Filtro Hodrick-Prescott (lambda estándar para datos mensuales: 129600)
+hp <- hpfilter(ingresos, freq = 129600, type = "lambda")
+serie_df$tend_hp <- as.numeric(hp$trend)
+ 
+## f) Descomposición STL (requiere objeto ts con frecuencia estacional)
+ingresos_ts <- ts(ingresos, start = c(2015, 1), frequency = 12)
+stl_dec <- stl(ingresos_ts, s.window = "periodic", robust = TRUE)
+serie_df$tend_stl <- as.numeric(stl_dec$time.series[, "trend"])
+
+
+metodos <- c("mm_12", "tend_lineal", "tend_poly", "tend_loess", "tend_hp", "tend_stl")
+ 
+rmse <- function(estimado, real) sqrt(mean((estimado - real)^2, na.rm = TRUE))
+mae  <- function(estimado, real) mean(abs(estimado - real), na.rm = TRUE)
+ 
+tabla_errores <- tibble(
+  metodo = metodos,
+  RMSE = map_dbl(metodos, ~ rmse(serie_df[[.x]], serie_df$tendencia_real)),
+  MAE  = map_dbl(metodos, ~ mae(serie_df[[.x]], serie_df$tendencia_real))
+) %>% arrange(RMSE)
+ 
+print(tabla_errores)
+
+colores <- c(
+  "Ingresos observados"        = "lightgray",
+  "Tendencia real (simulada)"  = "black",
+  "Media móvil (12m)"          = "steelblue",
+  "Regresión lineal"           = "firebrick",
+  "Regresión polinómica (g3)"  = "darkorange",
+  "LOESS"                      = "seagreen",
+  "Filtro Hodrick-Prescott"    = "purple",
+  "Descomposición STL"         = "deeppink"
+)
+ 
+fig <- plot_ly(serie_df, x = ~fecha) %>%
+  add_lines(y = ~ingresos, name = "Ingresos observados",
+            line = list(color = colores["Ingresos observados"], width = 1),
+            opacity = 0.6) %>%
+  add_lines(y = ~tendencia_real, name = "Tendencia real (simulada)",
+            line = list(color = colores["Tendencia real (simulada)"], width = 3, dash = "dot")) %>%
+  add_lines(y = ~mm_12, name = "Media móvil (12m)",
+            line = list(color = colores["Media móvil (12m)"], width = 2)) %>%
+  add_lines(y = ~tend_lineal, name = "Regresión lineal",
+            line = list(color = colores["Regresión lineal"], width = 2)) %>%
+  add_lines(y = ~tend_poly, name = "Regresión polinómica (g3)",
+            line = list(color = colores["Regresión polinómica (g3)"], width = 2)) %>%
+  add_lines(y = ~tend_loess, name = "LOESS",
+            line = list(color = colores["LOESS"], width = 2)) %>%
+  add_lines(y = ~tend_hp, name = "Filtro Hodrick-Prescott",
+            line = list(color = colores["Filtro Hodrick-Prescott"], width = 2)) %>%
+  add_lines(y = ~tend_stl, name = "Descomposición STL",
+            line = list(color = colores["Descomposición STL"], width = 2)) %>%
+  layout(
+    title = "Comparación de métodos de estimación de tendencia",
+    xaxis = list(title = "Fecha", rangeslider = list(visible = TRUE)),
+    yaxis = list(title = "Ingresos"),
+    legend = list(orientation = "h", y = -0.25),
+    hovermode = "x unified"
+  )
+ 
+fig
+```
 
 
 
@@ -124,7 +228,7 @@ plot_ly(serie_df, x = ~fecha) %>%
   add_lines(y = ~tendencia, name = "Tendencia",
             line = list(color = "firebrick", width = 3)) %>%
   layout(
-    title = "Ingresos mensuales a destino turístico (2015-2024)",
+    title = "Tendencia real (construida) vs Tendencia estimada (filtro de medias móviles)",
     xaxis = list(title = "Fecha", rangeslider = list(visible = FALSE)),
     yaxis = list(title = "Miles de ingresos"),
     legend = list(orientation = "h", y = -0.2)
@@ -132,11 +236,10 @@ plot_ly(serie_df, x = ~fecha) %>%
 
 ```
 
+
+\\
+
 ## Estacionalidad vs Ciclicidad
-
-
-
-
 
 ```{r plot-componentes}
 plot_ly(serie_df, x = ~fecha) %>%
@@ -152,8 +255,9 @@ plot_ly(serie_df, x = ~fecha) %>%
   )
 ```
 
-## Interpretación de cada componente en el contexto
+\\
 
+## Interpretación de cada componente en el contexto
 
 
 **Tendencia:**
@@ -175,6 +279,11 @@ A diferencia de la estacionalidad, el componente cíclico tiene una duración qu
 Representa cómo el gasto turístico internacional se expande en períodos de bonanza económica global y se contrae en períodos de desaceleración o crisis (por ejemplo, recesiones, crisis cambiarias en los países emisores de turistas). 
 
 A diferencia de la estacionalidad, este componente es mucho más difícil de anticipar con precisión porque su duración y amplitud cambian de un ciclo a otro.
+
+
+
+
+
 
 
 # 3. Procesos estocásticos estacionarios

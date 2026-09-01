@@ -4,8 +4,9 @@ subtitle: "Semestre 2027-1"
 format:
   html:
     theme: minimal
-    toc: false
+    toc: true
     page-layout: full
+    code-fold: show
 ---
 
 
