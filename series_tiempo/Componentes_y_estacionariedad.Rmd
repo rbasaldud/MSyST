@@ -50,13 +50,13 @@ $$
 
 donde:
 
-- **Tendencia ($m_t$):** movimiento de largo plazo, suave y sostenido (creciente, decreciente o estable) que refleja cambios estructurales de fondo (crecimiento económico, adopción tecnológica, cambios demográficos, etc.).
+- **Tendencia ($m_t$):** Movimiento a largo plazo, suave y sostenido (creciente, decreciente o estable).
 
 - **Estacionalidad ($s_t$):** patrón que se repite con **periodicidad fija y conocida**, generalmente ligada al calendario (mensual, trimestral, día de la semana). Su período no cambia con el tiempo.
 
 - **Ciclicidad ($C_t$) (Usualmente se omite):** oscilaciones de subida y bajada **sin período fijo**, normalmente más largas que la estacionalidad (varios años), asociadas a fenómenos como ciclos económicos, crediticios o de negocio. A diferencia de la estacionalidad, su duración y amplitud varían de un ciclo a otro.
 
-- **Ruido/Error ($\varepsilon_t$):** variación residual aleatoria no explicada por los componentes anteriores.
+- **Ruido/Error ($\varepsilon_t$):** Variación residual aleatoria no explicada por los componentes anteriores.
 
 
 # 2. Ingresos mensuales de un comercio en la playa
@@ -107,7 +107,7 @@ head(serie_df, 12)
 
 ## Visualización de la serie completa con `plotly`
 
-No es ninguna sospresa que al visualizar la serie, podemos identificar los componentes de tendencia, estacionalidad y ciclicidad.
+No es ninguna sospresa que al visualizar la serie, podemos identificar los componentes de tendencia y estacionalidad, el componente cíclico es más difícil de identificar a simple vista.
 
 ```{r plot-serie}
 plot_ly(serie_df, x = ~fecha) %>%
@@ -136,9 +136,9 @@ Una vez que hemos identificado los componentes, podemos estimarlos y analizarlos
 
 ## Estimando la tendencia
 
-Hay diversas forma de estimar la tendencia de una serie de tiempo cuando hay presencia de estacionalidad. Una de las más simples es mediante un  **filtro de Medias Móviles**. En este caso utilizaremos una ventana de tiempo de 12 meses. 
+Hay diversas forma de estimar la tendencia de una serie de tiempo cuando hay presencia de estacionalidad. Una de las más simples es mediante un  **filtro de Medias Móviles** y en este caso utilizaremos una ventana de tiempo de 12 meses. Otro método es mediante **regresión lineal simple o Mínimos Cuadrados Ordinarios** y finalmente podemos utilizar una **regresión polinómica** para capturar una ligera curvatura en la tendencia. En este caso es de utilidad complementar la comparativa con métricas de evaluación como el RMSE y el MAE para determinar cuál de los métodos es más adecuado para estimar la tendencia de la serie.
 
-```{r estimar-tendencia}
+```{r estimar-tendencia, fig.dim=c(8,8)}
 
 ## a) Media móvil centrada (ventana de 12 meses, filtro simple)
 serie_df$mm_12 <- rollmean(ingresos, k = 12, fill = NA, align = "center")
@@ -151,49 +151,33 @@ serie_df$tend_lineal <- predict(mod_lineal)
 mod_poly <- lm(ingresos ~ poly(t, 3), data = serie_df)
 serie_df$tend_poly <- predict(mod_poly)
  
-## d) LOESS (suavizado local, span moderado)
-mod_loess <- loess(ingresos ~ t, data = serie_df, span = 0.3, degree = 2)
-serie_df$tend_loess <- predict(mod_loess)
- 
-## e) Filtro Hodrick-Prescott (lambda estándar para datos mensuales: 129600)
-hp <- hpfilter(ingresos, freq = 129600, type = "lambda")
-serie_df$tend_hp <- as.numeric(hp$trend)
- 
-## f) Descomposición STL (requiere objeto ts con frecuencia estacional)
-ingresos_ts <- ts(ingresos, start = c(2015, 1), frequency = 12)
-stl_dec <- stl(ingresos_ts, s.window = "periodic", robust = TRUE)
-serie_df$tend_stl <- as.numeric(stl_dec$time.series[, "trend"])
 
 
-metodos <- c("mm_12", "tend_lineal", "tend_poly", "tend_loess", "tend_hp", "tend_stl")
+metodos <- c("mm_12", "tend_lineal", "tend_poly")
  
 rmse <- function(estimado, real) sqrt(mean((estimado - real)^2, na.rm = TRUE))
 mae  <- function(estimado, real) mean(abs(estimado - real), na.rm = TRUE)
  
 tabla_errores <- tibble(
   metodo = metodos,
-  RMSE = map_dbl(metodos, ~ rmse(serie_df[[.x]], serie_df$tendencia_real)),
-  MAE  = map_dbl(metodos, ~ mae(serie_df[[.x]], serie_df$tendencia_real))
+  RMSE = map_dbl(metodos, ~ rmse(serie_df[[.x]], serie_df$tendencia)),
+  MAE  = map_dbl(metodos, ~ mae(serie_df[[.x]], serie_df$tendencia))
 ) %>% arrange(RMSE)
  
 print(tabla_errores)
 
 colores <- c(
-  "Ingresos observados"        = "lightgray",
+  "Ingresos observados"        = "#d3d3d38f",
   "Tendencia real (simulada)"  = "black",
   "Media móvil (12m)"          = "steelblue",
   "Regresión lineal"           = "firebrick",
-  "Regresión polinómica (g3)"  = "darkorange",
-  "LOESS"                      = "seagreen",
-  "Filtro Hodrick-Prescott"    = "purple",
-  "Descomposición STL"         = "deeppink"
+  "Regresión polinómica (g3)"  = "darkorange"
 )
  
 fig <- plot_ly(serie_df, x = ~fecha) %>%
   add_lines(y = ~ingresos, name = "Ingresos observados",
-            line = list(color = colores["Ingresos observados"], width = 1),
-            opacity = 0.6) %>%
-  add_lines(y = ~tendencia_real, name = "Tendencia real (simulada)",
+            line = list(color = colores["Ingresos observados"], width = 2)) %>%
+  add_lines(y = ~tendencia, name = "Tendencia real (simulada)",
             line = list(color = colores["Tendencia real (simulada)"], width = 3, dash = "dot")) %>%
   add_lines(y = ~mm_12, name = "Media móvil (12m)",
             line = list(color = colores["Media móvil (12m)"], width = 2)) %>%
@@ -201,15 +185,9 @@ fig <- plot_ly(serie_df, x = ~fecha) %>%
             line = list(color = colores["Regresión lineal"], width = 2)) %>%
   add_lines(y = ~tend_poly, name = "Regresión polinómica (g3)",
             line = list(color = colores["Regresión polinómica (g3)"], width = 2)) %>%
-  add_lines(y = ~tend_loess, name = "LOESS",
-            line = list(color = colores["LOESS"], width = 2)) %>%
-  add_lines(y = ~tend_hp, name = "Filtro Hodrick-Prescott",
-            line = list(color = colores["Filtro Hodrick-Prescott"], width = 2)) %>%
-  add_lines(y = ~tend_stl, name = "Descomposición STL",
-            line = list(color = colores["Descomposición STL"], width = 2)) %>%
   layout(
     title = "Comparación de métodos de estimación de tendencia",
-    xaxis = list(title = "Fecha", rangeslider = list(visible = TRUE)),
+    xaxis = list(title = "Fecha", rangeslider = list(visible = FALSE)),
     yaxis = list(title = "Ingresos"),
     legend = list(orientation = "h", y = -0.25),
     hovermode = "x unified"
@@ -228,7 +206,7 @@ plot_ly(serie_df, x = ~fecha) %>%
   add_lines(y = ~tendencia, name = "Tendencia",
             line = list(color = "firebrick", width = 3)) %>%
   layout(
-    title = "Tendencia real (construida) vs Tendencia estimada (filtro de medias móviles)",
+    title = "Tendencia real (construida)",
     xaxis = list(title = "Fecha", rangeslider = list(visible = FALSE)),
     yaxis = list(title = "Miles de ingresos"),
     legend = list(orientation = "h", y = -0.2)
@@ -355,8 +333,6 @@ ggAcf(ar1_sim) +
 ## Ejemplo 3: Caminata aleatoria gaussiana (proceso NO estacionario)
 
 
-
-
 ```{r random-walk}
 set.seed(42)
 caminata_aleatoria <- cumsum(rnorm(n2))
@@ -378,7 +354,7 @@ En la caminata aleatoria la varianza crece con $t$ (pues Var$(Y_t) = t\sigma^2$)
 # 5. Animación de un proceso estocástico con `gganimate`
 
 
-```{r anim-ar1,cache=TRUE,eval=FALSE}
+```{r anim-ar1,eval=FALSE}
 df_ar1 <- tibble(t = 1:n2, valor = as.numeric(ar1_sim))
 
 p_anim <- ggplot(df_ar1, aes(t, valor)) +
@@ -393,8 +369,6 @@ p_anim <- ggplot(df_ar1, aes(t, valor)) +
   theme_minimal(base_size = 13) +
   transition_reveal(along =  t)
 
-animate(p_anim, nframes = nrow(df_ar1), fps = 20, width = 1000, height = 600,
-        renderer = gifski_renderer())
 
 
 
@@ -402,7 +376,7 @@ animate(p_anim, nframes = nrow(df_ar1), fps = 20, width = 1000, height = 600,
 
 ## Estacionario vs No Estacionario
 
-```{r anim-comparacion,cache=TRUE,eval=FALSE}
+```{r anim-comparacion,eval=FALSE}
 df_comparacion <- bind_rows(
   df_ar1 %>% mutate(proceso = "AR(1) estacionario (phi = 0.7)"),
   tibble(t = 1:n2, valor = caminata_aleatoria, proceso = "Caminata aleatoria (NO estacionaria)")
@@ -420,7 +394,5 @@ p_comp <- ggplot(df_comparacion, aes(t, valor, color = proceso)) +
   theme(legend.position = "none") +
   transition_reveal(along = t)
 
-animate(p_comp, nframes = nrow(df_comparacion), fps = 20, width = 800, height = 650,
-        renderer = gifski_renderer())
 ```
 
