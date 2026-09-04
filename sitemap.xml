@@ -2,10 +2,14 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://rbasaldud.github.io/MSyST/index.html</loc>
-    <lastmod>2026-09-01T05:17:17.458Z</lastmod>
+    <lastmod>2026-09-04T01:15:00.446Z</lastmod>
   </url>
   <url>
-    <loc>https://rbasaldud.github.io/MSyST/series_tiempo/Dependencia.html</loc>
+    <loc>https://rbasaldud.github.io/MSyST/series_tiempo/Componentes_y_estacionariedad.html</loc>
+    <lastmod>2026-09-04T00:41:07.616Z</lastmod>
+  </url>
+  <url>
+    <loc>https://rbasaldud.github.io/MSyST/series_tiempo/motivacion_3B.html</loc>
     <lastmod>2026-08-30T02:07:46.546Z</lastmod>
   </url>
   <url>
@@ -13,11 +17,11 @@
     <lastmod>2026-08-30T02:07:46.546Z</lastmod>
   </url>
   <url>
-    <loc>https://rbasaldud.github.io/MSyST/series_tiempo/motivacion_3B.html</loc>
-    <lastmod>2026-08-30T02:07:46.546Z</lastmod>
+    <loc>https://rbasaldud.github.io/MSyST/series_tiempo/Dependencia.html</loc>
+    <lastmod>2026-09-04T01:12:44.790Z</lastmod>
   </url>
   <url>
-    <loc>https://rbasaldud.github.io/MSyST/series_tiempo/Componentes_y_estacionariedad.html</loc>
-    <lastmod>2026-09-03T23:56:36.812Z</lastmod>
+    <loc>https://rbasaldud.github.io/MSyST/series_tiempo/ACF_PACF.html</loc>
+    <lastmod>2026-09-04T01:13:24.540Z</lastmod>
   </url>
 </urlset>

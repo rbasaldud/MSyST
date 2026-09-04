@@ -4,63 +4,77 @@
     "href": "index.html",
     "title": "Modelos de Supervivencia y Series de Tiempo",
     "section": "",
-    "text": "Series de tiempo\n\n\n\nTema\nPresentación\n\n\n\n\nMotivación del estudio de Series de Tiempo\nPresentación\n\n\nEjemplos de visualización en R\nPresentación\n\n\nModelo clásico y procesos estacionarios\nNotas\n\n\nMedidas de dependencia\nNotas\n\n\n\n\n\nRepositorio\nLos códigos de las presentaciones y ejemplos están disponibles en este repositorio"
+    "text": "Series de tiempo\n\n\n\nTema\nPresentación\n\n\n\n\nMotivación del estudio de Series de Tiempo\nPresentación\n\n\nEjemplos de visualización en R\nPresentación\n\n\nModelo clásico y procesos estacionarios\nNotas\n\n\nMedidas de dependencia\nNotas\n\n\nAutocorrelación y autocorrelación parcial\nNotas\n\n\n\n\n\nRepositorio\nLos códigos de las presentaciones y ejemplos están disponibles en este repositorio"
   },
   {
-    "objectID": "series_tiempo/Dependencia.html",
-    "href": "series_tiempo/Dependencia.html",
-    "title": "Covarianza, Correlación y Dependencia Temporal",
+    "objectID": "series_tiempo/Componentes_y_estacionariedad.html",
+    "href": "series_tiempo/Componentes_y_estacionariedad.html",
+    "title": "Componentes de una Serie de Tiempo y Procesos Estacionarios",
     "section": "",
-    "text": "Cuando tenemos dos variables aleatorias \\(X\\) y \\(Y\\), una de las primeras preguntas naturales es si se mueven juntas, es decir: Si \\(X\\) aumenta, ¿\\(Y\\) tiende a aumentar, a disminuir, o no hay relación aparente? La covarianza es la primera herramienta que responde esto de forma cuantitativa:\n\\[ Cov(X,Y) = E\\big[(X-\\mu_X)(Y-\\mu_Y)\\big] \\]\nLa covarianza tiene un defecto importante: su magnitud depende de las unidades/magnitudes de las variables, lo que la hace difícil de interpretar o comparar entre distintos pares de variables.\nPor ejemplo, supongamos que tenemos registros de estatura (en cm) y peso (en kg). Si pasamos la estatura a metros, la covarianza con los registros del peso cambiará, sin embargo la correlación no.\n\n\n# A tibble: 2 × 3\n  Unidad_de_altura Cov_AlturaPeso Corr_AlturaPeso\n  &lt;chr&gt;                     &lt;dbl&gt;           &lt;dbl&gt;\n1 Centímetros              43.2             0.677\n2 Metros                    0.432           0.677\n\n\nEsto es porque la correlación normaliza la covarianza con las desviaciones estándar de cada variable:\n\\[ Corr(X,Y) = \\rho_{X,Y} = \\frac{Cov(X,Y)}{\\sigma_X \\, \\sigma_Y} \\]\nEsta normalización hace que \\(\\rho_{X,Y} \\in [-1, 1]\\) siempre, sin importar las unidades, lo cual la vuelve comparable e interpretable: \\(\\rho\\) cercano a \\(\\pm1\\) indica relación lineal fuerte, cercano a 0 indica relación lineal débil o nula.\nPodemos tener una confirmación gráfica si realizamos el scatter-plot con ambas versiones de la variable estatura, la forma de la nube de puntos no cambia."
+    "text": "Una serie de tiempo puede descomponerse (de forma aditiva) como:\n\\[\nY_t = m_t + s_t + C_t + \\varepsilon_t\n\\]\ndonde:\n\nTendencia (\\(m_t\\)): Movimiento a largo plazo, suave y sostenido (creciente, decreciente o estable).\nEstacionalidad (\\(s_t\\)): patrón que se repite con periodicidad fija y conocida, generalmente ligada al calendario (mensual, trimestral, día de la semana). Su período no cambia con el tiempo.\nCiclicidad (\\(C_t\\)) (Usualmente se omite): oscilaciones de subida y bajada sin período fijo, normalmente más largas que la estacionalidad (varios años), asociadas a fenómenos como ciclos económicos, crediticios o de negocio. A diferencia de la estacionalidad, su duración y amplitud varían de un ciclo a otro.\nRuido/Error (\\(\\varepsilon_t\\)): Variación residual aleatoria no explicada por los componentes anteriores."
   },
   {
-    "objectID": "series_tiempo/Dependencia.html#para-vectores-gaussianos-sigma-tiene-la-estructura-de-dependencia",
-    "href": "series_tiempo/Dependencia.html#para-vectores-gaussianos-sigma-tiene-la-estructura-de-dependencia",
-    "title": "Covarianza, Correlación y Dependencia Temporal",
-    "section": "Para vectores gaussianos, \\(\\Sigma\\) tiene la estructura de dependencia",
-    "text": "Para vectores gaussianos, \\(\\Sigma\\) tiene la estructura de dependencia\nSi \\(\\mathbf{X}\\) sigue una distribución normal multivariada, su distribución completa queda determinada únicamente por su vector de medias \\(\\boldsymbol{\\mu}\\) y su matriz de covarianzas \\(\\Sigma\\):\n\\[ \\mathbf{X} \\sim N(\\boldsymbol{\\mu}, \\Sigma) \\]\nSe puede ver cómo cambia la forma de la nube de puntos de una normal bivariada conforme variamos su matriz de covarianzas con gganimate\nConforme \\(\\rho\\) pasa de negativo a positivo, la nube de puntos rota: de una elipse orientada hacia abajo (correlación negativa), pasa por una nube circular (independencia, \\(\\rho=0\\)), hasta una elipse orientada hacia arriba (correlación positiva). La orientación y la excentricidad de esa elipse están completamente determinadas por \\(\\Sigma\\)."
+    "objectID": "series_tiempo/Componentes_y_estacionariedad.html#visualización-de-la-serie-completa-con-plotly",
+    "href": "series_tiempo/Componentes_y_estacionariedad.html#visualización-de-la-serie-completa-con-plotly",
+    "title": "Componentes de una Serie de Tiempo y Procesos Estacionarios",
+    "section": "Visualización de la serie completa con plotly",
+    "text": "Visualización de la serie completa con plotly\nNo es ninguna sospresa que al visualizar la serie, podemos identificar los componentes de tendencia y estacionalidad, el componente cíclico es más difícil de identificar a simple vista.\n\n\n\n\n\n\n\\\nUna interpretación de cada componente en el contexto turístico podría ser la siguiente:\n\nTendencia: El destino gana popularidad año con año (publicidad, inversión en infraestructura hotelera).\nEstacionalidad: Cada año hay temporada alta (vacaciones de invierno/verano) y temporada baja (temporada de huracanes), con un patrón que se repite cada 12 meses.\nCiclicidad: El turismo internacional responde a factores económicos, políticos y socialesque duran varios años y no tienen una duración fija.\n\nUna vez que hemos identificado los componentes, podemos estimarlos y analizarlos por separado para entender mejor el comportamiento de la serie."
   },
   {
-    "objectID": "series_tiempo/Dependencia.html#y-si-el-vector-no-es-gaussiano",
-    "href": "series_tiempo/Dependencia.html#y-si-el-vector-no-es-gaussiano",
-    "title": "Covarianza, Correlación y Dependencia Temporal",
-    "section": "¿Y si el vector NO es gaussiano?",
-    "text": "¿Y si el vector NO es gaussiano?\n\\(\\Sigma\\) contiene toda la información de dependencia si el vector es de la familia gaussiana (más generalmente, de las distribuciones elípticas). Para vectores no gaussianos, dos distribuciones pueden compartir prácticamente la misma matriz de covarianzas y aun así verse completamente distintas.\nComparamos tres vectores aleatorios construidos para tener aproximadamente la misma covarianza (\\(\\rho \\approx 0.7\\)):\n\n\n# A tibble: 3 × 3\n  Distribucion          Cov_x1x2 Cor_x1x2\n  &lt;chr&gt;                    &lt;dbl&gt;    &lt;dbl&gt;\n1 Normal                   0.730    0.700\n2 t-multivariada (df=3)    0.495    0.681\n3 Mezcla bimodal           0.707    0.729\n\n\n\n\n\n\n\n\nLas tres nubes de puntos tienen una covarianza/correlación muestral muy similar (alrededor de 0.7 o su análogo), pero sus formas son completamente distintas: la normal multivariada es elíptica y compacta, la t-multivariada tiene colas más pesadas, y la mezcla bivariada tiene dos grupos claramente separados.\nEsto muestra que \\(\\Sigma\\) ya no resume toda la estructura de dependencia, y se necesita conocer la distribución conjunta completa, no solo sus dos primeros momentos. Esta idea ayuda a entender mejor por qué la estacionaridad débil (que solo condiciona a los primeros dos momentos) es menos restrictiva que la estacionaridad (todas las distribuciones finito dimensionales del proceso estocástico subyascente son invariantes ante traslaciones)."
+    "objectID": "series_tiempo/Componentes_y_estacionariedad.html#estimando-la-tendencia",
+    "href": "series_tiempo/Componentes_y_estacionariedad.html#estimando-la-tendencia",
+    "title": "Componentes de una Serie de Tiempo y Procesos Estacionarios",
+    "section": "Estimando la tendencia",
+    "text": "Estimando la tendencia\nHay diversas forma de estimar la tendencia de una serie de tiempo cuando hay presencia de estacionalidad. Una de las más simples es mediante un filtro de Medias Móviles, otro método es mediante regresión lineal simple o Mínimos Cuadrados Ordinarios y finalmente podemos utilizar una regresión polinómica para capturar una ligera curvatura en la tendencia, también existe el método de suavizamiento exponencial.\n\nFiltro de Medias Móviles\nLa idea de este método es tomar ventanas de tiempo con radio \\(q\\) y calcular el promedio de cada ventana.\n\\[\nw_t = \\frac{1}{2q + 1} \\sum_{j=-q}^{q} Y_{t+j} \\quad t = q+1, \\ldots, n-q\n\\]\nEn R, se puede implementar con la función rollmean() del paquete zoo. A continuación se muestra un ejemplo de cómo se calcula la media móvil centrada con ventana de 12 meses (radio de 6). El punto rojo representa el valor \\(w_t\\) calculado respecto a la ventana centrada en \\(X_t\\).\n\nLa fórmula anterior no está definida para los primeros y últimos \\(q\\) puntos de la serie, se puede optar por mantener constante el valor de la media móvil en los extremos, o dejarlo como NA.\n\n\nSuavizamiento exponencial\nEste método es una alternativa a la media móvil, que asigna pesos decrecientes a las observaciones más antiguas. La fórmula para el suavizamiento exponencial simple es:\n\n\nMCO\nLa estimación de la tendencia mediante Minimos Cuadrados Ordinarios (MCO) consiste en suponer una ecuación paramétrica para la tendencia (por ejemplo, lineal o polinómica) y optimizar los parámetros para la función objetivo:\n\\[\nL(a_0, a_1, \\ldots, a_p) = \\sum_{t=1}^{n} (Y_t - a_0 - a_1 t - \\ldots - a_p t^p)^2\n\\]\nLo anterior es equivalente a ajustar un modelo de regresión lineal o polinómica, donde la variable dependiente es la serie de tiempo y la variable independiente es el tiempo (o sus potencias). En R, se puede implementar con la función lm().\n\n\nComparativa\nYa que tenemos varios métodos, es de utilidad complementar la comparativa con métricas de evaluación como el RMSE y el MAE para determinar cuál de los métodos es más adecuado para estimar la tendencia de la serie.\n\n\n# A tibble: 3 × 3\n  metodo       RMSE   MAE\n  &lt;chr&gt;       &lt;dbl&gt; &lt;dbl&gt;\n1 tend_lineal  1.76  1.51\n2 tend_poly    2.91  2.19\n3 mm_12        6.47  5.59\n\n\n\nComparativa de métodos de estimación de tendencia mediante RMSE y MAE\n\n\nmetodo\nRMSE\nMAE\n\n\n\n\ntend_lineal\n1.763254\n1.505057\n\n\ntend_poly\n2.910914\n2.188961\n\n\nmm_12\n6.472366\n5.593630\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nEliminación de la tendencia con el método de diferenciación\nDefinimos el operador de diferenciación como:\n\\[\n\\nabla X_t = X_t - X_{t-1}  \n\\]\n\n\n\n\n\n\n\n\nTambién podemos definir la diferenciación estacional como:\n\\[\n\\nabla _{d} X_t = X_t - X_{t-d}  \n\\]"
   },
   {
-    "objectID": "series_tiempo/Dependencia.html#motivación-el-clima-tiene-memoria",
-    "href": "series_tiempo/Dependencia.html#motivación-el-clima-tiene-memoria",
-    "title": "Covarianza, Correlación y Dependencia Temporal",
-    "section": "Motivación: El clima tiene memoria",
-    "text": "Motivación: El clima tiene memoria\nPensemos en la temperatura diaria de una ciudad. Es intuitivo que:\n\nLa temperatura de hoy se parece mucho a la de ayer (persistencia de corto plazo)\nLa temperatura de este mes se parece a la del mismo mes hace un año (patrón estacional)\n\nEs decir, el valor de la serie en el tiempo \\(t\\) está relacionado con sus propios valores pasados. Para cuantificar exactamente esa relación, usamos la función de autocovarianza (ACV) y la función de autocorrelación (ACF), que son simplemente la covarianza y la correlación aplicadas a la propia serie, comparada consigo misma desplazada \\(k\\) periodos (rezagos o “lags”):\n\\[ \\gamma(k) = Cov(Y_t, Y_{t+k}) \\qquad \\qquad \\rho(k) = \\frac{\\gamma(k)}{\\gamma(0)} = Corr(Y_t, Y_{t+k}) \\]\nPara que \\(\\gamma(k)\\) y \\(\\rho(k)\\) tengan sentido (que no dependan de en qué \\(t\\) nos paramos, solo del rezago \\(k\\)), necesitamos que la serie sea estacionaria de segundo orden."
+    "objectID": "series_tiempo/Componentes_y_estacionariedad.html#estacionalidad-vs-ciclicidad",
+    "href": "series_tiempo/Componentes_y_estacionariedad.html#estacionalidad-vs-ciclicidad",
+    "title": "Componentes de una Serie de Tiempo y Procesos Estacionarios",
+    "section": "Estacionalidad vs Ciclicidad",
+    "text": "Estacionalidad vs Ciclicidad\n\n\n\n\n\n\n\\"
   },
   {
-    "objectID": "series_tiempo/Dependencia.html#temperatura-mensual-en-nottingham",
-    "href": "series_tiempo/Dependencia.html#temperatura-mensual-en-nottingham",
-    "title": "Covarianza, Correlación y Dependencia Temporal",
-    "section": "Temperatura mensual en Nottingham",
-    "text": "Temperatura mensual en Nottingham\nUsamos el dataset nottem de R base: temperaturas promedio mensuales (°F) en Nottingham, Inglaterra, de 1920 a 1939.\n\n\n\n\n\n\n\n\n\n\n\n\nEl ACF de nottem muestra picos claros y repetidos cada 12 rezagos (12, 24, 36 meses), lo que es consecuencia de la estacionalidad anual. También se ve una fuerte autocorrelación en los primeros rezagos (1-2 meses), reflejo de que el clima no cambia bruscamente de un mes a otro. Este es exactamente el tipo de estructura que la ACF está diseñada para revelar."
+    "objectID": "series_tiempo/Componentes_y_estacionariedad.html#interpretación-de-cada-componente-en-el-contexto",
+    "href": "series_tiempo/Componentes_y_estacionariedad.html#interpretación-de-cada-componente-en-el-contexto",
+    "title": "Componentes de una Serie de Tiempo y Procesos Estacionarios",
+    "section": "Interpretación de cada componente en el contexto",
+    "text": "Interpretación de cada componente en el contexto\nTendencia:\nLa línea de tendencia pasa de ~50 mil ingresos/mes en 2015 a ~146 mil ingresos/mes en 2024, un crecimiento sostenido de aproximadamente 0.8 mil ingresos adicionales cada mes.\nEn el contexto turístico, esto refleja el posicionamiento progresivo del destino: más conectividad aérea, mayor inversión hotelera y mejor reputación internacional, todo lo cual empuja la demanda al alza año tras año, independientemente del mes en que estemos.\nEstacionalidad:\nEl patrón oscila con amplitud de ±15 mil ingresos y se repite exactamente cada 12 meses: los picos coinciden con la temporada alta (vacaciones de invierno, cuando turistas de climas fríos buscan sol y playa) y los valles con la temporada de huracanes (baja demanda por riesgo climático).\nEste comportamiento es predecible: un operador turístico puede anticipar con certeza en qué meses necesitará más personal y en cuáles deberá ofrecer promociones.\nCiclicidad:\nA diferencia de la estacionalidad, el componente cíclico tiene una duración que ronda entre 3 y 4.5 años y no coincide con ningún mes del calendario en particular.\nRepresenta cómo el gasto turístico internacional se expande en períodos de bonanza económica global y se contrae en períodos de desaceleración o crisis (por ejemplo, recesiones, crisis cambiarias en los países emisores de turistas).\nA diferencia de la estacionalidad, este componente es mucho más difícil de anticipar con precisión porque su duración y amplitud cambian de un ciclo a otro."
   },
   {
-    "objectID": "series_tiempo/Dependencia.html#proceso-ar1",
-    "href": "series_tiempo/Dependencia.html#proceso-ar1",
-    "title": "Covarianza, Correlación y Dependencia Temporal",
-    "section": "Proceso AR(1)",
-    "text": "Proceso AR(1)\n\n\n\n\n\n\n\n\n\n\n\n\nPara un AR(1) estacionario, la teoría predice un decaimiento exponencial: \\(\\rho(k) = \\phi^k\\). Con \\(\\phi = 0.7 &gt; 0\\), el decaimiento es monótono, y la ACF cae por debajo de la banda de significancia relativamente rápido."
+    "objectID": "series_tiempo/Componentes_y_estacionariedad.html#ruido-blanco",
+    "href": "series_tiempo/Componentes_y_estacionariedad.html#ruido-blanco",
+    "title": "Componentes de una Serie de Tiempo y Procesos Estacionarios",
+    "section": "Ruido blanco",
+    "text": "Ruido blanco\nDefinimos un ruido blanco como una colección de variables aleatorias identicamente distribuidas con media cero y varianza \\(\\sigma^2\\), que además \\(cov(e_t, e_{k}) = \\sigma^2\\) si \\(t=k\\) y \\(cov(e_t, e_{k}) = 0\\) en otro caso. Hay que notar que no se está especificando la distribución y tampoco si las variables son independientes, solo que no hay correlación entre ellas. En general, correlación cero no implica independencia, pero si las variables son independientes entonces sí hay correlación cero."
   },
   {
-    "objectID": "series_tiempo/Dependencia.html#proceso-ar3",
-    "href": "series_tiempo/Dependencia.html#proceso-ar3",
-    "title": "Covarianza, Correlación y Dependencia Temporal",
-    "section": "Proceso AR(3)",
-    "text": "Proceso AR(3)\n\n\n\n\n\n\n\n\n\n\n\n\nEl AR(3) puede mostrar un decaimiento más complejo (oscilaciones o “rebotes” antes de apagarse). Esto refleja una dependencia temporal más compleja: el valor de hoy no solo depende del de ayer, sino de una combinación de los últimos tres periodos."
+    "objectID": "series_tiempo/Componentes_y_estacionariedad.html#ejemplo-1-ruido-blanco-gaussiano",
+    "href": "series_tiempo/Componentes_y_estacionariedad.html#ejemplo-1-ruido-blanco-gaussiano",
+    "title": "Componentes de una Serie de Tiempo y Procesos Estacionarios",
+    "section": "Ejemplo 1: Ruido blanco gaussiano",
+    "text": "Ejemplo 1: Ruido blanco gaussiano\nLa colección de variables aleatorias \\(e_1,...,e_n\\) de variables independientes e identicamente distribuidas pertenecientes a la distribución \\(N(0,\\sigma^{2})\\) es un ruido blanco gaussiano. En este caso, es muy fácil notar que se trata de un proceso estacionario. Un proceso con esta característica nos permitirá modelar fenómenos más complejos."
   },
   {
-    "objectID": "series_tiempo/Dependencia.html#ejemplo-1-y-x2",
-    "href": "series_tiempo/Dependencia.html#ejemplo-1-y-x2",
-    "title": "Covarianza, Correlación y Dependencia Temporal",
-    "section": "Ejemplo 1: \\(Y = X^2\\)",
-    "text": "Ejemplo 1: \\(Y = X^2\\)\nSi tomamos los valores no negativos de \\(X\\) su correlación (lineal) es prácticamente cero pero como la relación es monótona, el coeficiente de Spearman capturaría una correlación fuerte. Al tomar los valores negativos de \\(X\\) también, la relación ya no es monótona y por ende no se capturaría una correlación sin embargo es obvio que siguen siendo dependientes pues \\(Y\\) está completamente determinada por \\(X\\)."
+    "objectID": "series_tiempo/Componentes_y_estacionariedad.html#ejemplo-2-proceso-ar1-estacionario-phi-1",
+    "href": "series_tiempo/Componentes_y_estacionariedad.html#ejemplo-2-proceso-ar1-estacionario-phi-1",
+    "title": "Componentes de una Serie de Tiempo y Procesos Estacionarios",
+    "section": "Ejemplo 2: Proceso AR(1) estacionario (|phi| < 1)",
+    "text": "Ejemplo 2: Proceso AR(1) estacionario (|phi| &lt; 1)\nEl modelo Autoregresivo de orden uno definido como:\n\\[\nY_t = 0.7 * Y_{(t-1)} + e_t\n\\]\nDonde \\(e_1,...,e_n\\) es una muestra aleatoria de la distribución \\(N(0,1)\\)"
+  },
+  {
+    "objectID": "series_tiempo/Componentes_y_estacionariedad.html#ejemplo-3-caminata-aleatoria-gaussiana-sin-tendencia",
+    "href": "series_tiempo/Componentes_y_estacionariedad.html#ejemplo-3-caminata-aleatoria-gaussiana-sin-tendencia",
+    "title": "Componentes de una Serie de Tiempo y Procesos Estacionarios",
+    "section": "Ejemplo 3: Caminata aleatoria gaussiana (sin tendencia)",
+    "text": "Ejemplo 3: Caminata aleatoria gaussiana (sin tendencia)\nLa caminata aleatoria gaussiana es un proceso estocástico definido como:\n\\[\nY_t = Y_{(t-1)} + e_t = \\sum_{i=1}^{t} e_i\n\\]\nDonde \\(e_1,...,e_n\\) es una muestra aleatoria de la distribución \\(N(0,1)\\) y \\(Y_0 = 0\\). En este caso, la varianza crece con el tiempo y no existe un nivel fijo al cual la serie “regrese”, por lo que no es estacionaria.\nEn el caso con tendencia resulta casi inmediato notar que la serie no es estacionaria, por el término \\(\\delta t\\)."
+  },
+  {
+    "objectID": "series_tiempo/Componentes_y_estacionariedad.html#estacionario-vs-no-estacionario",
+    "href": "series_tiempo/Componentes_y_estacionariedad.html#estacionario-vs-no-estacionario",
+    "title": "Componentes de una Serie de Tiempo y Procesos Estacionarios",
+    "section": "Estacionario vs No Estacionario",
+    "text": "Estacionario vs No Estacionario"
   },
   {
     "objectID": "series_tiempo/motivacion_3B.html#section",
@@ -182,73 +196,59 @@
     "text": "Proximamente\n\nEstacionariedad y transformaciones (diferenciación, logaritmos)\nAutocorrelación: ACF y PACF como herramientas de diagnóstico\nDescomposición clásica\nSuavizamiento y estimación de ciclicidad\nModelos ARIMA / SARIMA\nIncorporación de covariables externas (ARIMAX)\nEvaluación y validación de pronósticos"
   },
   {
-    "objectID": "series_tiempo/Componentes_y_estacionariedad.html",
-    "href": "series_tiempo/Componentes_y_estacionariedad.html",
-    "title": "Componentes de una Serie de Tiempo y Procesos Estacionarios",
+    "objectID": "series_tiempo/Dependencia.html",
+    "href": "series_tiempo/Dependencia.html",
+    "title": "Covarianza, Correlación y Dependencia Temporal",
     "section": "",
-    "text": "Una serie de tiempo puede descomponerse (de forma aditiva) como:\n\\[\nY_t = m_t + s_t + C_t + \\varepsilon_t\n\\]\ndonde:\n\nTendencia (\\(m_t\\)): Movimiento a largo plazo, suave y sostenido (creciente, decreciente o estable).\nEstacionalidad (\\(s_t\\)): patrón que se repite con periodicidad fija y conocida, generalmente ligada al calendario (mensual, trimestral, día de la semana). Su período no cambia con el tiempo.\nCiclicidad (\\(C_t\\)) (Usualmente se omite): oscilaciones de subida y bajada sin período fijo, normalmente más largas que la estacionalidad (varios años), asociadas a fenómenos como ciclos económicos, crediticios o de negocio. A diferencia de la estacionalidad, su duración y amplitud varían de un ciclo a otro.\nRuido/Error (\\(\\varepsilon_t\\)): Variación residual aleatoria no explicada por los componentes anteriores."
+    "text": "Cuando tenemos dos variables aleatorias \\(X\\) y \\(Y\\), una de las primeras preguntas naturales es si se mueven juntas, es decir: Si \\(X\\) aumenta, ¿\\(Y\\) tiende a aumentar, a disminuir, o no hay relación aparente? La covarianza es la primera herramienta que responde esto de forma cuantitativa:\n\\[ Cov(X,Y) = E\\big[(X-\\mu_X)(Y-\\mu_Y)\\big] \\]\nLa covarianza tiene un defecto importante: su magnitud depende de las unidades/magnitudes de las variables, lo que la hace difícil de interpretar o comparar entre distintos pares de variables.\nPor ejemplo, supongamos que tenemos registros de estatura (en cm) y peso (en kg). Si pasamos la estatura a metros, la covarianza con los registros del peso cambiará, sin embargo la correlación no.\n\n\n# A tibble: 2 × 3\n  Unidad_de_altura Cov_AlturaPeso Corr_AlturaPeso\n  &lt;chr&gt;                     &lt;dbl&gt;           &lt;dbl&gt;\n1 Centímetros              43.2             0.677\n2 Metros                    0.432           0.677\n\n\nEsto es porque la correlación normaliza la covarianza con las desviaciones estándar de cada variable:\n\\[ Corr(X,Y) = \\rho_{X,Y} = \\frac{Cov(X,Y)}{\\sigma_X \\, \\sigma_Y} \\]\nEsta normalización hace que \\(\\rho_{X,Y} \\in [-1, 1]\\) siempre, sin importar las unidades, lo cual la vuelve comparable e interpretable: \\(\\rho\\) cercano a \\(\\pm1\\) indica relación lineal fuerte, cercano a 0 indica relación lineal débil o nula.\nPodemos tener una confirmación gráfica si realizamos el scatter-plot con ambas versiones de la variable estatura, la forma de la nube de puntos no cambia."
   },
   {
-    "objectID": "series_tiempo/Componentes_y_estacionariedad.html#visualización-de-la-serie-completa-con-plotly",
-    "href": "series_tiempo/Componentes_y_estacionariedad.html#visualización-de-la-serie-completa-con-plotly",
-    "title": "Componentes de una Serie de Tiempo y Procesos Estacionarios",
-    "section": "Visualización de la serie completa con plotly",
-    "text": "Visualización de la serie completa con plotly\nNo es ninguna sospresa que al visualizar la serie, podemos identificar los componentes de tendencia y estacionalidad, el componente cíclico es más difícil de identificar a simple vista.\n\n\n\n\n\n\n\\\nUna interpretación de cada componente en el contexto turístico podría ser la siguiente:\n\nTendencia: El destino gana popularidad año con año (publicidad, inversión en infraestructura hotelera).\nEstacionalidad: Cada año hay temporada alta (vacaciones de invierno/verano) y temporada baja (temporada de huracanes), con un patrón que se repite cada 12 meses.\nCiclicidad: El turismo internacional responde a factores económicos, políticos y socialesque duran varios años y no tienen una duración fija.\n\nUna vez que hemos identificado los componentes, podemos estimarlos y analizarlos por separado para entender mejor el comportamiento de la serie."
+    "objectID": "series_tiempo/Dependencia.html#para-vectores-gaussianos-sigma-tiene-la-estructura-de-dependencia",
+    "href": "series_tiempo/Dependencia.html#para-vectores-gaussianos-sigma-tiene-la-estructura-de-dependencia",
+    "title": "Covarianza, Correlación y Dependencia Temporal",
+    "section": "Para vectores gaussianos, \\(\\Sigma\\) tiene la estructura de dependencia",
+    "text": "Para vectores gaussianos, \\(\\Sigma\\) tiene la estructura de dependencia\nSi \\(\\mathbf{X}\\) sigue una distribución normal multivariada, su distribución completa queda determinada únicamente por su vector de medias \\(\\boldsymbol{\\mu}\\) y su matriz de covarianzas \\(\\Sigma\\):\n\\[ \\mathbf{X} \\sim N(\\boldsymbol{\\mu}, \\Sigma) \\]\nSe puede ver cómo cambia la forma de la nube de puntos de una normal bivariada conforme variamos su matriz de covarianzas con gganimate\nConforme \\(\\rho\\) pasa de negativo a positivo, la nube de puntos rota: de una elipse orientada hacia abajo (correlación negativa), pasa por una nube circular (independencia, \\(\\rho=0\\)), hasta una elipse orientada hacia arriba (correlación positiva). La orientación y la excentricidad de esa elipse están completamente determinadas por \\(\\Sigma\\)."
   },
   {
-    "objectID": "series_tiempo/Componentes_y_estacionariedad.html#estimando-la-tendencia",
-    "href": "series_tiempo/Componentes_y_estacionariedad.html#estimando-la-tendencia",
-    "title": "Componentes de una Serie de Tiempo y Procesos Estacionarios",
-    "section": "Estimando la tendencia",
-    "text": "Estimando la tendencia\nHay diversas forma de estimar la tendencia de una serie de tiempo cuando hay presencia de estacionalidad. Una de las más simples es mediante un filtro de Medias Móviles, otro método es mediante regresión lineal simple o Mínimos Cuadrados Ordinarios y finalmente podemos utilizar una regresión polinómica para capturar una ligera curvatura en la tendencia, también existe el método de suavizamiento exponencial.\n\nFiltro de Medias Móviles\nLa idea de este método es tomar ventanas de tiempo con radio \\(q\\) y calcular el promedio de cada ventana.\n\\[\nw_t = \\frac{1}{2q + 1} \\sum_{j=-q}^{q} Y_{t+j} \\quad t = q+1, \\ldots, n-q\n\\]\nEn R, se puede implementar con la función rollmean() del paquete zoo. A continuación se muestra un ejemplo de cómo se calcula la media móvil centrada con ventana de 12 meses (radio de 6). El punto rojo representa el valor \\(w_t\\) calculado respecto a la ventana centrada en \\(X_t\\).\n\nLa fórmula anterior no está definida para los primeros y últimos \\(q\\) puntos de la serie, se puede optar por mantener constante el valor de la media móvil en los extremos, o dejarlo como NA.\n\n\nSuavizamiento exponencial\nEste método es una alternativa a la media móvil, que asigna pesos decrecientes a las observaciones más antiguas. La fórmula para el suavizamiento exponencial simple es:\n\n\nMCO\nLa estimación de la tendencia mediante Minimos Cuadrados Ordinarios (MCO) consiste en suponer una ecuación paramétrica para la tendencia (por ejemplo, lineal o polinómica) y optimizar los parámetros para la función objetivo:\n\\[\nL(a_0, a_1, \\ldots, a_p) = \\sum_{t=1}^{n} (Y_t - a_0 - a_1 t - \\ldots - a_p t^p)^2\n\\]\nLo anterior es equivalente a ajustar un modelo de regresión lineal o polinómica, donde la variable dependiente es la serie de tiempo y la variable independiente es el tiempo (o sus potencias). En R, se puede implementar con la función lm().\n\n\nComparativa\nYa que tenemos varios métodos, es de utilidad complementar la comparativa con métricas de evaluación como el RMSE y el MAE para determinar cuál de los métodos es más adecuado para estimar la tendencia de la serie.\n\n\n# A tibble: 3 × 3\n  metodo       RMSE   MAE\n  &lt;chr&gt;       &lt;dbl&gt; &lt;dbl&gt;\n1 tend_lineal  1.76  1.51\n2 tend_poly    2.91  2.19\n3 mm_12        6.47  5.59\n\n\n\nComparativa de métodos de estimación de tendencia mediante RMSE y MAE\n\n\nmetodo\nRMSE\nMAE\n\n\n\n\ntend_lineal\n1.763254\n1.505057\n\n\ntend_poly\n2.910914\n2.188961\n\n\nmm_12\n6.472366\n5.593630\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nEliminación de la tendencia con el método de diferenciación\nDefinimos el operador de diferenciación como:\n\\[\n\\nabla X_t = X_t - X_{t-1}  \n\\]\n\n\n\n\n\n\n\n\nTambién podemos definir la diferenciación estacional como:\n\\[\n\\nabla _{d} X_t = X_t - X_{t-d}  \n\\]"
+    "objectID": "series_tiempo/Dependencia.html#y-si-el-vector-no-es-gaussiano",
+    "href": "series_tiempo/Dependencia.html#y-si-el-vector-no-es-gaussiano",
+    "title": "Covarianza, Correlación y Dependencia Temporal",
+    "section": "¿Y si el vector NO es gaussiano?",
+    "text": "¿Y si el vector NO es gaussiano?\n\\(\\Sigma\\) contiene toda la información de dependencia si el vector es de la familia gaussiana (más generalmente, de las distribuciones elípticas). Para vectores no gaussianos, dos distribuciones pueden compartir prácticamente la misma matriz de covarianzas y aun así verse completamente distintas.\nComparamos tres vectores aleatorios construidos para tener aproximadamente la misma covarianza (\\(\\rho \\approx 0.7\\)):\n\n\n# A tibble: 3 × 3\n  Distribucion          Cov_x1x2 Cor_x1x2\n  &lt;chr&gt;                    &lt;dbl&gt;    &lt;dbl&gt;\n1 Normal                   0.730    0.700\n2 t-multivariada (df=3)    0.495    0.681\n3 Mezcla bimodal           0.707    0.729\n\n\n\n\n\n\n\n\nLas tres nubes de puntos tienen una covarianza/correlación muestral muy similar (alrededor de 0.7 o su análogo), pero sus formas son completamente distintas: la normal multivariada es elíptica y compacta, la t-multivariada tiene colas más pesadas, y la mezcla bivariada tiene dos grupos claramente separados.\nEsto muestra que \\(\\Sigma\\) ya no resume toda la estructura de dependencia, y se necesita conocer la distribución conjunta completa, no solo sus dos primeros momentos. Esta idea ayuda a entender mejor por qué la estacionaridad débil (que solo condiciona a los primeros dos momentos) es menos restrictiva que la estacionaridad (todas las distribuciones finito dimensionales del proceso estocástico subyascente son invariantes ante traslaciones)."
   },
   {
-    "objectID": "series_tiempo/Componentes_y_estacionariedad.html#estacionalidad-vs-ciclicidad",
-    "href": "series_tiempo/Componentes_y_estacionariedad.html#estacionalidad-vs-ciclicidad",
-    "title": "Componentes de una Serie de Tiempo y Procesos Estacionarios",
-    "section": "Estacionalidad vs Ciclicidad",
-    "text": "Estacionalidad vs Ciclicidad\n\n\n\n\n\n\n\\"
+    "objectID": "series_tiempo/Dependencia.html#ejemplo-1-y-x2",
+    "href": "series_tiempo/Dependencia.html#ejemplo-1-y-x2",
+    "title": "Covarianza, Correlación y Dependencia Temporal",
+    "section": "Ejemplo 1: \\(Y = X^2\\)",
+    "text": "Ejemplo 1: \\(Y = X^2\\)\nSi tomamos los valores no negativos de \\(X\\) su correlación (lineal) es prácticamente cero pero como la relación es monótona, el coeficiente de Spearman capturaría una correlación fuerte. Al tomar los valores negativos de \\(X\\) también, la relación ya no es monótona y por ende no se capturaría una correlación sin embargo es obvio que siguen siendo dependientes pues \\(Y\\) está completamente determinada por \\(X\\)."
   },
   {
-    "objectID": "series_tiempo/Componentes_y_estacionariedad.html#interpretación-de-cada-componente-en-el-contexto",
-    "href": "series_tiempo/Componentes_y_estacionariedad.html#interpretación-de-cada-componente-en-el-contexto",
-    "title": "Componentes de una Serie de Tiempo y Procesos Estacionarios",
-    "section": "Interpretación de cada componente en el contexto",
-    "text": "Interpretación de cada componente en el contexto\nTendencia:\nLa línea de tendencia pasa de ~50 mil ingresos/mes en 2015 a ~146 mil ingresos/mes en 2024, un crecimiento sostenido de aproximadamente 0.8 mil ingresos adicionales cada mes.\nEn el contexto turístico, esto refleja el posicionamiento progresivo del destino: más conectividad aérea, mayor inversión hotelera y mejor reputación internacional, todo lo cual empuja la demanda al alza año tras año, independientemente del mes en que estemos.\nEstacionalidad:\nEl patrón oscila con amplitud de ±15 mil ingresos y se repite exactamente cada 12 meses: los picos coinciden con la temporada alta (vacaciones de invierno, cuando turistas de climas fríos buscan sol y playa) y los valles con la temporada de huracanes (baja demanda por riesgo climático).\nEste comportamiento es predecible: un operador turístico puede anticipar con certeza en qué meses necesitará más personal y en cuáles deberá ofrecer promociones.\nCiclicidad:\nA diferencia de la estacionalidad, el componente cíclico tiene una duración que ronda entre 3 y 4.5 años y no coincide con ningún mes del calendario en particular.\nRepresenta cómo el gasto turístico internacional se expande en períodos de bonanza económica global y se contrae en períodos de desaceleración o crisis (por ejemplo, recesiones, crisis cambiarias en los países emisores de turistas).\nA diferencia de la estacionalidad, este componente es mucho más difícil de anticipar con precisión porque su duración y amplitud cambian de un ciclo a otro."
+    "objectID": "series_tiempo/ACF_PACF.html",
+    "href": "series_tiempo/ACF_PACF.html",
+    "title": "Autocorrelación y autocorrelación parcial en una serie de tiempo",
+    "section": "",
+    "text": "Una extensión de la covarianza y correlación para dos variables aleatorias en el contexto de un proceso estocástico, es la autocovarianza y autocorrelación, que miden la dependencia de una serie consigo misma en distintos puntos del tiempo. De manera más formal, podemos definir la función de Autocovarianza (ACV) para el proceso estocástico \\(\\{Y_t\\}\\) como:\n\\[\n\\gamma_{Y}(t,k) = Cov(Y_t, Y_{t+k}) = E\\big[(Y_t - \\mu_{Y_t})(Y_{t+k} - \\mu_{Y_{t+k}})\\big]\n\\]\nSi el proceso es estacionario de segundo orden, entonces la ACV se denota como:\n\\[\n\\gamma_{Y}(k) : =  \\gamma_{Y}(0,k)\n\\]\nY la función de Autocorrelación (ACF) para un proceso estacionario de segundo orden se define como:\n\\[\n\\rho_{Y}(k) = \\frac{\\gamma_{Y}(k)}{\\gamma_{Y}(0)}\n\\]\nUsualmente se prefiere trabajar con la ACF, ya que no depende de las unidades de la serie y es más fácil de interpretar. La ACF nos dice qué tan correlacionada está la serie consigo misma en distintos rezagos(lags)."
   },
   {
-    "objectID": "series_tiempo/Componentes_y_estacionariedad.html#ruido-blanco",
-    "href": "series_tiempo/Componentes_y_estacionariedad.html#ruido-blanco",
-    "title": "Componentes de una Serie de Tiempo y Procesos Estacionarios",
-    "section": "Ruido blanco",
-    "text": "Ruido blanco\nDefinimos un ruido blanco como una colección de variables aleatorias identicamente distribuidas con media cero y varianza \\(\\sigma^2\\), que además \\(cov(e_t, e_{k}) = \\sigma^2\\) si \\(t=k\\) y \\(cov(e_t, e_{k}) = 0\\) en otro caso. Hay que notar que no se está especificando la distribución y tampoco si las variables son independientes, solo que no hay correlación entre ellas. En general, correlación cero no implica independencia, pero si las variables son independientes entonces sí hay correlación cero."
+    "objectID": "series_tiempo/ACF_PACF.html#cálculo-de-la-acf-y-pacf-para-un-ar1-y-un-ar3",
+    "href": "series_tiempo/ACF_PACF.html#cálculo-de-la-acf-y-pacf-para-un-ar1-y-un-ar3",
+    "title": "Autocorrelación y autocorrelación parcial en una serie de tiempo",
+    "section": "Cálculo de la ACF y PACF para un AR(1) y un AR(3)",
+    "text": "Cálculo de la ACF y PACF para un AR(1) y un AR(3)"
   },
   {
-    "objectID": "series_tiempo/Componentes_y_estacionariedad.html#ejemplo-1-ruido-blanco-gaussiano",
-    "href": "series_tiempo/Componentes_y_estacionariedad.html#ejemplo-1-ruido-blanco-gaussiano",
-    "title": "Componentes de una Serie de Tiempo y Procesos Estacionarios",
-    "section": "Ejemplo 1: Ruido blanco gaussiano",
-    "text": "Ejemplo 1: Ruido blanco gaussiano\nLa colección de variables aleatorias \\(e_1,...,e_n\\) de variables independientes e identicamente distribuidas pertenecientes a la distribución \\(N(0,\\sigma^{2})\\) es un ruido blanco gaussiano. En este caso, es muy fácil notar que se trata de un proceso estacionario. Un proceso con esta característica nos permitirá modelar fenómenos más complejos."
+    "objectID": "series_tiempo/ACF_PACF.html#proceso-ar1",
+    "href": "series_tiempo/ACF_PACF.html#proceso-ar1",
+    "title": "Autocorrelación y autocorrelación parcial en una serie de tiempo",
+    "section": "Proceso AR(1)",
+    "text": "Proceso AR(1)\n\n\n\n\n\n\n\n\n\n\n\n\nPara un AR(1) estacionario, la teoría predice un decaimiento exponencial: \\(\\rho(k) = \\phi^k\\). Con \\(\\phi = 0.7 &gt; 0\\), el decaimiento es monótono, y la ACF cae por debajo de la banda de significancia relativamente rápido."
   },
   {
-    "objectID": "series_tiempo/Componentes_y_estacionariedad.html#ejemplo-2-proceso-ar1-estacionario-phi-1",
-    "href": "series_tiempo/Componentes_y_estacionariedad.html#ejemplo-2-proceso-ar1-estacionario-phi-1",
-    "title": "Componentes de una Serie de Tiempo y Procesos Estacionarios",
-    "section": "Ejemplo 2: Proceso AR(1) estacionario (|phi| < 1)",
-    "text": "Ejemplo 2: Proceso AR(1) estacionario (|phi| &lt; 1)\nEl modelo Autoregresivo de orden uno definido como:\n\\[\nY_t = 0.7 * Y_{(t-1)} + e_t\n\\]\nDonde \\(e_1,...,e_n\\) es una muestra aleatoria de la distribución \\(N(0,1)\\)"
-  },
-  {
-    "objectID": "series_tiempo/Componentes_y_estacionariedad.html#ejemplo-3-caminata-aleatoria-gaussiana-sin-tendencia",
-    "href": "series_tiempo/Componentes_y_estacionariedad.html#ejemplo-3-caminata-aleatoria-gaussiana-sin-tendencia",
-    "title": "Componentes de una Serie de Tiempo y Procesos Estacionarios",
-    "section": "Ejemplo 3: Caminata aleatoria gaussiana (sin tendencia)",
-    "text": "Ejemplo 3: Caminata aleatoria gaussiana (sin tendencia)\nLa caminata aleatoria gaussiana es un proceso estocástico definido como:\n\\[\nY_t = Y_{(t-1)} + e_t = \\sum_{i=1}^{t} e_i\n\\]\nDonde \\(e_1,...,e_n\\) es una muestra aleatoria de la distribución \\(N(0,1)\\) y \\(Y_0 = 0\\). En este caso, la varianza crece con el tiempo y no existe un nivel fijo al cual la serie “regrese”, por lo que no es estacionaria.\nEn el caso con tendencia resulta casi inmediato notar que la serie no es estacionaria, por el término \\(\\delta t\\)."
-  },
-  {
-    "objectID": "series_tiempo/Componentes_y_estacionariedad.html#estacionario-vs-no-estacionario",
-    "href": "series_tiempo/Componentes_y_estacionariedad.html#estacionario-vs-no-estacionario",
-    "title": "Componentes de una Serie de Tiempo y Procesos Estacionarios",
-    "section": "Estacionario vs No Estacionario",
-    "text": "Estacionario vs No Estacionario"
+    "objectID": "series_tiempo/ACF_PACF.html#proceso-ar3",
+    "href": "series_tiempo/ACF_PACF.html#proceso-ar3",
+    "title": "Autocorrelación y autocorrelación parcial en una serie de tiempo",
+    "section": "Proceso AR(3)",
+    "text": "Proceso AR(3)\n\n\n\n\n\n\n\n\n\n\n\n\nEl AR(3) puede mostrar un decaimiento más complejo (oscilaciones o “rebotes” antes de apagarse). Esto refleja una dependencia temporal más compleja: el valor de hoy no solo depende del de ayer, sino de una combinación de los últimos tres periodos."
   }
 ]
