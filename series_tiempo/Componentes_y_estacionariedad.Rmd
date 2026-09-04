@@ -340,7 +340,7 @@ tabKable(tabla_errores, cap = "Comparativa de métodos de estimación de tendenc
 
 ```
 
-\\
+\
 
 
 ```{r comparativa-metodos-tendencia-plot}
@@ -392,7 +392,96 @@ plot_ly(serie_df, x = ~fecha) %>%
 ```
 
 
-\\
+\
+
+### Eliminación de la tendencia con el método de diferenciación
+
+Definimos el operador de diferenciación como:
+
+$$
+\nabla X_t = X_t - X_{t-1}  
+$$
+
+```{r diferenciacion,fig.dim=c(8,8)}
+
+# quitar tendencia con una dif 
+serie_df$diff_1 <- c(rep(NA_real_, 1), diff(serie_df$ingresos, lag = 1))
+ 
+p1_original <- plot_ly(serie_df, x = ~fecha) %>%
+  add_lines(y = ~ingresos, name = "Serie original",
+            line = list(color = "steelblue")) %>%
+  layout(yaxis = list(title = "Ingresos"))
+ 
+p1_diff <- plot_ly(serie_df, x = ~fecha) %>%
+  add_lines(y = ~diff_1, name = "Diferencia de orden 1",
+            line = list(color = "firebrick")) %>%
+  add_lines(x = ~fecha, y = 0, name = "Referencia (y = 0)",
+            line = list(color = "gray50", dash = "dash", width = 1)) %>%
+  layout(yaxis = list(title = "Ingresos diferenciados"),
+         xaxis = list(title = "Fecha"))
+ 
+fig_diff_regular <- subplot(p1_original, p1_diff,
+                             nrows = 2, shareX = TRUE, titleY = TRUE) %>%
+  layout(
+    title = "Diferenciación regular (orden 1): elimina la tendencia",
+    legend = list(orientation = "h", y = -0.15),
+    annotations = list(
+      list(text = "Serie original (con tendencia)", x = 0.5, y = 1.0,
+           xref = "paper", yref = "paper", showarrow = FALSE, xanchor = "center"),
+      list(text = "Serie diferenciada (sin tendencia, oscila alrededor de 0)",
+           x = 0.5, y = 0.42, xref = "paper", yref = "paper",
+           showarrow = FALSE, xanchor = "center")
+    )
+  )
+ 
+fig_diff_regular
+ 
+
+```
+
+\
+
+También podemos definir la diferenciación estacional como:
+
+$$
+\nabla _{d} X_t = X_t - X_{t-d}  
+$$
+
+```{r diferenciacion-estacional,fig.dim=c(8,8)}
+
+# quitar estacionalidad dif=12
+serie_df$diff_12 <- c(rep(NA_real_, 12), diff(serie_df$ingresos, lag = 12))
+
+p2_original <- plot_ly(serie_df, x = ~fecha) %>%
+  add_lines(y = ~ingresos, name = "Serie original",
+            line = list(color = "steelblue")) %>%
+  layout(yaxis = list(title = "Ingresos"))
+ 
+p2_diff <- plot_ly(serie_df, x = ~fecha) %>%
+  add_lines(y = ~diff_12, name = "Diferencia estacional (lag=12)",
+            line = list(color = "darkorange")) %>%
+  add_lines(x = ~fecha, y = 0, name = "Referencia (y = 0)",
+            line = list(color = "gray50", dash = "dash", width = 1)) %>%
+  layout(yaxis = list(title = "Ingresos diferenciados"),
+         xaxis = list(title = "Fecha"))
+ 
+fig_diff_estacional <- subplot(p2_original, p2_diff,
+                                nrows = 2, shareX = TRUE, titleY = TRUE) %>%
+  layout(
+    title = "Diferenciación estacional (lag = 12): elimina la estacionalidad",
+    legend = list(orientation = "h", y = -0.15),
+    annotations = list(
+      list(text = "Serie original (con estacionalidad)", x = 0.5, y = 1.0,
+           xref = "paper", yref = "paper", showarrow = FALSE, xanchor = "center"),
+      list(text = "Serie diferenciada estacionalmente (queda tendencia + ciclo)",
+           x = 0.5, y = 0.42, xref = "paper", yref = "paper",
+           showarrow = FALSE, xanchor = "center")
+    )
+  )
+ 
+fig_diff_estacional
+
+```
 
 ## Estacionalidad vs Ciclicidad
 
