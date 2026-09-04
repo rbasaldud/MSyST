@@ -19,6 +19,8 @@ format:
 | Ejemplos de visualización en R | [Presentación](series_tiempo/visualizacion.qmd) |
 | Modelo clásico y procesos estacionarios | [Notas](series_tiempo/Componentes_y_estacionariedad.Rmd) |
 | Medidas de dependencia | [Notas](series_tiempo/Dependencia.Rmd) |
+| Autocorrelación y autocorrelación parcial | [Notas](series_tiempo/ACF_PACF.Rmd) |
+
 
 
 

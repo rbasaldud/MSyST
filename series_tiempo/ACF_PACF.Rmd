@@ -9,6 +9,31 @@ output:
     theme: flatly
 ---
 
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+	error = F,
+	fig.align = "center",
+	fig.cap = " ",
+	fig.dim = c(8, 6),
+	message = FALSE,
+	warning = FALSE,
+	echo = F,
+	fig.pos="H")
+#Limpiamos entorno
+rm(list = ls(all.names = TRUE))
+gc() #Liberamos memoria
+```
+```{r libs, include=FALSE}
+library(tidyverse)
+library(plotly)
+library(gganimate)
+library(forecast)
+library(MASS)   
+library(patchwork)
+```
+
+
 # Autocovarianza y autocorrelación de una serie de tiempo
 
 Una extensión de la covarianza y correlación para dos variables aleatorias en el contexto de un proceso estocástico, es la **autocovarianza** y **autocorrelación**, que miden la dependencia de una serie consigo misma en distintos puntos del tiempo. De manera más formal, podemos definir la función de Autocovarianza (ACV) para el proceso estocástico $\{Y_t\}$ como:
