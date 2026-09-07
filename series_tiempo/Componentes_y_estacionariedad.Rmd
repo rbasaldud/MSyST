@@ -65,12 +65,13 @@ donde:
 
 - **Tendencia ($m_t$):** Movimiento a largo plazo, suave y sostenido (creciente, decreciente o estable).
 
-- **Estacionalidad ($s_t$):** patrón que se repite con **periodicidad fija y conocida**, generalmente ligada al calendario (mensual, trimestral, día de la semana). Su período no cambia con el tiempo.
+- **Estacionalidad ($s_t$):** Patrón que se repite con **periodicidad fija y conocida**, generalmente ligada al calendario (mensual, trimestral, día de la semana). Su período no cambia con el tiempo.
 
-- **Ciclicidad ($C_t$) (Usualmente se omite):** oscilaciones de subida y bajada **sin período fijo**, normalmente más largas que la estacionalidad (varios años), asociadas a fenómenos como ciclos económicos, crediticios o de negocio. A diferencia de la estacionalidad, su duración y amplitud varían de un ciclo a otro.
+- **Ciclicidad ($C_t$) (Usualmente se omite):** Oscilaciones de subida y bajada **sin período fijo** asociadas a fenómenos como ciclos económicos o políticos. A diferencia de la estacionalidad, su duración y amplitud varían de un ciclo a otro.
 
 - **Ruido/Error ($\varepsilon_t$):** Variación residual aleatoria no explicada por los componentes anteriores.
 
+El objetivo de proponer esta descomposición es de poder estimar cada componente por separado, para luego obtener el residuo $Y_t - \hat{m}_t - \hat{s}_t$ y que con suerte, este sea estacionario de segundo orden.
 
 # 2. Ingresos mensuales de un comercio en la playa
 
@@ -134,7 +135,7 @@ plot_ly(serie_df, x = ~fecha) %>%
   )
 ```
 
-\\
+\
 
 Una interpretación de cada componente en el contexto turístico podría ser la siguiente:
 
@@ -142,7 +143,7 @@ Una interpretación de cada componente en el contexto turístico podría ser la 
 
 - **Estacionalidad:** Cada año hay temporada alta (vacaciones de invierno/verano) y temporada baja (temporada de huracanes), con un patrón que se repite cada 12 meses.
 
-- **Ciclicidad:** El turismo internacional responde a factores económicos, políticos y socialesque duran varios años y no tienen una duración fija.
+- **Ciclicidad:** El turismo internacional responde a factores económicos, políticos y sociales que duran varios años y no tienen una duración fija.
 
 Una vez que hemos identificado los componentes, podemos estimarlos y analizarlos por separado para entender mejor el comportamiento de la serie.
 
@@ -394,13 +395,16 @@ plot_ly(serie_df, x = ~fecha) %>%
 
 \
 
-### Eliminación de la tendencia con el método de diferenciación
+## Eliminación de la tendencia con el método de diferenciación
 
 Definimos el operador de diferenciación como:
 
 $$
 \nabla X_t = X_t - X_{t-1}  
 $$
+
+En R se puede implementar con la función `diff()`. En general, si nuestra serie tiene una tendencia polinómica de grado $p$, entonces necesitamos diferenciarla $p$ veces para eliminar la tendencia. Para este ejemplo, la tendencia es lineal, por lo que basta con una diferenciación de orden 1.
+\
 
 ```{r diferenciacion,fig.dim=c(8,8)}
 
@@ -423,12 +427,12 @@ p1_diff <- plot_ly(serie_df, x = ~fecha) %>%
 fig_diff_regular <- subplot(p1_original, p1_diff,
                              nrows = 2, shareX = TRUE, titleY = TRUE) %>%
   layout(
-    title = "Diferenciación regular (orden 1): elimina la tendencia",
+    title = "Diferenciación (orden 1): elimina la tendencia",
     legend = list(orientation = "h", y = -0.15),
     annotations = list(
       list(text = "Serie original (con tendencia)", x = 0.5, y = 1.0,
            xref = "paper", yref = "paper", showarrow = FALSE, xanchor = "center"),
-      list(text = "Serie diferenciada (sin tendencia, oscila alrededor de 0)",
+      list(text = "Serie diferenciada (sin tendencia)",
            x = 0.5, y = 0.42, xref = "paper", yref = "paper",
            showarrow = FALSE, xanchor = "center")
     )
@@ -446,6 +450,11 @@ También podemos definir la diferenciación estacional como:
 $$
 \nabla _{d} X_t = X_t - X_{t-d}  
 $$
+
+Como en este caso el período estacional es de 12 meses, la diferenciación estacional es $\nabla _{12} X_t = X_t - X_{t-12}$. Es importante notar que la diferenciación estacional **no necesariamente elimina la tendencia**, sino que elimina la estacionalidad. Si la serie resultante aún tiene patrones, puede ser un indicio de que la serie tiene un componente cíclico o que la tendencia no es lineal.
+\
+Parece que la tendencia fue eliminada, además de que se aprecia un componente cíclico irregular, que sabíamos que la serie tenía solo que no era tan evidente a simple vista al visualizar la serie original.
+\
 
 ```{r diferenciacion-estacional,fig.dim=c(8,8)}
 
@@ -473,7 +482,7 @@ fig_diff_estacional <- subplot(p2_original, p2_diff,
     annotations = list(
       list(text = "Serie original (con estacionalidad)", x = 0.5, y = 1.0,
            xref = "paper", yref = "paper", showarrow = FALSE, xanchor = "center"),
-      list(text = "Serie diferenciada estacionalmente (queda tendencia + ciclo)",
+      list(text = "Serie diferenciada estacionalmente",
            x = 0.5, y = 0.42, xref = "paper", yref = "paper",
            showarrow = FALSE, xanchor = "center")
     )
@@ -483,7 +492,92 @@ fig_diff_estacional
 
 ```
 
+\
+
+Podemos confirmar esta creencia al visualizar el componente cíclico de la serie, que fue construido artificialmente y sabemos que existe.
+\
+
+```{r plot-ciclicidad}
+plot_ly(serie_df, x = ~fecha) %>%
+  add_lines(y = ~ciclo, name = "Ciclicidad (período variable, varios años)",
+            line = list(color = "purple")) %>%
+  layout(
+    title = "Componentes de ciclicidad teórico en la serie",
+    xaxis = list(title = "Fecha", rangeslider = list(visible = FALSE)),
+    yaxis = list(title = "Valor"),
+    legend = list(orientation = "h", y = -0.2)
+  )
+```
+
+# Estimación de la estacionalidad 
+
+Luego de estimar la tendencia (sin importar el método elegido) se debe eliminar de la serie, posteriormente se estima la estacionalidad y también se elimina. A los valores resultantes se les llama residuos. 
+
+```{r estima-estacionalidad}
+
+d <- 12          # periodo estacional 
+q <- d / 2
+
+serie_df$sin_tendencia <- serie_df$ingresos - serie_df$mm_12
+
+# w_k: para cada mes k, promedio de los w_t disponibles que caen en ese mes 
+w_k <- numeric(d)
+for (k in 1:d) {
+  posiciones <- seq(k, n, by = d)
+  w_k[k] <- mean(serie_df$sin_tendencia[posiciones], na.rm = TRUE)
+}
+
+# centrar los w_k para que sumen 0: s_k = w_k - promedio(w_t)
+s_k <- w_k - mean(w_k)
+
+# extender s_k periodicamente a toda la serie
+
+k_de_cada_t    <- ((t - 1) %% d) + 1
+serie_df$s_hat <- s_k[k_de_cada_t]
+
+# Serie SIN ESTACIONALIDAD x_des = x_t - s_hat_t 
+serie_df$sin_estacionalidad <- serie_df$ingresos - serie_df$s_hat
+
+
+serie_df$residuo <- serie_df$ingresos - serie_df$mm_12 - serie_df$s_hat
+
+
+
+fig_sin_tendencia_estacionalidad <- plot_ly(serie_df, x = ~fecha) %>%
+  add_lines(y = ~ingresos, name = "Serie original",
+            line = list(color = "gray70")) %>%
+  add_lines(y = ~sin_tendencia, name = "Sin tendencia (x - mm_12)",
+            line = list(color = "darkgreen", width = 2)) %>%
+  add_lines(y = ~residuo, name = "Residuo",
+            line = list(color = "firebrick", width = 2)) %>%
+  layout(
+    title = "Proceso de eliminación en la serie ",
+    xaxis = list(title = "Fecha"),
+    yaxis = list(title = "Ingresos"),
+    legend = list(orientation = "h", y = -0.2)
+  )
+
+fig_sin_tendencia_estacionalidad
+
+
+plot_ly(serie_df, x = ~fecha) %>%
+  add_lines(y = ~residuo, name = "Residuo",
+            line = list(color = "firebrick", width = 2)) %>%
+  layout(
+    title = "Residuos de la serie (descomposición aditiva)",
+    xaxis = list(title = "Fecha"),
+    yaxis = list(title = "Ingresos"),
+    legend = list(orientation = "h", y = -0.2)
+  )
+
+
+```
+
+
+
 ## Estacionalidad vs Ciclicidad
+
+Solo para ilustrar la diferencia entre estacionalidad y ciclicidad, a continuación se muestra un gráfico con ambos componentes. La estacionalidad tiene un período fijo de 12 meses, mientras que la ciclicidad tiene un período variable de varios años. Podemos hacer esta visualización pues la serie fue construida artificialmente y conocemos los componentes que la conforman. En la práctica, no es tan sencillo separar estos componentes, especialmente el cíclico, que puede ser difícil de identificar a simple vista.
 
 ```{r plot-componentes}
 plot_ly(serie_df, x = ~fecha) %>%
@@ -499,7 +593,7 @@ plot_ly(serie_df, x = ~fecha) %>%
   )
 ```
 
-\\
+\
 
 ## Interpretación de cada componente en el contexto
 
@@ -523,6 +617,9 @@ A diferencia de la estacionalidad, el componente cíclico tiene una duración qu
 Representa cómo el gasto turístico internacional se expande en períodos de bonanza económica global y se contrae en períodos de desaceleración o crisis (por ejemplo, recesiones, crisis cambiarias en los países emisores de turistas). 
 
 A diferencia de la estacionalidad, este componente es mucho más difícil de anticipar con precisión porque su duración y amplitud cambian de un ciclo a otro.
+
+
+
 
 
 # 3. Procesos estocásticos estacionarios
