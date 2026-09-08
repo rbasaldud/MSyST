@@ -523,9 +523,10 @@ El proceso de estimación de la estacionalidad $\hat{s}_t$ se puede resumir como
 Otra observación es que la última diferencia es para que $\sum_{i=1}^{d}\hat{s}_i = 0$. 
 
 
-\
+>Esto quiere decir que no importa cúal componente se estime primero, pues tanto para obtener $\hat{m}_t$ como $\hat{s}_k$ se trabaja incialmente con la serie original.
 
-La implementación de forma manual en R se muestra a continuación, donde se puede notar que la estimación para Enero 2014 es la misma que para Enero 2025, similarmente con el resto de meses (y años).
+\
+La implementación de forma manual en R se muestra a continuación, donde se puede notar que la estimación para Enero 2014 es la misma que para Enero 2015, similarmente con el resto de meses (y años).
 
 ```{r estima-estacionalidad, echo=TRUE}
 
@@ -556,24 +557,47 @@ head(serie_df$s_hat,14)
 ```
 
 
-Los siguientes gráficos de la paquetería `TSstudio` ayudan a ilustrar la idea, también hay otras que permiten este tipo de visualizaciones como `TIMETK` o `ggtime`.
+Los siguientes gráficos de la paquetería `TSstudio` ayudan a encontrar patrones específicos de la parte estacional, también hay otras que permiten este tipo de visualizaciones como `TIMETK` o `ggtime`. 
 
-```{r periodos-estacionalidad}
+\
 
+Por ejemplo, la siguiente gráfica muestra los valores de la serie de cada año, esto permite identificar si conforme pasaron los años hubo un incremento o decremento en la escala (efecto de la tendencia), también permite identificar si conforme pasaron los años hubo un cambio en el patrón estacional (cambiar la periodicidad de los patrones o la forma). 
+
+
+>En muchos ejemplos ilustrativos esto último no tendría por qué ocurrir, sin embargo en ocasiones el fenómeno de interés requiere modelos que permitan capturar un *cambio de régimen* o *multi-estados* dentro de la serie.
+
+\
+
+```{r ts-seasonal-plot1}
+
+# convertimos a objeto ts para poder usar en la liberia TSstudio
 serie_ts <- ts(
   serie_df$ingresos,
   start = c(2015, 1),
   frequency = 12
 )
 
-ts_seasonal(serie_ts, type = "normal",title = "Comportamiento estacionalidad anual para cada mes")
+ts_seasonal(serie_ts, type = "normal",title = "Comportamiento de la serie por año")
+```
 
-ts_seasonal(serie_ts, type = "cycle",title = "Comportamiento estacionalidad mensual para cada año")
 
-ts_seasonal(serie_ts, type = "box", title = "Comportamiento estacionalidad mensual")
+ También se puede analizar el comportamiento de cada mes a lo largo de los años en búsqueda de algún comportamiento interesante, por ejemplo, que un mes específico tuviera una tendencia decreciente (sin contradecir que la tendencia general de la serie sea creciente), este prodría ser un indício de varianza creciente.
 
+```{r ts-seasonal-plot2}
+ts_seasonal(serie_ts, type = "cycle",title = "Comportamiento de la serie por mes")
 
 ```
+
+\
+Por último, se puede analizar la distribución mensual de la serie, esto permite identificar posibles outliers en meses específicos, o meses con poca/mucha dispersión.
+\
+
+
+```{r ts-seasonal-plot3}
+ts_seasonal(serie_ts, type = "box",title = "Distribución mensual de la serie")
+
+```
+
 
 
 A los valores resultantes de las eliminaciones anteriores se les llama residuos de la serie. 
@@ -581,6 +605,7 @@ A los valores resultantes de las eliminaciones anteriores se les llama residuos 
 $$
 e_t = X_t - \hat{m}_t - \hat{s}_t
 $$
+
 
 Se puede visualizar este proceso de descomposición de la serie en el siguiente gráfico:
 
@@ -593,9 +618,9 @@ serie_df$residuo <- serie_df$ingresos - serie_df$mm_12 - serie_df$s_hat
 fig_sin_tendencia_estacionalidad <- plot_ly(serie_df, x = ~fecha) %>%
   add_lines(y = ~ingresos, name = "Serie original",
             line = list(color = "gray70")) %>%
-  add_lines(y = ~sin_tendencia, name = "Sin tendencia (x - mm_12)",
+  add_lines(y = ~sin_tendencia, name = "Sin tendencia con Estacionalidad (x - mm_12)",
             line = list(color = "darkgreen", width = 2)) %>%
-  add_lines(y = ~residuo, name = "Residuo",
+  add_lines(y = ~residuo, name = "Residuo (x - mm_12 - s^_t)",
             line = list(color = "firebrick", width = 2)) %>%
   layout(
     title = "Proceso de eliminación en la serie ",
@@ -656,7 +681,6 @@ plot_ly(serie_df, x = ~fecha) %>%
 
 
 Existen paqueterías que realizan el proceso de estimación para cada componente de forma automática, la forma más popular es con la función `decompose()` de R base, otra alternativa solo para visualizar es `ts_decompose()` de `TSstudio`
-
 
 
 
