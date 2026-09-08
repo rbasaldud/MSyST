@@ -512,37 +512,20 @@ plot_ly(serie_df, x = ~fecha) %>%
 
 # Estimación de la estacionalidad 
 
-El proceso de estimación de la tendencia  $\hat{s}_t$ requiere que primero se estime la tendencia (por el método que sea), posteriormente:
+El proceso de estimación de la estacionalidad $\hat{s}_t$ se puede resumir como:
 
-- Agrupar por mes: se juntan los valores correspondientes al mismo mes de distintos años, suponiendo que la estacionalidad se repite anualmente.
-- Obtener el efecto estacional: se promedian los valores de cada mes para estimar cuánto se desvía típicamente ese mes del nivel general.
-- Centrar los índices: se ajustan los 12 promedios para que su suma sea cero, de modo que representen únicamente el efecto estacional.
-- Repetir el patrón: los 12 índices estacionales se asignan a cada año según el mes correspondiente.
-- Desestacionalizar: se resta el patrón estacional estimado a la serie original, eliminando las fluctuaciones periódicas pero conservando la tendencia.
 
-En resumen, para estimar la estacionalidad se elimina temporalmente la tendencia para identificar el patrón que se repite cada año, luego se estima un índice para cada mes y luego ese patrón se resta de la serie original para obtener una serie sin estacionalidad. 
+- Identificar el periodo estacional $d$. En este ejemplo con periodo mensual $(d=12)$.
+- Estimar la tendencia con filtro de Medias Móviles con ventana $d$, es decir, se promedian $d$ observaciones.
+- Quitamos tendencia a la serie original $X_t - \hat{m}_t$
+- Promediamos las diferencias $X_t - \hat{m}_t$ para cada $d$. A este promedio le llamamos $W_k$, y tenemos $d$ de ellos. Es decir, las diferencias de todos las observaciones de Enero, todas las de Febrero, ...., todas las de Diciembre.
+- La estimación de la tendencia es $\hat{s}_k = W_k - \bar{W}$, para $k=1,...,d$, esto significa que la estimación del componente estacional en el mes $k$ es la misma para todos los años.
+Otra observación es que la última diferencia es para que $\sum_{i=1}^{d}\hat{s}_i = 0$. 
+
 
 \
-Los siguientes gráficos de la paquetería `TSstudio` ayudan a ilustrar la idea, también hay otras que permiten este tipo de visualizaciones como `TIMETK` o `ggtime`.
 
-```{r periodos-estacionalidad}
-
-serie_ts <- ts(
-  serie_df$ingresos,
-  start = c(2015, 1),
-  frequency = 12
-)
-
-ts_seasonal(serie_ts, type = "normal",title = "Comportamiento estacionalidad anual para cada mes")
-
-ts_seasonal(serie_ts, type = "cycle",title = "Comportamiento estacionalidad mensual para cada año")
-
-ts_seasonal(serie_ts, type = "box", title = "Comportamiento estacionalidad mensual")
-
-
-```
-
-La implementación de forma manual en R:
+La implementación de forma manual en R se muestra a continuación, donde se puede notar que la estimación para Enero 2014 es la misma que para Enero 2025, similarmente con el resto de meses (y años).
 
 ```{r estima-estacionalidad, echo=TRUE}
 
@@ -566,6 +549,28 @@ k_de_cada_t    <- ((t - 1) %% d) + 1
 
 # estimacion de la estacionalidad
 serie_df$s_hat <- s_k[k_de_cada_t]
+
+
+head(serie_df$s_hat,14)
+
+```
+
+
+Los siguientes gráficos de la paquetería `TSstudio` ayudan a ilustrar la idea, también hay otras que permiten este tipo de visualizaciones como `TIMETK` o `ggtime`.
+
+```{r periodos-estacionalidad}
+
+serie_ts <- ts(
+  serie_df$ingresos,
+  start = c(2015, 1),
+  frequency = 12
+)
+
+ts_seasonal(serie_ts, type = "normal",title = "Comportamiento estacionalidad anual para cada mes")
+
+ts_seasonal(serie_ts, type = "cycle",title = "Comportamiento estacionalidad mensual para cada año")
+
+ts_seasonal(serie_ts, type = "box", title = "Comportamiento estacionalidad mensual")
 
 
 ```
@@ -650,16 +655,24 @@ plot_ly(serie_df, x = ~fecha) %>%
 # Automatizando la descomposición 
 
 
-Existen paqueterías que realizan el proceso de estimación para cada componente de forma automática, la forma más popular es con la función `decompose()` de R base, otra alternativa es `ts_decompose()` de `TSstudio`
+Existen paqueterías que realizan el proceso de estimación para cada componente de forma automática, la forma más popular es con la función `decompose()` de R base, otra alternativa solo para visualizar es `ts_decompose()` de `TSstudio`
+
+
+
 
 
 ```{r descomposicion-libs,echo=TRUE}
 
+# estimaciones con r base
+descomp <- decompose(serie_ts, type = "additive")
+head(descomp)
+#visualiza la descomposicion
+plot(descomp)
+
+# alternativa solo para visualizar
 ts_decompose(serie_ts)
 
 ```
-
-
 
 
 
@@ -671,19 +684,18 @@ ts_decompose(serie_ts)
 
 La línea de tendencia pasa de ~50 mil ingresos/mes en 2015 a ~146 mil ingresos/mes en 2024, un crecimiento sostenido de aproximadamente 0.8 mil ingresos adicionales cada mes. 
 
-En el contexto turístico, esto refleja el posicionamiento progresivo del destino: más conectividad aérea, mayor inversión hotelera y mejor reputación internacional, todo lo cual empuja la demanda al alza año tras año, independientemente del mes en que estemos.
+En el contexto turístico, esto refleja un aumento en la popularidad del destino, puede ser ocasionado por mayor inversión hotelera o mayor presencia en redes sociales de parte de negocios ceranos.
 
 **Estacionalidad:**
 
-El patrón oscila con amplitud de ±15 mil ingresos y se repite **exactamente cada 12 meses**: los picos coinciden con la temporada alta (vacaciones de invierno, cuando turistas de climas fríos buscan sol y playa) y los valles con la temporada de huracanes (baja demanda por riesgo climático). 
+El patrón oscila con amplitud de ±15 mil ingresos y se repite exactamente cada 12 meses, los picos coinciden con la temporada alta de vacaciones de verano y los valles con la temporada de invierno.
 
-Este comportamiento es predecible: un operador turístico puede anticipar con certeza en qué meses necesitará más personal y en cuáles deberá ofrecer promociones.
 
 **Ciclicidad:**
 
-A diferencia de la estacionalidad, el componente cíclico tiene una duración que ronda entre 3 y 4.5 años y **no coincide con ningún mes del calendario en particular**. 
+A diferencia de la estacionalidad, el componente cíclico tiene una duración que ronda entre 3 y 4.5 años y no coincide con ningún mes del calendario en particular. 
 
-Representa cómo el gasto turístico internacional se expande en períodos de bonanza económica global y se contrae en períodos de desaceleración o crisis (por ejemplo, recesiones, crisis cambiarias en los países emisores de turistas). 
+En muchos casos, se asocia a fenómenos económicos o políticos que afectan indirectamente a los destinos turísticos.
 
 A diferencia de la estacionalidad, este componente es mucho más difícil de anticipar con precisión porque su duración y amplitud cambian de un ciclo a otro.
 
@@ -700,7 +712,6 @@ Un proceso $\{Y_t\}$ es **débilmente (o de segundo orden) estacionario** si cum
 3. $Cov(Y_t, Y_{t+k})$ depende únicamente del rezago $k$, no del tiempo $t$
 
 
-
 ## Ruido blanco 
 
 Definimos un **ruido blanco** como una colección de variables aleatorias identicamente distribuidas con media cero y varianza $\sigma^2$, que además $cov(e_t, e_{k}) = \sigma^2$ si $t=k$ y $cov(e_t, e_{k}) = 0$ en otro caso. Hay que notar que no se está especificando la distribución y tampoco si las variables son independientes, solo que no hay correlación entre ellas. 
@@ -708,7 +719,7 @@ En general, correlación cero no implica independencia, pero si las variables so
 
 ## Ejemplo 1: Ruido blanco **gaussiano**
 
-La colección de variables aleatorias $e_1,...,e_n$  de variables independientes e identicamente distribuidas pertenecientes a la distribución $N(0,\sigma^{2})$ es un ruido blanco gaussiano. En este caso, es muy fácil notar que se trata de un proceso estacionario.
+La colección de variables aleatorias $e_1,e_2,...$  de variables independientes e identicamente distribuidas pertenecientes a la distribución $N(0,\sigma^{2})$ es un ruido blanco Gaussiano. En este caso, es muy fácil notar que se trata de un proceso estacionario de segundo orden.
 Un proceso con esta característica nos permitirá modelar fenómenos más complejos.
 
 ```{r ruido-blanco}
@@ -738,7 +749,7 @@ $$
 Y_t = 0.7 * Y_{(t-1)} + e_t
 $$
 
-Donde $e_1,...,e_n$ es una muestra aleatoria de la distribución $N(0,1)$
+Donde $e_1,e_2,...$ es un ruido blanco Gaussiano $N(0,1)$
 
 ```{r ar1}
 set.seed(42)
@@ -768,7 +779,7 @@ $$
 Y_t = Y_{(t-1)} + e_t = \sum_{i=1}^{t} e_i
 $$
 
-Donde $e_1,...,e_n$ es una muestra aleatoria de la distribución $N(0,1)$ y $Y_0 = 0$. En este caso, la varianza crece con el tiempo y no existe un nivel fijo al cual la serie "regrese", por lo que **no** es estacionaria.
+Donde $e_1,e_2,...$ es ruido blanco Gaussiano $N(0,1)$ y $Y_0 = 0$. En este caso, la varianza crece con el tiempo y no existe un nivel fijo al cual la serie "regrese", por lo que **no** es estacionaria.
 
 En el caso con tendencia resulta casi inmediato notar que la serie no es estacionaria, por el término $\delta t$.
 
