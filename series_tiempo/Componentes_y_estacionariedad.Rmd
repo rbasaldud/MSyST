@@ -156,18 +156,20 @@ Hay diversas forma de estimar la tendencia de una serie de tiempo cuando hay pre
 
 ### Filtro de Medias Móviles
 
-La idea de este método es tomar ventanas de tiempo con radio $q$ y calcular el promedio de cada ventana. 
+La idea de este método es tomar ventanas de tiempo de tamaño $d$ y calcular el promedio de cada ventana. 
+Si asumimos que $d=2q +1$ (es impar), entonces el suavizamiento se calcula como:
 
 $$
 w_t = \frac{1}{2q + 1} \sum_{j=-q}^{q} Y_{t+j} \quad t = q+1, \ldots, n-q
 $$
 
-En R, se puede implementar con la función `rollmean()` del paquete `zoo`. A continuación se muestra un ejemplo de cómo se calcula la media móvil centrada con ventana de 12 meses (radio de 6). El punto rojo representa el valor $w_t$ calculado respecto a la ventana centrada en $X_t$.
+
+En R, se puede implementar con la función `rollmean()` del paquete `zoo`. A continuación se muestra un ejemplo de cómo se calcula la media móvil centrada con ventana de 12 meses. El punto rojo representa el valor $w_t$ calculado respecto a la ventana centrada en $X_t$.
 
 
 ```{r mm_animacion, eval=FALSE}
 
-# Media movil radio 6
+# Media movil rventana 12
 m <- 12
 
 serie_df <- serie_df |>
@@ -738,12 +740,14 @@ Un proceso $\{Y_t\}$ es **débilmente (o de segundo orden) estacionario** si cum
 
 ## Ruido blanco 
 
-Definimos un **ruido blanco** como una colección de variables aleatorias identicamente distribuidas con media cero y varianza $\sigma^2$, que además $cov(e_t, e_{k}) = \sigma^2$ si $t=k$ y $cov(e_t, e_{k}) = 0$ en otro caso. Hay que notar que no se está especificando la distribución y tampoco si las variables son independientes, solo que no hay correlación entre ellas. 
-En general, correlación cero no implica independencia, pero si las variables son independientes entonces sí hay correlación cero.
+Definimos un **ruido blanco** como un proceso $e_1,e_2,...$ de variables aleatorias identicamente distribuidas con media cero y varianza $\sigma^2$, que además $cov(e_t, e_{k}) = \sigma^2$ si $t=k$ y $cov(e_t, e_{k}) = 0$ en otro caso. 
+
+\
+Hay que notar que no se está especificando la distribución y tampoco si las variables son independientes, solo que no hay correlación entre ellas. En general, correlación cero no implica independencia, pero si las variables son independientes entonces sí hay correlación cero.
 
 ## Ejemplo 1: Ruido blanco **gaussiano**
 
-La colección de variables aleatorias $e_1,e_2,...$  de variables independientes e identicamente distribuidas pertenecientes a la distribución $N(0,\sigma^{2})$ es un ruido blanco Gaussiano. En este caso, es muy fácil notar que se trata de un proceso estacionario de segundo orden.
+El proceso $e_1,e_2,...$  de variables aleatorias independientes e identicamente distribuidas pertenecientes a la distribución $N(0,\sigma^{2})$ es un ruido blanco Gaussiano. En este caso, es muy fácil notar que se trata de un proceso estacionario de segundo orden.
 Un proceso con esta característica nos permitirá modelar fenómenos más complejos.
 
 ```{r ruido-blanco}
