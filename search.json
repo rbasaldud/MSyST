@@ -39,7 +39,7 @@
     "href": "series_tiempo/Componentes_y_estacionariedad.html#interpretación-de-cada-componente-en-el-contexto",
     "title": "Componentes de una Serie de Tiempo y Procesos Estacionarios",
     "section": "Interpretación de cada componente en el contexto",
-    "text": "Interpretación de cada componente en el contexto\nTendencia:\nLa línea de tendencia pasa de ~50 mil ingresos/mes en 2015 a ~146 mil ingresos/mes en 2024, un crecimiento sostenido de aproximadamente 0.8 mil ingresos adicionales cada mes.\nEn el contexto turístico, esto refleja el posicionamiento progresivo del destino: más conectividad aérea, mayor inversión hotelera y mejor reputación internacional, todo lo cual empuja la demanda al alza año tras año, independientemente del mes en que estemos.\nEstacionalidad:\nEl patrón oscila con amplitud de ±15 mil ingresos y se repite exactamente cada 12 meses: los picos coinciden con la temporada alta (vacaciones de invierno, cuando turistas de climas fríos buscan sol y playa) y los valles con la temporada de huracanes (baja demanda por riesgo climático).\nEste comportamiento es predecible: un operador turístico puede anticipar con certeza en qué meses necesitará más personal y en cuáles deberá ofrecer promociones.\nCiclicidad:\nA diferencia de la estacionalidad, el componente cíclico tiene una duración que ronda entre 3 y 4.5 años y no coincide con ningún mes del calendario en particular.\nRepresenta cómo el gasto turístico internacional se expande en períodos de bonanza económica global y se contrae en períodos de desaceleración o crisis (por ejemplo, recesiones, crisis cambiarias en los países emisores de turistas).\nA diferencia de la estacionalidad, este componente es mucho más difícil de anticipar con precisión porque su duración y amplitud cambian de un ciclo a otro."
+    "text": "Interpretación de cada componente en el contexto\nTendencia:\nLa línea de tendencia pasa de ~50 mil ingresos/mes en 2015 a ~146 mil ingresos/mes en 2024, un crecimiento sostenido de aproximadamente 0.8 mil ingresos adicionales cada mes.\nEn el contexto turístico, esto refleja un aumento en la popularidad del destino, puede ser ocasionado por mayor inversión hotelera o mayor presencia en redes sociales de parte de negocios ceranos.\nEstacionalidad:\nEl patrón oscila con amplitud de ±15 mil ingresos y se repite exactamente cada 12 meses, los picos coinciden con la temporada alta de vacaciones de verano y los valles con la temporada de invierno.\nCiclicidad:\nA diferencia de la estacionalidad, el componente cíclico tiene una duración que ronda entre 3 y 4.5 años y no coincide con ningún mes del calendario en particular.\nEn muchos casos, se asocia a fenómenos económicos o políticos que afectan indirectamente a los destinos turísticos.\nA diferencia de la estacionalidad, este componente es mucho más difícil de anticipar con precisión porque su duración y amplitud cambian de un ciclo a otro."
   },
   {
     "objectID": "series_tiempo/Componentes_y_estacionariedad.html#ruido-blanco",
@@ -53,21 +53,21 @@
     "href": "series_tiempo/Componentes_y_estacionariedad.html#ejemplo-1-ruido-blanco-gaussiano",
     "title": "Componentes de una Serie de Tiempo y Procesos Estacionarios",
     "section": "Ejemplo 1: Ruido blanco gaussiano",
-    "text": "Ejemplo 1: Ruido blanco gaussiano\nLa colección de variables aleatorias \\(e_1,...,e_n\\) de variables independientes e identicamente distribuidas pertenecientes a la distribución \\(N(0,\\sigma^{2})\\) es un ruido blanco gaussiano. En este caso, es muy fácil notar que se trata de un proceso estacionario. Un proceso con esta característica nos permitirá modelar fenómenos más complejos."
+    "text": "Ejemplo 1: Ruido blanco gaussiano\nLa colección de variables aleatorias \\(e_1,e_2,...\\) de variables independientes e identicamente distribuidas pertenecientes a la distribución \\(N(0,\\sigma^{2})\\) es un ruido blanco Gaussiano. En este caso, es muy fácil notar que se trata de un proceso estacionario de segundo orden. Un proceso con esta característica nos permitirá modelar fenómenos más complejos."
   },
   {
     "objectID": "series_tiempo/Componentes_y_estacionariedad.html#ejemplo-2-proceso-ar1-estacionario-phi-1",
     "href": "series_tiempo/Componentes_y_estacionariedad.html#ejemplo-2-proceso-ar1-estacionario-phi-1",
     "title": "Componentes de una Serie de Tiempo y Procesos Estacionarios",
     "section": "Ejemplo 2: Proceso AR(1) estacionario (|phi| < 1)",
-    "text": "Ejemplo 2: Proceso AR(1) estacionario (|phi| &lt; 1)\nEl modelo Autoregresivo de orden uno definido como:\n\\[\nY_t = 0.7 * Y_{(t-1)} + e_t\n\\]\nDonde \\(e_1,...,e_n\\) es una muestra aleatoria de la distribución \\(N(0,1)\\)"
+    "text": "Ejemplo 2: Proceso AR(1) estacionario (|phi| &lt; 1)\nEl modelo Autoregresivo de orden uno definido como:\n\\[\nY_t = 0.7 * Y_{(t-1)} + e_t\n\\]\nDonde \\(e_1,e_2,...\\) es un ruido blanco Gaussiano \\(N(0,1)\\)"
   },
   {
     "objectID": "series_tiempo/Componentes_y_estacionariedad.html#ejemplo-3-caminata-aleatoria-gaussiana-sin-tendencia",
     "href": "series_tiempo/Componentes_y_estacionariedad.html#ejemplo-3-caminata-aleatoria-gaussiana-sin-tendencia",
     "title": "Componentes de una Serie de Tiempo y Procesos Estacionarios",
     "section": "Ejemplo 3: Caminata aleatoria gaussiana (sin tendencia)",
-    "text": "Ejemplo 3: Caminata aleatoria gaussiana (sin tendencia)\nLa caminata aleatoria gaussiana es un proceso estocástico definido como:\n\\[\nY_t = Y_{(t-1)} + e_t = \\sum_{i=1}^{t} e_i\n\\]\nDonde \\(e_1,...,e_n\\) es una muestra aleatoria de la distribución \\(N(0,1)\\) y \\(Y_0 = 0\\). En este caso, la varianza crece con el tiempo y no existe un nivel fijo al cual la serie “regrese”, por lo que no es estacionaria.\nEn el caso con tendencia resulta casi inmediato notar que la serie no es estacionaria, por el término \\(\\delta t\\)."
+    "text": "Ejemplo 3: Caminata aleatoria gaussiana (sin tendencia)\nLa caminata aleatoria gaussiana es un proceso estocástico definido como:\n\\[\nY_t = Y_{(t-1)} + e_t = \\sum_{i=1}^{t} e_i\n\\]\nDonde \\(e_1,e_2,...\\) es ruido blanco Gaussiano \\(N(0,1)\\) y \\(Y_0 = 0\\). En este caso, la varianza crece con el tiempo y no existe un nivel fijo al cual la serie “regrese”, por lo que no es estacionaria.\nEn el caso con tendencia resulta casi inmediato notar que la serie no es estacionaria, por el término \\(\\delta t\\)."
   },
   {
     "objectID": "series_tiempo/Componentes_y_estacionariedad.html#estacionario-vs-no-estacionario",
