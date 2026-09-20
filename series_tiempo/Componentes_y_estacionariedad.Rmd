@@ -734,8 +734,7 @@ A diferencia de la estacionalidad, este componente es mucho más difícil de ant
 Un proceso $\{Y_t\}$ es **débilmente (o de segundo orden) estacionario** si cumple:
 
 1. $E[Y_t] = \mu$ (media constante, no depende de $t$)
-2. $Var(Y_t) = \sigma^2$ (varianza constante y finita)
-3. $Cov(Y_t, Y_{t+k})$ depende únicamente del rezago $k$, no del tiempo $t$
+2. $Cov(Y_t, Y_{t+k})$ depende únicamente del rezago $k$, no del tiempo $t$
 
 
 ## Ruido blanco 
@@ -743,7 +742,7 @@ Un proceso $\{Y_t\}$ es **débilmente (o de segundo orden) estacionario** si cum
 Definimos un **ruido blanco** como un proceso $e_1,e_2,...$ de variables aleatorias identicamente distribuidas con media cero y varianza $\sigma^2$, que además $cov(e_t, e_{k}) = \sigma^2$ si $t=k$ y $cov(e_t, e_{k}) = 0$ en otro caso. 
 
 \
-Hay que notar que no se está especificando la distribución y tampoco si las variables son independientes, solo que no hay correlación entre ellas. En general, correlación cero no implica independencia, pero si las variables son independientes entonces sí hay correlación cero.
+Hay que notar que no se está especificando la distribución y tampoco si las variables son independientes, solo que no hay correlación entre ellas. En general, correlación cero no implica independencia, pero si las variables son independientes entonces sí implica correlación cero.
 
 ## Ejemplo 1: Ruido blanco **gaussiano**
 
@@ -799,7 +798,7 @@ ggAcf(ar1_sim) +
   theme_minimal(base_size = 13)
 ```
 
-## Ejemplo 3: Caminata aleatoria gaussiana (sin tendencia)
+## Proceso no estacionario: Caminata aleatoria gaussiana 
 
 La caminata aleatoria gaussiana es un proceso estocástico definido como:
 
@@ -809,7 +808,7 @@ $$
 
 Donde $e_1,e_2,...$ es ruido blanco Gaussiano $N(0,1)$ y $Y_0 = 0$. En este caso, la varianza crece con el tiempo y no existe un nivel fijo al cual la serie "regrese", por lo que **no** es estacionaria.
 
-En el caso con tendencia resulta casi inmediato notar que la serie no es estacionaria, por el término $\delta t$.
+En el caso de una caminata aleatoria con tendencia (lineal) resulta casi inmediato notar que la serie no es estacionaria, por el término $\delta t$.
 
 
 ```{r random-walk}
@@ -843,8 +842,6 @@ p_anim <- ggplot(df_ar1, aes(t, valor)) +
   ) +
   theme_minimal(base_size = 13) +
   transition_reveal(along =  t)
-
-
 
 
 ```
