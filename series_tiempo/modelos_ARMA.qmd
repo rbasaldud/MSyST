@@ -21,6 +21,14 @@ set.seed(2026)
 library(UnitCircle)   # visualización de raíces respecto al círculo unitario
 library(forecast)     # Acf/Pacf y autoplot de raíces
 library(ggplot2)
+library(kableExtra)
+
+tabKable <- function(tabla,cap=""){
+  tabla %>% 
+    kbl(booktabs = TRUE, align = "c",caption = cap) %>%
+    #Evitamos que cambie de posición 
+    kable_styling(latex_options = c("hold_position")) 
+}  
 
 par_default <- par(no.readonly = TRUE)
 ```
@@ -40,36 +48,36 @@ $$
 \Phi(B)\, X_t = Z_t
 $$
 
-Donde $B$ es el operador de retraso definido por $B^k X_t = X_{t-k}$, y el polinomio de retraso es
+Donde $B$ es el operador de retraso está definido por $B^k X_t = X_{t-k}$, y entonces el polinomio de retraso es
 
 $$
 \Phi(B) = 1 - \phi_1 B - \phi_2 B^2 - \cdots - \phi_p B^p 
 $$
 
-El proceso es **estacionario de segundo orden** si todas las raíces de $\Phi(B)$ caen fuera del círculo unitario, es decir  $|z_i| > 1$ para toda $z$ que cumpla $\Phi(z)=0$ . En ese caso existe la representación $MA(\infty)$
+El proceso es **estacionario de segundo orden** si todas las raíces de $\Phi(B)$ caen fuera del círculo unitario, es decir $|z_i| > 1$ para toda $z$ que cumpla $\Phi(z)=0$ . En ese caso existe la representación $MA(\infty)$
 
 $$
 X_t = \Phi^{-1}(B) Z_t = \sum_{j=0}^{\infty} \psi_j Z_{t-j}
 \qquad \text{donde} \quad  \sum_{j=0}^{\infty}|\psi_j| < \infty 
 $$
 
-Para un modelo $AR(1)$, el polinomio de retraso es  $\Phi(B) = 1-\phi B$, la única raíz es $z = 1/\phi$ y la condición para que sea estacionario de segundo orden es que $|z|>1$, y es equivalente a que $|\phi|<1$. Si se cumple lo anterior, entonces
+Para un modelo $AR(1)$, el polinomio de retraso es $\Phi(B) = 1-\phi B$ y la única raíz es $z = 1/\phi$, entonces la condición para que sea estacionario de segundo orden es que $|z|>1$, y es equivalente a que $|\phi|<1$. Si se cumple lo anterior, entonces:
 
 $$
 \mathbb{E}[X_t]=0, \qquad \gamma(0)=\mathrm{Var}(X_t)=\frac{\sigma^2}{1-\phi^2}
 $$
 
-# ACF y PACF
+## ACF y PACF
 
-## Expresión para AR(p)
+### Expresión para AR(p)
 
-Multiplicando $\Phi(B)X_t = Z_t$ por $X_{t-h}$ y tomando esperanzas se obtienen las **ecuaciones de Yule–Walker**:
+Multiplicando $X_t = \Phi^{-1}(B) Z_t$ por $X_{t-h}$ y tomando esperanzas se obtienen las **ecuaciones Yule–Walker**:
 
 $$
 \gamma(h) = \phi_1\gamma(h-1) + \cdots + \phi_p\gamma(h-p), \qquad h \ge 1,
 $$
 
-y dividiendo entre $\gamma(0)$,
+Dividiendo entre $\gamma(0)$,
 
 $$
 \rho(h) = \phi_1\rho(h-1) + \cdots + \phi_p\rho(h-p), \qquad h \ge 1 .
@@ -77,22 +85,18 @@ $$
 
 Es una ecuación en diferencias (lineal) cuya solución general es
 
-$$
-\rho(h) = \sum_{i=1}^{k} c_i\, z_i^{-h} \quad (\text{raices distintas } z_i),
-$$
+De modo que la ACF **decae** (exponencialmente, o con oscilación si hay términos negativos o raíces complejas) pero **no se corta en cierto punto**.
 
-de modo que la ACF **decae** (exponencialmente, o con oscilación si hay términos negativos o raíces complejas) pero **no se corta**.
-
-La PACF $\alpha(h)$ para un $AR(p)$,
+Sin entrar en detalles técnicos, la PACF $\alpha(h)$ para un modelo $AR(p)$ es:
 
 $$
 \alpha(h) \ne 0 \ \text{ para } h \le p, \qquad
 \alpha(h) = 0 \ \text{ para } h > p
 $$
 
-Ese **corte** en el rezago $p$ nos ayudará a "identificar" al modelo para datos observados.
+Ese **corte** en el rezago $p$ nos ayudará a "identificar" el orden del modelo para unos datos observados.
 
-## Expresión para AR(1) estacionario
+### Expresión para AR(1) estacionario
 
 Como $\rho(h)=\phi\rho(h-1)$ y $\rho(0)=1$:
 
@@ -104,23 +108,22 @@ $$
 
 Si $0<\phi<1$ la ACF decae monótonamente; si $-1<\phi<0$ decae alternando signo.
 
-
-Mientras que la PACF queda determinada por:
+Mientras que la PACF queda determinada por: 
 $$
 \alpha(1) = \phi, \qquad \alpha(h) = 0 \quad \text{para } h>1 .
 $$
 
-
-## Plot de ambas con funciones de R
+Podemos obtener las funciones de autocorrelación teóricas para un modelo completamente especificado, con la función `ARMAacf().` A continuación se muestra un ejemplo para el modelo $AR(1)$ con $\phi = 0.8$ y $\phi = - 0.8$, se puede ver que en el segundo caso la ACF oscila y en la PACF el único valor es para el rezago $1$ pero con signo negativo.
 
 ```{r}
 #| label: acf-pacf-ar
 #| fig-width: 9
 #| fig-height: 6
 
+# rezago maximo en la grafica
 h <- 20
 
-# ACF y PACF teóricas con ARMAacf()
+# ACF y PACF teoricas con ARMAacf()
 acf_ar_pos  <- ARMAacf(ar = 0.8,  lag.max = h)
 pacf_ar_pos <- ARMAacf(ar = 0.8,  lag.max = h, pacf = TRUE)
 acf_ar_neg  <- ARMAacf(ar = -0.8, lag.max = h)
@@ -151,51 +154,51 @@ abline(h = 0)
 par(par_default)
 ```
 
-Y las versiones **muestrales** sobre una realización de un $AR(2)$, con `acf()`/`pacf()` de R base y `forecast::Acf()`:
+También podemos obtener las versiones **muestrales** sobre una realización del mismo proceso, con las funciones `acf()` y `pacf()` de R base y `Acf()` de `forecast`
 
 ```{r}
 #| label: acf-pacf-ar-muestral
 #| fig-width: 9
 #| fig-height: 6
 
-x_ar2 <- arima.sim(n = 500, model = list(ar = c(0.6, -0.3)))
+x_ar2 <- arima.sim(n = 500, model = list(ar = c(0.8)))
 
 par(mfrow = c(2, 2), mar = c(4, 4, 3, 1))
-plot(x_ar2, main = "Realización AR(2)", ylab = expression(X[t]))
+
+plot(x_ar2, main = "Realización de un AR(1)", ylab = expression(X[t]))
 acf(x_ar2,  main = "ACF muestral (R base)")
 pacf(x_ar2, main = "PACF muestral (R base)")
-forecast::Acf(x_ar2, main = "Acf() de forecast (sin rezago 0)")
+forecast::Acf(x_ar2, main = "ACF (forecast) (sin rezago 0)")
+
 par(par_default)
+
 ```
 
-La PACF muestral se apaga después del rezago 2, consistente con un $AR(2)$.
+## Raíces del polinomio
 
-# Raices del polinomio
-
-Para $AR(p)$ analizamos las raíces de
+Para saber si el modelo $AR(p)$ es estacionario de segundo orden, analizamos las raíces del polinomio de retraso
 
 $$
-\Phi(z) = 1 - \phi_1 z - \cdots - \phi_p z^p = 0 .
+\Phi(B) = 1 - \phi_1 B - \phi_2 B^2 - \cdots - \phi_p B^p
 $$
 
-En R, `polyroot()` recibe los coeficientes en **orden creciente** de potencia: $c(1, -\phi_1, \dots, -\phi_p)$.
+La función `polyroot()` recibe los coeficientes $(1,- \phi_1, ..., - \phi_p)$ y devuelve las raíces del polinomio. Otra forma es visualizar las raices, en esta gráfica queremos que los puntos estén fuera del círculo unitario. Para ilustrar estos métodos, supongamos un modelo $AR(1)$ con $\phi = 0.8$
 
 ```{r}
 #| label: raices-ar-base
 #| fig-width: 6
 #| fig-height: 6
 
-phi <- c(0.6, -0.3)                  # AR(2)
-coef_ar <- c(1, -phi)                # 1 - 0.6z + 0.3z^2
+phi <- c(0.8)                  # AR(1)
+coef_ar <- c(1, -phi)                # 1 - 0.8z 
 raices_ar <- polyroot(coef_ar)
 
-data.frame(
-  raiz   = raices_ar,
-  modulo = Mod(raices_ar),
-  fuera_del_circulo = Mod(raices_ar) > 1
-)
+tabKable(data.frame(
+  Raiz   = raices_ar,
+  Modulo = Mod(raices_ar))
+        )
 
-# --- Plot con R base ---
+# funcion manual
 plot_raices <- function(raices, titulo = "Raíces y círculo unitario") {
   theta <- seq(0, 2*pi, length.out = 400)
   lim <- max(1.5, max(Mod(raices)) * 1.2)
@@ -211,43 +214,49 @@ plot_raices <- function(raices, titulo = "Raíces y círculo unitario") {
          legend = c("|z| > 1 (estacionario)", "|z| <= 1"))
 }
 
-plot_raices(raices_ar, "AR(2): raíces de Phi(z)")
+plot_raices(raices_ar, "Raices de AR(1) con phi=0.8")
 ```
+
+Otra alternativa es con la función `uc.check()` de la paquetería `UnitCircle`
 
 ```{r}
 #| label: raices-ar-paquete
 #| fig-width: 6
 #| fig-height: 6
 
-# --- Plot con paquetería extra: UnitCircle ---
+# UnitCircle
 # uc.check() recibe el polinomio en orden creciente de potencia
 UnitCircle::uc.check(pol_ = coef_ar, print_output = TRUE, plot_output = TRUE)
 ```
+
+Por último, la función `autoplot` de la paquetería `forecast`.
 
 ```{r}
 #| label: raices-ar-forecast
 #| fig-width: 6
 #| fig-height: 5
 
-# Alternativa: forecast grafica las raíces INVERSAS (deben quedar DENTRO del círculo)
-fit_ar2 <- Arima(x_ar2, order = c(2, 0, 0), include.mean = FALSE)
-autoplot(fit_ar2) + ggtitle("Raíces inversas del AR(2) estimado (forecast)")
+# forecast grafica las raices INVERSAS (deben quedar DENTRO del circulo)
+fit_ar2 <- Arima(x_ar2, order = c(1, 0, 0), include.mean = FALSE)
+autoplot(fit_ar2) + ggtitle("Raíces inversas de AR(1) con phi=0.8 ")
 ```
 
-::: {.callout-note}
+::: callout-note
 `polyroot()` y `UnitCircle` grafican las raíces $z_i$: la condición es $|z_i|>1$ (**fuera** del círculo). `forecast::autoplot()` grafica las raíces **inversas** $1/z_i$: la condición equivalente es que caigan **dentro** del círculo.
 :::
 
-# Simulacion
+## Simulación
 
-Simulamos $AR(1)$: $X_t = \phi X_{t-1} + Z_t$ con $X_0 = 0$ y $Z_t \sim N(0,1)$. Como `arima.sim()` exige estacionariedad, escribimos la recursión a mano para poder incluir los casos $|\phi| \ge 1$.
+Podemos simular un modelo $AR(1)$ con $X_0 = 0$ y $Z_t \sim GWN(0,1)$ con distintos valores del parámetro de persistencia $\phi$ para ilustrar lo que pasa cuando está dentro del circulo unitario o fuera de él.
 
 ```{r}
 #| label: sim-ar1
 #| fig-width: 9
 #| fig-height: 7
 
-sim_ar1 <- function(n, phi, x0 = 0, sd = 1) {
+
+
+sim_ar1 <- function(n, phi, x0 = 0, sd = 1) {   
   z <- rnorm(n, sd = sd)
   x <- numeric(n)
   x[1] <- phi * x0 + z[1]
@@ -262,22 +271,18 @@ x_exp  <- sim_ar1(n, phi = 1.05)  # |phi| > 1  -> explosivo
 
 par(mfrow = c(3, 1), mar = c(4, 4, 3, 1))
 plot(x_est,  ylab = expression(X[t]), col = "steelblue",
-     main = expression(paste("AR(1) con ", phi == 0.7, ": estacionario, revierte a la media")))
+     main = expression(paste("AR(1) con ", phi == 0.7, ": Estacionario")))
 abline(h = 0, lty = 2)
 plot(x_unit, ylab = expression(X[t]), col = "darkorange",
-     main = expression(paste("AR(1) con ", phi == 1, ": raíz unitaria (caminata aleatoria)")))
+     main = expression(paste("AR(1) con ", phi == 1, ": Raíz unitaria (Caminata aleatoria Gaussiana)")))
 abline(h = 0, lty = 2)
 plot(x_exp,  ylab = expression(X[t]), col = "firebrick",
-     main = expression(paste("AR(1) con ", phi == 1.05, ": explosivo")))
+     main = expression(paste("AR(1) con ", phi == 1.05, ": Explosivo")))
 abline(h = 0, lty = 2)
 par(par_default)
 ```
 
-Interpretación:
-
-- $|\phi| < 1$: varianza finita $\sigma^2/(1-\phi^2)$, la serie oscila alrededor de 0 y la ACF muestral decae rápido.
-- $|\phi| = 1$: $X_t = \sum_{j\le t} Z_j$, varianza $t\sigma^2$ creciente; la ACF muestral decae lentamente (casi lineal).
-- $|\phi| > 1$: la serie diverge a tasa geométrica; note la escala del eje vertical.
+También podemos analizar las funciones de autocorrelación de dichas series.
 
 ```{r}
 #| label: sim-ar1-acf
@@ -359,8 +364,6 @@ $$
 $$
 
 que decae geométricamente y alterna de signo cuando $\theta>0$.
-
-### Plot de ambas con funciones de R
 
 ```{r}
 #| label: acf-pacf-ma
@@ -561,10 +564,10 @@ $$
 
 Resultado clave para la identificación:
 
-| Modelo | ACF | PACF |
-|---|---|---|
-| $AR(p)$ | decae | se corta en $p$ |
-| $MA(q)$ | se corta en $q$ | decae |
+| Modelo      | ACF              | PACF             |
+|-------------|------------------|------------------|
+| $AR(p)$     | decae            | se corta en $p$  |
+| $MA(q)$     | se corta en $q$  | decae            |
 | $ARMA(p,q)$ | decae (tras $q$) | decae (tras $p$) |
 
 Ninguna de las dos funciones se corta, por lo que en la práctica el orden se elige con criterios de información (AIC/BIC), p. ej. con `forecast::auto.arima()`.
@@ -762,8 +765,8 @@ En el último panel, $\Phi(B)=1-0.6B$ y $\Theta(B)=1-0.6B$ se cancelan y el proc
 
 # Resumen
 
-| | $AR(p)$ | $MA(q)$ | $ARMA(p,q)$ |
-|---|---|---|---|
+|   | $AR(p)$ | $MA(q)$ | $ARMA(p,q)$ |
+|------------------|------------------|------------------|------------------|
 | Forma compacta | $\Phi(B)X_t=Z_t$ | $X_t=\Theta(B)Z_t$ | $\Phi(B)X_t=\Theta(B)Z_t$ |
 | Estacionariedad | raíces de $\Phi$ fuera del círculo | siempre | raíces de $\Phi$ fuera |
 | Invertibilidad | siempre | raíces de $\Theta$ fuera | raíces de $\Theta$ fuera |
