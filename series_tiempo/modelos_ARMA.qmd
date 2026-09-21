@@ -25,9 +25,9 @@ library(ggplot2)
 par_default <- par(no.readonly = TRUE)
 ```
 
-# Modelos Autoregresivos
+# Modelos Autoregresivos $AR(p)$
 
-Un proceso $\{X_t\}$ es autoregresivo de orden $p$, $AR(p)$, si satisface
+Un proceso $\{X_t\}$ es autoregresivo de orden $p$ si satisface la ecuación:
 
 $$
 X_t = \phi_1 X_{t-1} + \phi_2 X_{t-2} + \cdots + \phi_p X_{t-p} + Z_t,
@@ -46,14 +46,14 @@ $$
 \Phi(B) = 1 - \phi_1 B - \phi_2 B^2 - \cdots - \phi_p B^p 
 $$
 
-El proceso es **causal y estacionario** si todas las raíces de $\Phi(B)$ caen **fuera** del círculo unitario, es decir  $|z_i| > 1$ para toda $z$ que cumpla $\Phi(z)=0$ . En ese caso existe la representación $MA(\infty)$
+El proceso es **estacionario de segundo orden** si todas las raíces de $\Phi(B)$ caen fuera del círculo unitario, es decir  $|z_i| > 1$ para toda $z$ que cumpla $\Phi(z)=0$ . En ese caso existe la representación $MA(\infty)$
 
 $$
-X_t = \Phi^{-1}(B) Z_t = \sum_{j\ge 0} \psi_j Z_{t-j},
-\qquad \sum_{j\ge 0}|\psi_j| < \infty 
+X_t = \Phi^{-1}(B) Z_t = \sum_{j=0}^{\infty} \psi_j Z_{t-j}
+\qquad \text{donde} \quad  \sum_{j=0}^{\infty}|\psi_j| < \infty 
 $$
 
-Para $AR(1)$: $\Phi(B) = 1-\phi B$, la única raíz es $z = 1/\phi$ y la condición para que sea estacionario de segundo orden es que $|z|>1$, y es equivalente a que $|\phi|<1$. Si se cumple lo anterior, entonces
+Para un modelo $AR(1)$, el polinomio de retraso es  $\Phi(B) = 1-\phi B$, la única raíz es $z = 1/\phi$ y la condición para que sea estacionario de segundo orden es que $|z|>1$, y es equivalente a que $|\phi|<1$. Si se cumple lo anterior, entonces
 
 $$
 \mathbb{E}[X_t]=0, \qquad \gamma(0)=\mathrm{Var}(X_t)=\frac{\sigma^2}{1-\phi^2}

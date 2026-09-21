@@ -20,6 +20,7 @@ format:
 | Modelo clásico y procesos estacionarios | [Notas](series_tiempo/Componentes_y_estacionariedad.Rmd) |
 | Medidas de dependencia | [Notas](series_tiempo/Dependencia.Rmd) |
 | Autocorrelación y autocorrelación parcial | [Notas](series_tiempo/ACF_PACF.Rmd) |
+| Modelos $AR(p)$, $MA(q)$ y $ARMA(p,q)$ | [Notas](series_tiempo/modelos_ARMA.qmd) |
 
 
 
