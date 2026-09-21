@@ -1,0 +1,1673 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.18">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Rodrigo B.">
+
+<title>Modelos AR(p), MA(q) y ARMA(p,q) – Modelos de Supervivencia y Series de Tiempo</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-9d96f532d65220ca877c0304385df42f.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script src="../site_libs/kePrint-0.0.1/kePrint.js"></script>
+<link href="../site_libs/lightable-0.0.1/lightable.css" rel="stylesheet">
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">Modelos de Supervivencia y Series de Tiempo</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../index.html"> 
+<span class="menu-text">Inicio</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#modelos-autoregresivos-arp" id="toc-modelos-autoregresivos-arp" class="nav-link active" data-scroll-target="#modelos-autoregresivos-arp">Modelos Autoregresivos <span class="math inline">\(AR(p)\)</span></a>
+  <ul class="collapse">
+  <li><a href="#acf-y-pacf" id="toc-acf-y-pacf" class="nav-link" data-scroll-target="#acf-y-pacf">ACF y PACF</a>
+  <ul class="collapse">
+  <li><a href="#expresión-para-arp" id="toc-expresión-para-arp" class="nav-link" data-scroll-target="#expresión-para-arp">Expresión para AR(p)</a></li>
+  <li><a href="#expresión-para-ar1-estacionario" id="toc-expresión-para-ar1-estacionario" class="nav-link" data-scroll-target="#expresión-para-ar1-estacionario">Expresión para AR(1) estacionario</a></li>
+  </ul></li>
+  <li><a href="#raíces-del-polinomio" id="toc-raíces-del-polinomio" class="nav-link" data-scroll-target="#raíces-del-polinomio">Raíces del polinomio</a></li>
+  <li><a href="#simulación" id="toc-simulación" class="nav-link" data-scroll-target="#simulación">Simulación</a></li>
+  </ul></li>
+  <li><a href="#modelos-de-medias-móviles" id="toc-modelos-de-medias-móviles" class="nav-link" data-scroll-target="#modelos-de-medias-móviles">Modelos de Medias Móviles</a>
+  <ul class="collapse">
+  <li><a href="#acf-y-pacf-1" id="toc-acf-y-pacf-1" class="nav-link" data-scroll-target="#acf-y-pacf-1">ACF y PACF</a>
+  <ul class="collapse">
+  <li><a href="#expresión-para-maq" id="toc-expresión-para-maq" class="nav-link" data-scroll-target="#expresión-para-maq">Expresión para MA(q)</a></li>
+  <li><a href="#expresión-para-ma1" id="toc-expresión-para-ma1" class="nav-link" data-scroll-target="#expresión-para-ma1">Expresión para MA(1)</a></li>
+  </ul></li>
+  <li><a href="#raices-del-polinomio" id="toc-raices-del-polinomio" class="nav-link" data-scroll-target="#raices-del-polinomio">Raices del polinomio</a></li>
+  <li><a href="#simulacion" id="toc-simulacion" class="nav-link" data-scroll-target="#simulacion">Simulacion</a></li>
+  </ul></li>
+  <li><a href="#modelos-arma" id="toc-modelos-arma" class="nav-link" data-scroll-target="#modelos-arma">Modelos ARMA</a>
+  <ul class="collapse">
+  <li><a href="#acf-y-pacf-2" id="toc-acf-y-pacf-2" class="nav-link" data-scroll-target="#acf-y-pacf-2">ACF y PACF</a>
+  <ul class="collapse">
+  <li><a href="#expresión-para-armapq" id="toc-expresión-para-armapq" class="nav-link" data-scroll-target="#expresión-para-armapq">Expresión para ARMA(p,q)</a></li>
+  <li><a href="#expresión-para-arma11" id="toc-expresión-para-arma11" class="nav-link" data-scroll-target="#expresión-para-arma11">Expresión para ARMA(1,1)</a></li>
+  <li><a href="#plot-de-ambas-con-funciones-de-r" id="toc-plot-de-ambas-con-funciones-de-r" class="nav-link" data-scroll-target="#plot-de-ambas-con-funciones-de-r">Plot de ambas con funciones de R</a></li>
+  </ul></li>
+  <li><a href="#raices-del-polinomio-1" id="toc-raices-del-polinomio-1" class="nav-link" data-scroll-target="#raices-del-polinomio-1">Raices del polinomio</a></li>
+  <li><a href="#simulacion-1" id="toc-simulacion-1" class="nav-link" data-scroll-target="#simulacion-1">Simulacion</a></li>
+  </ul></li>
+  <li><a href="#resumen" id="toc-resumen" class="nav-link" data-scroll-target="#resumen">Resumen</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Modelos AR(p), MA(q) y ARMA(p,q)</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Rodrigo B. </p>
+          </div>
+  </div>
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">2026</span>)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Paquetes usados a lo largo del documento</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co"># install.packages(c("UnitCircle", "forecast", "ggplot2"))</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(UnitCircle)   <span class="co"># visualización de raíces respecto al círculo unitario</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(forecast)     <span class="co"># Acf/Pacf y autoplot de raíces</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(kableExtra)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>tabKable <span class="ot">&lt;-</span> <span class="cf">function</span>(tabla,<span class="at">cap=</span><span class="st">""</span>){</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>  tabla <span class="sc">%&gt;%</span> </span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">kbl</span>(<span class="at">booktabs =</span> <span class="cn">TRUE</span>, <span class="at">align =</span> <span class="st">"c"</span>,<span class="at">caption =</span> cap) <span class="sc">%&gt;%</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>    <span class="co">#Evitamos que cambie de posición </span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">kable_styling</span>(<span class="at">latex_options =</span> <span class="fu">c</span>(<span class="st">"hold_position"</span>)) </span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>}  </span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>par_default <span class="ot">&lt;-</span> <span class="fu">par</span>(<span class="at">no.readonly =</span> <span class="cn">TRUE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<section id="modelos-autoregresivos-arp" class="level1">
+<h1>Modelos Autoregresivos <span class="math inline">\(AR(p)\)</span></h1>
+<p>Un proceso <span class="math inline">\(\{X_t\}\)</span> es autoregresivo de orden <span class="math inline">\(p\)</span> si satisface la ecuación:</p>
+<p><span class="math display">\[
+X_t = \phi_1 X_{t-1} + \phi_2 X_{t-2} + \cdots + \phi_p X_{t-p} + Z_t,
+\qquad Z_t \sim \mathrm{WN}(0,\sigma^2)
+\]</span></p>
+<p>Podemos resumir un modelo <span class="math inline">\(AR(p)\)</span> en términos del polinomio de retraso:</p>
+<p><span class="math display">\[
+\Phi(B)\, X_t = Z_t
+\]</span></p>
+<p>Donde <span class="math inline">\(B\)</span> es el operador de retraso está definido por <span class="math inline">\(B^k X_t = X_{t-k}\)</span>, y entonces el polinomio de retraso es</p>
+<p><span class="math display">\[
+\Phi(B) = 1 - \phi_1 B - \phi_2 B^2 - \cdots - \phi_p B^p
+\]</span></p>
+<p>El proceso es <strong>estacionario de segundo orden</strong> si todas las raíces de <span class="math inline">\(\Phi(B)\)</span> caen fuera del círculo unitario, es decir <span class="math inline">\(|z_i| &gt; 1\)</span> para toda <span class="math inline">\(z\)</span> que cumpla <span class="math inline">\(\Phi(z)=0\)</span> . En ese caso existe la representación <span class="math inline">\(MA(\infty)\)</span></p>
+<p><span class="math display">\[
+X_t = \Phi^{-1}(B) Z_t = \sum_{j=0}^{\infty} \psi_j Z_{t-j}
+\qquad \text{donde} \quad  \sum_{j=0}^{\infty}|\psi_j| &lt; \infty
+\]</span></p>
+<p>Para un modelo <span class="math inline">\(AR(1)\)</span>, el polinomio de retraso es <span class="math inline">\(\Phi(B) = 1-\phi B\)</span> y la única raíz es <span class="math inline">\(z = 1/\phi\)</span>, entonces la condición para que sea estacionario de segundo orden es que <span class="math inline">\(|z|&gt;1\)</span>, y es equivalente a que <span class="math inline">\(|\phi|&lt;1\)</span>. Si se cumple lo anterior, entonces:</p>
+<p><span class="math display">\[
+\mathbb{E}[X_t]=0, \qquad \gamma(0)=\mathrm{Var}(X_t)=\frac{\sigma^2}{1-\phi^2}
+\]</span></p>
+<section id="acf-y-pacf" class="level2">
+<h2 class="anchored" data-anchor-id="acf-y-pacf">ACF y PACF</h2>
+<section id="expresión-para-arp" class="level3">
+<h3 class="anchored" data-anchor-id="expresión-para-arp">Expresión para AR(p)</h3>
+<p>Multiplicando <span class="math inline">\(X_t = \Phi^{-1}(B) Z_t\)</span> por <span class="math inline">\(X_{t-h}\)</span> y tomando esperanzas se obtienen las <strong>ecuaciones Yule–Walker</strong>:</p>
+<p><span class="math display">\[
+\gamma(h) = \phi_1\gamma(h-1) + \cdots + \phi_p\gamma(h-p), \qquad h \ge 1,
+\]</span></p>
+<p>Dividiendo entre <span class="math inline">\(\gamma(0)\)</span>,</p>
+<p><span class="math display">\[
+\rho(h) = \phi_1\rho(h-1) + \cdots + \phi_p\rho(h-p), \qquad h \ge 1 .
+\]</span></p>
+<p>Es una ecuación en diferencias (lineal) cuya solución general es</p>
+<p>De modo que la ACF <strong>decae</strong> (exponencialmente, o con oscilación si hay términos negativos o raíces complejas) pero <strong>no se corta en cierto punto</strong>.</p>
+<p>Sin entrar en detalles técnicos, la PACF <span class="math inline">\(\alpha(h)\)</span> para un modelo <span class="math inline">\(AR(p)\)</span> es:</p>
+<p><span class="math display">\[
+\alpha(h) \ne 0 \ \text{ para } h \le p, \qquad
+\alpha(h) = 0 \ \text{ para } h &gt; p
+\]</span></p>
+<p>Ese <strong>corte</strong> en el rezago <span class="math inline">\(p\)</span> nos ayudará a “identificar” el orden del modelo para unos datos observados.</p>
+</section>
+<section id="expresión-para-ar1-estacionario" class="level3">
+<h3 class="anchored" data-anchor-id="expresión-para-ar1-estacionario">Expresión para AR(1) estacionario</h3>
+<p>Como <span class="math inline">\(\rho(h)=\phi\rho(h-1)\)</span> y <span class="math inline">\(\rho(0)=1\)</span>:</p>
+<p>En este caso, la ACF es:</p>
+<p><span class="math display">\[
+\rho(h) = \phi^{|h|}, \qquad h = 0,\pm 1,\pm 2,\dots
+\]</span></p>
+<p>Si <span class="math inline">\(0&lt;\phi&lt;1\)</span> la ACF decae monótonamente; si <span class="math inline">\(-1&lt;\phi&lt;0\)</span> decae alternando signo.</p>
+<p>Mientras que la PACF queda determinada por: <span class="math display">\[
+\alpha(1) = \phi, \qquad \alpha(h) = 0 \quad \text{para } h&gt;1 .
+\]</span></p>
+<p>Podemos obtener las funciones de autocorrelación teóricas para un modelo completamente especificado, con la función <code>ARMAacf().</code> A continuación se muestra un ejemplo para el modelo <span class="math inline">\(AR(1)\)</span> con <span class="math inline">\(\phi = 0.8\)</span> y <span class="math inline">\(\phi = - 0.8\)</span>, se puede ver que en el segundo caso la ACF oscila y en la PACF el único valor es para el rezago <span class="math inline">\(1\)</span> pero con signo negativo.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># rezago maximo en la grafica</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>h <span class="ot">&lt;-</span> <span class="dv">20</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co"># ACF y PACF teoricas con ARMAacf()</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>acf_ar_pos  <span class="ot">&lt;-</span> <span class="fu">ARMAacf</span>(<span class="at">ar =</span> <span class="fl">0.8</span>,  <span class="at">lag.max =</span> h)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>pacf_ar_pos <span class="ot">&lt;-</span> <span class="fu">ARMAacf</span>(<span class="at">ar =</span> <span class="fl">0.8</span>,  <span class="at">lag.max =</span> h, <span class="at">pacf =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>acf_ar_neg  <span class="ot">&lt;-</span> <span class="fu">ARMAacf</span>(<span class="at">ar =</span> <span class="sc">-</span><span class="fl">0.8</span>, <span class="at">lag.max =</span> h)</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>pacf_ar_neg <span class="ot">&lt;-</span> <span class="fu">ARMAacf</span>(<span class="at">ar =</span> <span class="sc">-</span><span class="fl">0.8</span>, <span class="at">lag.max =</span> h, <span class="at">pacf =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(<span class="at">mfrow =</span> <span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">2</span>), <span class="at">mar =</span> <span class="fu">c</span>(<span class="dv">4</span>, <span class="dv">4</span>, <span class="dv">3</span>, <span class="dv">1</span>))</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(<span class="dv">0</span><span class="sc">:</span>h, acf_ar_pos, <span class="at">type =</span> <span class="st">"h"</span>, <span class="at">lwd =</span> <span class="dv">2</span>, <span class="at">col =</span> <span class="st">"steelblue"</span>,</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>     <span class="at">xlab =</span> <span class="st">"Rezago h"</span>, <span class="at">ylab =</span> <span class="fu">expression</span>(<span class="fu">rho</span>(h)),</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="fu">expression</span>(<span class="fu">paste</span>(<span class="st">"ACF teórica AR(1), "</span>, phi <span class="sc">==</span> <span class="fl">0.8</span>)))</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">h =</span> <span class="dv">0</span>)</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(<span class="dv">1</span><span class="sc">:</span>h, pacf_ar_pos, <span class="at">type =</span> <span class="st">"h"</span>, <span class="at">lwd =</span> <span class="dv">2</span>, <span class="at">col =</span> <span class="st">"firebrick"</span>,</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>     <span class="at">xlab =</span> <span class="st">"Rezago h"</span>, <span class="at">ylab =</span> <span class="fu">expression</span>(<span class="fu">alpha</span>(h)), <span class="at">ylim =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">1</span>, <span class="dv">1</span>),</span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="fu">expression</span>(<span class="fu">paste</span>(<span class="st">"PACF teórica AR(1), "</span>, phi <span class="sc">==</span> <span class="fl">0.8</span>)))</span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">h =</span> <span class="dv">0</span>)</span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(<span class="dv">0</span><span class="sc">:</span>h, acf_ar_neg, <span class="at">type =</span> <span class="st">"h"</span>, <span class="at">lwd =</span> <span class="dv">2</span>, <span class="at">col =</span> <span class="st">"steelblue"</span>,</span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>     <span class="at">xlab =</span> <span class="st">"Rezago h"</span>, <span class="at">ylab =</span> <span class="fu">expression</span>(<span class="fu">rho</span>(h)),</span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="fu">expression</span>(<span class="fu">paste</span>(<span class="st">"ACF teórica AR(1), "</span>, phi <span class="sc">==</span> <span class="sc">-</span><span class="fl">0.8</span>)))</span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">h =</span> <span class="dv">0</span>)</span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(<span class="dv">1</span><span class="sc">:</span>h, pacf_ar_neg, <span class="at">type =</span> <span class="st">"h"</span>, <span class="at">lwd =</span> <span class="dv">2</span>, <span class="at">col =</span> <span class="st">"firebrick"</span>,</span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a>     <span class="at">xlab =</span> <span class="st">"Rezago h"</span>, <span class="at">ylab =</span> <span class="fu">expression</span>(<span class="fu">alpha</span>(h)), <span class="at">ylim =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">1</span>, <span class="dv">1</span>),</span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="fu">expression</span>(<span class="fu">paste</span>(<span class="st">"PACF teórica AR(1), "</span>, phi <span class="sc">==</span> <span class="sc">-</span><span class="fl">0.8</span>)))</span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">h =</span> <span class="dv">0</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="modelos_ARMA_files/figure-html/acf-pacf-ar-1.png" class="img-fluid figure-img" width="864"></p>
+</figure>
+</div>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(par_default)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<p>También podemos obtener las versiones <strong>muestrales</strong> sobre una realización del mismo proceso, con las funciones <code>acf()</code> y <code>pacf()</code> de R base y <code>Acf()</code> de <code>forecast</code></p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>x_ar2 <span class="ot">&lt;-</span> <span class="fu">arima.sim</span>(<span class="at">n =</span> <span class="dv">500</span>, <span class="at">model =</span> <span class="fu">list</span>(<span class="at">ar =</span> <span class="fu">c</span>(<span class="fl">0.8</span>)))</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(<span class="at">mfrow =</span> <span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">2</span>), <span class="at">mar =</span> <span class="fu">c</span>(<span class="dv">4</span>, <span class="dv">4</span>, <span class="dv">3</span>, <span class="dv">1</span>))</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(x_ar2, <span class="at">main =</span> <span class="st">"Realización de un AR(1)"</span>, <span class="at">ylab =</span> <span class="fu">expression</span>(X[t]))</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="fu">acf</span>(x_ar2,  <span class="at">main =</span> <span class="st">"ACF muestral (R base)"</span>)</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="fu">pacf</span>(x_ar2, <span class="at">main =</span> <span class="st">"PACF muestral (R base)"</span>)</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>forecast<span class="sc">::</span><span class="fu">Acf</span>(x_ar2, <span class="at">main =</span> <span class="st">"ACF (forecast) (sin rezago 0)"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="modelos_ARMA_files/figure-html/acf-pacf-ar-muestral-1.png" class="img-fluid figure-img" width="864"></p>
+</figure>
+</div>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(par_default)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+</section>
+</section>
+<section id="raíces-del-polinomio" class="level2">
+<h2 class="anchored" data-anchor-id="raíces-del-polinomio">Raíces del polinomio</h2>
+<p>Para saber si el modelo <span class="math inline">\(AR(p)\)</span> es estacionario de segundo orden, analizamos las raíces del polinomio de retraso</p>
+<p><span class="math display">\[
+\Phi(B) = 1 - \phi_1 B - \phi_2 B^2 - \cdots - \phi_p B^p
+\]</span></p>
+<p>La función <code>polyroot()</code> recibe los coeficientes <span class="math inline">\((1,- \phi_1, ..., - \phi_p)\)</span> y devuelve las raíces del polinomio. Otra forma es visualizar las raices, en esta gráfica queremos que los puntos estén fuera del círculo unitario. Para ilustrar estos métodos, supongamos un modelo <span class="math inline">\(AR(1)\)</span> con <span class="math inline">\(\phi = 0.8\)</span></p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>phi <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">0.8</span>)                  <span class="co"># AR(1)</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>coef_ar <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="sc">-</span>phi)                <span class="co"># 1 - 0.8z </span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>raices_ar <span class="ot">&lt;-</span> <span class="fu">polyroot</span>(coef_ar)</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="fu">tabKable</span>(<span class="fu">data.frame</span>(</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">Raiz   =</span> raices_ar,</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">Modulo =</span> <span class="fu">Mod</span>(raices_ar))</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>        )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<table class="table caption-top table-sm table-striped small">
+<thead>
+<tr class="header">
+<th style="text-align: center;" data-quarto-table-cell-role="th">Raiz</th>
+<th style="text-align: center;" data-quarto-table-cell-role="th">Modulo</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">1.25+0i</td>
+<td style="text-align: center;">1.25</td>
+</tr>
+</tbody>
+</table>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># funcion manual</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>plot_raices <span class="ot">&lt;-</span> <span class="cf">function</span>(raices, <span class="at">titulo =</span> <span class="st">"Raíces y círculo unitario"</span>) {</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  theta <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">2</span><span class="sc">*</span>pi, <span class="at">length.out =</span> <span class="dv">400</span>)</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  lim <span class="ot">&lt;-</span> <span class="fu">max</span>(<span class="fl">1.5</span>, <span class="fu">max</span>(<span class="fu">Mod</span>(raices)) <span class="sc">*</span> <span class="fl">1.2</span>)</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">plot</span>(<span class="fu">cos</span>(theta), <span class="fu">sin</span>(theta), <span class="at">type =</span> <span class="st">"l"</span>, <span class="at">lwd =</span> <span class="dv">2</span>, <span class="at">col =</span> <span class="st">"grey40"</span>,</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>       <span class="at">asp =</span> <span class="dv">1</span>, <span class="at">xlim =</span> <span class="fu">c</span>(<span class="sc">-</span>lim, lim), <span class="at">ylim =</span> <span class="fu">c</span>(<span class="sc">-</span>lim, lim),</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>       <span class="at">xlab =</span> <span class="st">"Re(z)"</span>, <span class="at">ylab =</span> <span class="st">"Im(z)"</span>, <span class="at">main =</span> titulo)</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">abline</span>(<span class="at">h =</span> <span class="dv">0</span>, <span class="at">v =</span> <span class="dv">0</span>, <span class="at">lty =</span> <span class="dv">3</span>, <span class="at">col =</span> <span class="st">"grey70"</span>)</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">points</span>(<span class="fu">Re</span>(raices), <span class="fu">Im</span>(raices), <span class="at">pch =</span> <span class="dv">19</span>, <span class="at">cex =</span> <span class="fl">1.4</span>,</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>         <span class="at">col =</span> <span class="fu">ifelse</span>(<span class="fu">Mod</span>(raices) <span class="sc">&gt;</span> <span class="dv">1</span>, <span class="st">"forestgreen"</span>, <span class="st">"firebrick"</span>))</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">text</span>(<span class="fu">Re</span>(raices), <span class="fu">Im</span>(raices), <span class="at">labels =</span> <span class="fu">round</span>(<span class="fu">Mod</span>(raices), <span class="dv">2</span>), <span class="at">pos =</span> <span class="dv">3</span>, <span class="at">cex =</span> .<span class="dv">8</span>)</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">legend</span>(<span class="st">"topleft"</span>, <span class="at">bty =</span> <span class="st">"n"</span>, <span class="at">pch =</span> <span class="dv">19</span>, <span class="at">cex =</span> .<span class="dv">8</span>,</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>         <span class="at">col =</span> <span class="fu">c</span>(<span class="st">"forestgreen"</span>, <span class="st">"firebrick"</span>),</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>         <span class="at">legend =</span> <span class="fu">c</span>(<span class="st">"|z| &gt; 1 (estacionario)"</span>, <span class="st">"|z| &lt;= 1"</span>))</span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_raices</span>(raices_ar, <span class="st">"Raices de AR(1) con phi=0.8"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="modelos_ARMA_files/figure-html/raices-ar-base-1.png" class="img-fluid figure-img" width="576"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Otra alternativa es con la función <code>uc.check()</code> de la paquetería <code>UnitCircle</code></p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># UnitCircle</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="co"># uc.check() recibe el polinomio en orden creciente de potencia</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>UnitCircle<span class="sc">::</span><span class="fu">uc.check</span>(<span class="at">pol_ =</span> coef_ar, <span class="at">print_output =</span> <span class="cn">TRUE</span>, <span class="at">plot_output =</span> <span class="cn">TRUE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>  real complex outside
+1 1.25       0    TRUE
+*Results are rounded to 6 digits.</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="modelos_ARMA_files/figure-html/raices-ar-paquete-1.png" class="img-fluid figure-img" width="576"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Por último, la función <code>autoplot</code> de la paquetería <code>forecast</code>.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># forecast grafica las raices INVERSAS (deben quedar DENTRO del circulo)</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>fit_ar2 <span class="ot">&lt;-</span> <span class="fu">Arima</span>(x_ar2, <span class="at">order =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>), <span class="at">include.mean =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="fu">autoplot</span>(fit_ar2) <span class="sc">+</span> <span class="fu">ggtitle</span>(<span class="st">"Raíces inversas de AR(1) con phi=0.8 "</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="modelos_ARMA_files/figure-html/raices-ar-forecast-1.png" class="img-fluid figure-img" width="576"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><code>polyroot()</code> y <code>UnitCircle</code> grafican las raíces <span class="math inline">\(z_i\)</span>: la condición es <span class="math inline">\(|z_i|&gt;1\)</span> (<strong>fuera</strong> del círculo). <code>forecast::autoplot()</code> grafica las raíces <strong>inversas</strong> <span class="math inline">\(1/z_i\)</span>: la condición equivalente es que caigan <strong>dentro</strong> del círculo.</p>
+</div>
+</div>
+</section>
+<section id="simulación" class="level2">
+<h2 class="anchored" data-anchor-id="simulación">Simulación</h2>
+<p>Podemos simular un modelo <span class="math inline">\(AR(1)\)</span> con <span class="math inline">\(X_0 = 0\)</span> y <span class="math inline">\(Z_t \sim GWN(0,1)\)</span> con distintos valores del parámetro de persistencia <span class="math inline">\(\phi\)</span> para ilustrar lo que pasa cuando está dentro del circulo unitario o fuera de él.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>sim_ar1 <span class="ot">&lt;-</span> <span class="cf">function</span>(n, phi, <span class="at">x0 =</span> <span class="dv">0</span>, <span class="at">sd =</span> <span class="dv">1</span>) {   </span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  z <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(n, <span class="at">sd =</span> sd)</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  x <span class="ot">&lt;-</span> <span class="fu">numeric</span>(n)</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>  x[<span class="dv">1</span>] <span class="ot">&lt;-</span> phi <span class="sc">*</span> x0 <span class="sc">+</span> z[<span class="dv">1</span>]</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (t <span class="cf">in</span> <span class="dv">2</span><span class="sc">:</span>n) x[t] <span class="ot">&lt;-</span> phi <span class="sc">*</span> x[t<span class="dv">-1</span>] <span class="sc">+</span> z[t]</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ts</span>(x)</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>n <span class="ot">&lt;-</span> <span class="dv">300</span></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>x_est  <span class="ot">&lt;-</span> <span class="fu">sim_ar1</span>(n, <span class="at">phi =</span> <span class="fl">0.7</span>)   <span class="co"># |phi| &lt; 1  -&gt; estacionario</span></span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>x_unit <span class="ot">&lt;-</span> <span class="fu">sim_ar1</span>(n, <span class="at">phi =</span> <span class="fl">1.0</span>)   <span class="co"># |phi| = 1  -&gt; caminata aleatoria</span></span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>x_exp  <span class="ot">&lt;-</span> <span class="fu">sim_ar1</span>(n, <span class="at">phi =</span> <span class="fl">1.05</span>)  <span class="co"># |phi| &gt; 1  -&gt; explosivo</span></span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(<span class="at">mfrow =</span> <span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">1</span>), <span class="at">mar =</span> <span class="fu">c</span>(<span class="dv">4</span>, <span class="dv">4</span>, <span class="dv">3</span>, <span class="dv">1</span>))</span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(x_est,  <span class="at">ylab =</span> <span class="fu">expression</span>(X[t]), <span class="at">col =</span> <span class="st">"steelblue"</span>,</span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="fu">expression</span>(<span class="fu">paste</span>(<span class="st">"AR(1) con "</span>, phi <span class="sc">==</span> <span class="fl">0.7</span>, <span class="st">": Estacionario"</span>)))</span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">h =</span> <span class="dv">0</span>, <span class="at">lty =</span> <span class="dv">2</span>)</span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(x_unit, <span class="at">ylab =</span> <span class="fu">expression</span>(X[t]), <span class="at">col =</span> <span class="st">"darkorange"</span>,</span>
+<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="fu">expression</span>(<span class="fu">paste</span>(<span class="st">"AR(1) con "</span>, phi <span class="sc">==</span> <span class="dv">1</span>, <span class="st">": Raíz unitaria (Caminata aleatoria Gaussiana)"</span>)))</span>
+<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">h =</span> <span class="dv">0</span>, <span class="at">lty =</span> <span class="dv">2</span>)</span>
+<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(x_exp,  <span class="at">ylab =</span> <span class="fu">expression</span>(X[t]), <span class="at">col =</span> <span class="st">"firebrick"</span>,</span>
+<span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="fu">expression</span>(<span class="fu">paste</span>(<span class="st">"AR(1) con "</span>, phi <span class="sc">==</span> <span class="fl">1.05</span>, <span class="st">": Explosivo"</span>)))</span>
+<span id="cb11-23"><a href="#cb11-23" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">h =</span> <span class="dv">0</span>, <span class="at">lty =</span> <span class="dv">2</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="modelos_ARMA_files/figure-html/sim-ar1-1.png" class="img-fluid figure-img" width="864"></p>
+</figure>
+</div>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(par_default)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<p>También podemos analizar las funciones de autocorrelación de dichas series.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(<span class="at">mfrow =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">3</span>), <span class="at">mar =</span> <span class="fu">c</span>(<span class="dv">4</span>, <span class="dv">4</span>, <span class="dv">3</span>, <span class="dv">1</span>))</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="fu">acf</span>(x_est,  <span class="at">main =</span> <span class="fu">expression</span>(phi <span class="sc">==</span> <span class="fl">0.7</span>))</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="fu">acf</span>(x_unit, <span class="at">main =</span> <span class="fu">expression</span>(phi <span class="sc">==</span> <span class="dv">1</span>))</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="fu">acf</span>(x_exp,  <span class="at">main =</span> <span class="fu">expression</span>(phi <span class="sc">==</span> <span class="fl">1.05</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="modelos_ARMA_files/figure-html/sim-ar1-acf-1.png" class="img-fluid figure-img" width="864"></p>
+</figure>
+</div>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(par_default)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+</section>
+</section>
+<section id="modelos-de-medias-móviles" class="level1">
+<h1>Modelos de Medias Móviles</h1>
+<p>Un proceso <span class="math inline">\(\{X_t\}\)</span> es de medias móviles de orden <span class="math inline">\(q\)</span>, <span class="math inline">\(MA(q)\)</span>, si</p>
+<p><span class="math display">\[
+X_t = Z_t + \theta_1 Z_{t-1} + \cdots + \theta_q Z_{t-q},
+\qquad Z_t \sim \mathrm{WN}(0,\sigma^2).
+\]</span></p>
+<p>En términos del polinomio de retraso:</p>
+<p><span class="math display">\[
+X_t = \Theta(B)\, Z_t, \qquad
+\Theta(B) = 1 + \theta_1 B + \cdots + \theta_q B^q .
+\]</span></p>
+<p>Un <span class="math inline">\(MA(q)\)</span> es <strong>siempre estacionario</strong> (es una combinación lineal finita de ruido blanco), con</p>
+<p><span class="math display">\[
+\mathbb{E}[X_t]=0, \qquad \gamma(0) = \sigma^2\sum_{j=0}^{q}\theta_j^2, \quad \theta_0 = 1 .
+\]</span></p>
+<p>La condición relevante aquí no es la estacionariedad sino la <strong>invertibilidad</strong>: que las raíces de <span class="math inline">\(\Theta(z)=0\)</span> caigan <strong>fuera</strong> del círculo unitario, <span class="math inline">\(|z_i|&gt;1\)</span>. Eso permite escribir la representación <span class="math inline">\(AR(\infty)\)</span></p>
+<p><span class="math display">\[
+\Theta^{-1}(B) X_t = Z_t, \qquad X_t = -\sum_{j\ge 1}\pi_j X_{t-j} + Z_t .
+\]</span></p>
+<p>Para <span class="math inline">\(MA(1)\)</span>, <span class="math inline">\(\Theta(B)=1+\theta B\)</span>, la raíz es <span class="math inline">\(z=-1/\theta\)</span> y la invertibilidad equivale a <span class="math inline">\(|\theta|&lt;1\)</span>.</p>
+<section id="acf-y-pacf-1" class="level2">
+<h2 class="anchored" data-anchor-id="acf-y-pacf-1">ACF y PACF</h2>
+<section id="expresión-para-maq" class="level3">
+<h3 class="anchored" data-anchor-id="expresión-para-maq">Expresión para MA(q)</h3>
+<p><span class="math display">\[
+\gamma(h) =
+\begin{cases}
+\sigma^2 \displaystyle\sum_{j=0}^{q-|h|} \theta_j \theta_{j+|h|}, &amp; |h| \le q,\\[2mm]
+0, &amp; |h| &gt; q,
+\end{cases}
+\qquad \theta_0 = 1,
+\]</span></p>
+<p>de donde</p>
+<p><span class="math display">\[
+\rho(h) = \frac{\sum_{j=0}^{q-|h|}\theta_j\theta_{j+|h|}}{\sum_{j=0}^{q}\theta_j^2}
+\ \ (|h|\le q), \qquad
+\boxed{\rho(h) = 0 \ \text{ para } |h| &gt; q.}
+\]</span></p>
+<p>La ACF <strong>se corta</strong> en el rezago <span class="math inline">\(q\)</span>, mientras que la PACF <strong>decae</strong> sin cortarse. Es exactamente el comportamiento dual al del <span class="math inline">\(AR(p)\)</span>.</p>
+</section>
+<section id="expresión-para-ma1" class="level3">
+<h3 class="anchored" data-anchor-id="expresión-para-ma1">Expresión para MA(1)</h3>
+<p><span class="math display">\[
+\rho(1) = \frac{\theta}{1+\theta^2}, \qquad \rho(h) = 0 \ \ \text{para } h \ge 2 .
+\]</span></p>
+<p>Note que <span class="math inline">\(|\rho(1)|\le 1/2\)</span> siempre, y que <span class="math inline">\(\theta\)</span> y <span class="math inline">\(1/\theta\)</span> producen la <strong>misma</strong> ACF (problema de identificación que resuelve la invertibilidad: se elige la raíz con <span class="math inline">\(|\theta|&lt;1\)</span>).</p>
+<p>La PACF del <span class="math inline">\(MA(1)\)</span> invertible es</p>
+<p><span class="math display">\[
+\alpha(h) = -\frac{(-\theta)^h\,(1-\theta^2)}{1-\theta^{2(h+1)}}, \qquad h\ge 1,
+\]</span></p>
+<p>que decae geométricamente y alterna de signo cuando <span class="math inline">\(\theta&gt;0\)</span>.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>acf_ma_pos  <span class="ot">&lt;-</span> <span class="fu">ARMAacf</span>(<span class="at">ma =</span> <span class="fl">0.8</span>,  <span class="at">lag.max =</span> h)</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>pacf_ma_pos <span class="ot">&lt;-</span> <span class="fu">ARMAacf</span>(<span class="at">ma =</span> <span class="fl">0.8</span>,  <span class="at">lag.max =</span> h, <span class="at">pacf =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>acf_ma_neg  <span class="ot">&lt;-</span> <span class="fu">ARMAacf</span>(<span class="at">ma =</span> <span class="sc">-</span><span class="fl">0.8</span>, <span class="at">lag.max =</span> h)</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>pacf_ma_neg <span class="ot">&lt;-</span> <span class="fu">ARMAacf</span>(<span class="at">ma =</span> <span class="sc">-</span><span class="fl">0.8</span>, <span class="at">lag.max =</span> h, <span class="at">pacf =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(<span class="at">mfrow =</span> <span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">2</span>), <span class="at">mar =</span> <span class="fu">c</span>(<span class="dv">4</span>, <span class="dv">4</span>, <span class="dv">3</span>, <span class="dv">1</span>))</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(<span class="dv">0</span><span class="sc">:</span>h, acf_ma_pos, <span class="at">type =</span> <span class="st">"h"</span>, <span class="at">lwd =</span> <span class="dv">2</span>, <span class="at">col =</span> <span class="st">"steelblue"</span>,</span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>     <span class="at">xlab =</span> <span class="st">"Rezago h"</span>, <span class="at">ylab =</span> <span class="fu">expression</span>(<span class="fu">rho</span>(h)),</span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="fu">expression</span>(<span class="fu">paste</span>(<span class="st">"ACF teórica MA(1), "</span>, theta <span class="sc">==</span> <span class="fl">0.8</span>)))</span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">h =</span> <span class="dv">0</span>)</span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(<span class="dv">1</span><span class="sc">:</span>h, pacf_ma_pos, <span class="at">type =</span> <span class="st">"h"</span>, <span class="at">lwd =</span> <span class="dv">2</span>, <span class="at">col =</span> <span class="st">"firebrick"</span>,</span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>     <span class="at">xlab =</span> <span class="st">"Rezago h"</span>, <span class="at">ylab =</span> <span class="fu">expression</span>(<span class="fu">alpha</span>(h)), <span class="at">ylim =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">1</span>, <span class="dv">1</span>),</span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="fu">expression</span>(<span class="fu">paste</span>(<span class="st">"PACF teórica MA(1), "</span>, theta <span class="sc">==</span> <span class="fl">0.8</span>)))</span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">h =</span> <span class="dv">0</span>)</span>
+<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(<span class="dv">0</span><span class="sc">:</span>h, acf_ma_neg, <span class="at">type =</span> <span class="st">"h"</span>, <span class="at">lwd =</span> <span class="dv">2</span>, <span class="at">col =</span> <span class="st">"steelblue"</span>,</span>
+<span id="cb15-19"><a href="#cb15-19" aria-hidden="true" tabindex="-1"></a>     <span class="at">xlab =</span> <span class="st">"Rezago h"</span>, <span class="at">ylab =</span> <span class="fu">expression</span>(<span class="fu">rho</span>(h)),</span>
+<span id="cb15-20"><a href="#cb15-20" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="fu">expression</span>(<span class="fu">paste</span>(<span class="st">"ACF teórica MA(1), "</span>, theta <span class="sc">==</span> <span class="sc">-</span><span class="fl">0.8</span>)))</span>
+<span id="cb15-21"><a href="#cb15-21" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">h =</span> <span class="dv">0</span>)</span>
+<span id="cb15-22"><a href="#cb15-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-23"><a href="#cb15-23" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(<span class="dv">1</span><span class="sc">:</span>h, pacf_ma_neg, <span class="at">type =</span> <span class="st">"h"</span>, <span class="at">lwd =</span> <span class="dv">2</span>, <span class="at">col =</span> <span class="st">"firebrick"</span>,</span>
+<span id="cb15-24"><a href="#cb15-24" aria-hidden="true" tabindex="-1"></a>     <span class="at">xlab =</span> <span class="st">"Rezago h"</span>, <span class="at">ylab =</span> <span class="fu">expression</span>(<span class="fu">alpha</span>(h)), <span class="at">ylim =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">1</span>, <span class="dv">1</span>),</span>
+<span id="cb15-25"><a href="#cb15-25" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="fu">expression</span>(<span class="fu">paste</span>(<span class="st">"PACF teórica MA(1), "</span>, theta <span class="sc">==</span> <span class="sc">-</span><span class="fl">0.8</span>)))</span>
+<span id="cb15-26"><a href="#cb15-26" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">h =</span> <span class="dv">0</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="modelos_ARMA_files/figure-html/acf-pacf-ma-1.png" class="img-fluid figure-img" width="864"></p>
+</figure>
+</div>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(par_default)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<p>Comprobación de la no identificación entre <span class="math inline">\(\theta\)</span> y <span class="math inline">\(1/\theta\)</span>, y versión muestral de un <span class="math inline">\(MA(2)\)</span>:</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># misma ACF para theta = 0.5 y theta = 2</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="fu">rbind</span>(<span class="at">theta_0.5 =</span> <span class="fu">ARMAacf</span>(<span class="at">ma =</span> <span class="fl">0.5</span>, <span class="at">lag.max =</span> <span class="dv">3</span>),</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>      <span class="at">theta_2   =</span> <span class="fu">ARMAacf</span>(<span class="at">ma =</span> <span class="fl">2.0</span>, <span class="at">lag.max =</span> <span class="dv">3</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>          0   1 2 3
+theta_0.5 1 0.4 0 0
+theta_2   1 0.4 0 0</code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>x_ma2 <span class="ot">&lt;-</span> <span class="fu">arima.sim</span>(<span class="at">n =</span> <span class="dv">500</span>, <span class="at">model =</span> <span class="fu">list</span>(<span class="at">ma =</span> <span class="fu">c</span>(<span class="fl">0.7</span>, <span class="fl">0.4</span>)))</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(<span class="at">mfrow =</span> <span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">2</span>), <span class="at">mar =</span> <span class="fu">c</span>(<span class="dv">4</span>, <span class="dv">4</span>, <span class="dv">3</span>, <span class="dv">1</span>))</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(x_ma2, <span class="at">main =</span> <span class="st">"Realización MA(2)"</span>, <span class="at">ylab =</span> <span class="fu">expression</span>(X[t]))</span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a><span class="fu">acf</span>(x_ma2,  <span class="at">main =</span> <span class="st">"ACF muestral (R base)"</span>)</span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a><span class="fu">pacf</span>(x_ma2, <span class="at">main =</span> <span class="st">"PACF muestral (R base)"</span>)</span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>forecast<span class="sc">::</span><span class="fu">Pacf</span>(x_ma2, <span class="at">main =</span> <span class="st">"Pacf() de forecast"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="modelos_ARMA_files/figure-html/acf-pacf-ma-muestral-1.png" class="img-fluid figure-img" width="864"></p>
+</figure>
+</div>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(par_default)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<p>La ACF muestral se corta tras el rezago 2 y la PACF decae: la firma de un <span class="math inline">\(MA(2)\)</span>.</p>
+</section>
+</section>
+<section id="raices-del-polinomio" class="level2">
+<h2 class="anchored" data-anchor-id="raices-del-polinomio">Raices del polinomio</h2>
+<p>Ahora las raíces de interés son las de</p>
+<p><span class="math display">\[
+\Theta(z) = 1 + \theta_1 z + \cdots + \theta_q z^q = 0,
+\]</span></p>
+<p>y la condición <span class="math inline">\(|z_i|&gt;1\)</span> corresponde a <strong>invertibilidad</strong> (no a estacionariedad, que se cumple siempre). En <code>polyroot()</code> los coeficientes van con <strong>signo positivo</strong>: <span class="math inline">\(c(1, \theta_1, \dots, \theta_q)\)</span>.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>theta <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">0.7</span>, <span class="fl">0.4</span>)                 <span class="co"># MA(2)</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>coef_ma <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">1</span>, theta)               <span class="co"># 1 + 0.7z + 0.4z^2</span></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>raices_ma <span class="ot">&lt;-</span> <span class="fu">polyroot</span>(coef_ma)</span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a><span class="fu">data.frame</span>(</span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">raiz   =</span> raices_ma,</span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">modulo =</span> <span class="fu">Mod</span>(raices_ma),</span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">invertible =</span> <span class="fu">Mod</span>(raices_ma) <span class="sc">&gt;</span> <span class="dv">1</span></span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>              raiz   modulo invertible
+1 -0.875+1.316957i 1.581139       TRUE
+2 -0.875-1.316957i 1.581139       TRUE</code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_raices</span>(raices_ma, <span class="st">"MA(2): raíces de Theta(z)"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="modelos_ARMA_files/figure-html/raices-ma-1.png" class="img-fluid figure-img" width="576"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>UnitCircle<span class="sc">::</span><span class="fu">uc.check</span>(<span class="at">pol_ =</span> coef_ma, <span class="at">print_output =</span> <span class="cn">TRUE</span>, <span class="at">plot_output =</span> <span class="cn">TRUE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>    real   complex outside
+1 -0.875  1.316957    TRUE
+2 -0.875 -1.316957    TRUE
+*Results are rounded to 6 digits.</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="modelos_ARMA_files/figure-html/raices-ma-paquete-1.png" class="img-fluid figure-img" width="576"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Caso no invertible, para contrastar:</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>raices_ma_ni <span class="ot">&lt;-</span> <span class="fu">polyroot</span>(<span class="fu">c</span>(<span class="dv">1</span>, <span class="fl">1.5</span>))   <span class="co"># MA(1) con theta = 1.5 -&gt; raíz -0.667</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a><span class="fu">Mod</span>(raices_ma_ni)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 0.6666667</code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_raices</span>(raices_ma_ni, <span class="fu">expression</span>(<span class="fu">paste</span>(<span class="st">"MA(1) con "</span>, theta <span class="sc">==</span> <span class="fl">1.5</span>, <span class="st">": no invertible"</span>)))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="modelos_ARMA_files/figure-html/raices-ma-noinv-1.png" class="img-fluid figure-img" width="576"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="simulacion" class="level2">
+<h2 class="anchored" data-anchor-id="simulacion">Simulacion</h2>
+<p>Simulamos <span class="math inline">\(MA(1)\)</span>: <span class="math inline">\(X_t = Z_t + \theta Z_{t-1}\)</span> con tres valores de <span class="math inline">\(\theta\)</span>. Usamos <code>filter()</code> para poder incluir <span class="math inline">\(|\theta|\ge 1\)</span> (todos son estacionarios, pero sólo el primero es invertible).</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>sim_ma1 <span class="ot">&lt;-</span> <span class="cf">function</span>(n, theta, <span class="at">sd =</span> <span class="dv">1</span>) {</span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>  z <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(n <span class="sc">+</span> <span class="dv">1</span>, <span class="at">sd =</span> sd)</span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ts</span>(stats<span class="sc">::</span><span class="fu">filter</span>(z, <span class="at">filter =</span> <span class="fu">c</span>(<span class="dv">1</span>, theta), <span class="at">method =</span> <span class="st">"convolution"</span>, <span class="at">sides =</span> <span class="dv">1</span>)[<span class="sc">-</span><span class="dv">1</span>])</span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a>m_inv   <span class="ot">&lt;-</span> <span class="fu">sim_ma1</span>(n, <span class="at">theta =</span> <span class="fl">0.8</span>)   <span class="co"># |theta| &lt; 1 -&gt; invertible</span></span>
+<span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a>m_unit  <span class="ot">&lt;-</span> <span class="fu">sim_ma1</span>(n, <span class="at">theta =</span> <span class="fl">1.0</span>)   <span class="co"># |theta| = 1 -&gt; frontera, no invertible</span></span>
+<span id="cb29-8"><a href="#cb29-8" aria-hidden="true" tabindex="-1"></a>m_noinv <span class="ot">&lt;-</span> <span class="fu">sim_ma1</span>(n, <span class="at">theta =</span> <span class="fl">1.25</span>)  <span class="co"># |theta| &gt; 1 -&gt; no invertible</span></span>
+<span id="cb29-9"><a href="#cb29-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-10"><a href="#cb29-10" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(<span class="at">mfrow =</span> <span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">1</span>), <span class="at">mar =</span> <span class="fu">c</span>(<span class="dv">4</span>, <span class="dv">4</span>, <span class="dv">3</span>, <span class="dv">1</span>))</span>
+<span id="cb29-11"><a href="#cb29-11" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(m_inv,   <span class="at">ylab =</span> <span class="fu">expression</span>(X[t]), <span class="at">col =</span> <span class="st">"steelblue"</span>,</span>
+<span id="cb29-12"><a href="#cb29-12" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="fu">expression</span>(<span class="fu">paste</span>(<span class="st">"MA(1) con "</span>, theta <span class="sc">==</span> <span class="fl">0.8</span>, <span class="st">": estacionario e invertible"</span>)))</span>
+<span id="cb29-13"><a href="#cb29-13" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">h =</span> <span class="dv">0</span>, <span class="at">lty =</span> <span class="dv">2</span>)</span>
+<span id="cb29-14"><a href="#cb29-14" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(m_unit,  <span class="at">ylab =</span> <span class="fu">expression</span>(X[t]), <span class="at">col =</span> <span class="st">"darkorange"</span>,</span>
+<span id="cb29-15"><a href="#cb29-15" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="fu">expression</span>(<span class="fu">paste</span>(<span class="st">"MA(1) con "</span>, theta <span class="sc">==</span> <span class="dv">1</span>, <span class="st">": raíz unitaria en Theta(z)"</span>)))</span>
+<span id="cb29-16"><a href="#cb29-16" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">h =</span> <span class="dv">0</span>, <span class="at">lty =</span> <span class="dv">2</span>)</span>
+<span id="cb29-17"><a href="#cb29-17" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(m_noinv, <span class="at">ylab =</span> <span class="fu">expression</span>(X[t]), <span class="at">col =</span> <span class="st">"firebrick"</span>,</span>
+<span id="cb29-18"><a href="#cb29-18" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="fu">expression</span>(<span class="fu">paste</span>(<span class="st">"MA(1) con "</span>, theta <span class="sc">==</span> <span class="fl">1.25</span>, <span class="st">": estacionario, no invertible"</span>)))</span>
+<span id="cb29-19"><a href="#cb29-19" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">h =</span> <span class="dv">0</span>, <span class="at">lty =</span> <span class="dv">2</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="modelos_ARMA_files/figure-html/sim-ma1-1.png" class="img-fluid figure-img" width="864"></p>
+</figure>
+</div>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(par_default)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(<span class="at">mfrow =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">3</span>), <span class="at">mar =</span> <span class="fu">c</span>(<span class="dv">4</span>, <span class="dv">4</span>, <span class="dv">3</span>, <span class="dv">1</span>))</span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a><span class="fu">acf</span>(m_inv,   <span class="at">main =</span> <span class="fu">expression</span>(theta <span class="sc">==</span> <span class="fl">0.8</span>))</span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a><span class="fu">acf</span>(m_unit,  <span class="at">main =</span> <span class="fu">expression</span>(theta <span class="sc">==</span> <span class="dv">1</span>))</span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a><span class="fu">acf</span>(m_noinv, <span class="at">main =</span> <span class="fu">expression</span>(theta <span class="sc">==</span> <span class="fl">1.25</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="modelos_ARMA_files/figure-html/sim-ma1-acf-1.png" class="img-fluid figure-img" width="864"></p>
+</figure>
+</div>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(par_default)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<p>A diferencia del <span class="math inline">\(AR(1)\)</span>, <strong>ninguna</strong> de las tres trayectorias explota: el <span class="math inline">\(MA(1)\)</span> es estacionario para cualquier <span class="math inline">\(\theta\)</span>. Lo que cambia es la invertibilidad, y con ella la posibilidad de recuperar <span class="math inline">\(Z_t\)</span> a partir del pasado observado de <span class="math inline">\(X_t\)</span>. Note además que <span class="math inline">\(\theta=0.8\)</span> y <span class="math inline">\(\theta=1/0.8=1.25\)</span> generan ACF prácticamente idénticas: sólo la versión invertible es identificable en la estimación.</p>
+</section>
+</section>
+<section id="modelos-arma" class="level1">
+<h1>Modelos ARMA</h1>
+<p>Un proceso <span class="math inline">\(\{X_t\}\)</span> es <span class="math inline">\(ARMA(p,q)\)</span> si</p>
+<p><span class="math display">\[
+X_t - \phi_1 X_{t-1} - \cdots - \phi_p X_{t-p}
+= Z_t + \theta_1 Z_{t-1} + \cdots + \theta_q Z_{t-q},
+\]</span></p>
+<p>o de forma compacta con los polinomios de retraso:</p>
+<p><span class="math display">\[
+\boxed{\ \Phi(B)\,X_t = \Theta(B)\,Z_t\ }
+\]</span></p>
+<p>con <span class="math inline">\(\Phi(B)=1-\phi_1B-\cdots-\phi_pB^p\)</span> y <span class="math inline">\(\Theta(B)=1+\theta_1B+\cdots+\theta_qB^q\)</span>.</p>
+<p>Condiciones:</p>
+<ul>
+<li><strong>Causalidad / estacionariedad</strong>: raíces de <span class="math inline">\(\Phi(z)\)</span> fuera del círculo unitario.</li>
+<li><strong>Invertibilidad</strong>: raíces de <span class="math inline">\(\Theta(z)\)</span> fuera del círculo unitario.</li>
+<li><strong>Identificabilidad</strong>: <span class="math inline">\(\Phi(z)\)</span> y <span class="math inline">\(\Theta(z)\)</span> no deben tener raíces comunes (si las tienen, el modelo se reduce a uno de orden menor).</li>
+</ul>
+<p>Bajo causalidad, <span class="math inline">\(X_t = \Psi(B)Z_t\)</span> con <span class="math inline">\(\Psi(B)=\Theta(B)/\Phi(B)=\sum_{j\ge0}\psi_j B^j\)</span>, coeficientes que en R se obtienen con <code>ARMAtoMA()</code>.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ARMAtoMA</span>(<span class="at">ar =</span> <span class="fl">0.7</span>, <span class="at">ma =</span> <span class="fl">0.4</span>, <span class="at">lag.max =</span> <span class="dv">8</span>)   <span class="co"># pesos psi_j de la representación MA(infinito)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 1.10000000 0.77000000 0.53900000 0.37730000 0.26411000 0.18487700 0.12941390
+[8] 0.09058973</code></pre>
+</div>
+</div>
+<section id="acf-y-pacf-2" class="level2">
+<h2 class="anchored" data-anchor-id="acf-y-pacf-2">ACF y PACF</h2>
+<section id="expresión-para-armapq" class="level3">
+<h3 class="anchored" data-anchor-id="expresión-para-armapq">Expresión para ARMA(p,q)</h3>
+<p>Para <span class="math inline">\(h &gt; q\)</span> los términos de medias móviles desaparecen de las covarianzas cruzadas y la ACF satisface la <strong>misma</strong> ecuación en diferencias que en el caso autoregresivo:</p>
+<p><span class="math display">\[
+\rho(h) = \phi_1\rho(h-1) + \cdots + \phi_p\rho(h-p), \qquad h &gt; q,
+\]</span></p>
+<p>con valores iniciales <span class="math inline">\(\rho(0),\dots,\rho(q)\)</span> determinados por ambos polinomios. En términos de la representación <span class="math inline">\(MA(\infty)\)</span>,</p>
+<p><span class="math display">\[
+\gamma(h) = \sigma^2 \sum_{j\ge 0}\psi_j\,\psi_{j+|h|} .
+\]</span></p>
+<p>Resultado clave para la identificación:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Modelo</th>
+<th>ACF</th>
+<th>PACF</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(AR(p)\)</span></td>
+<td>decae</td>
+<td>se corta en <span class="math inline">\(p\)</span></td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(MA(q)\)</span></td>
+<td>se corta en <span class="math inline">\(q\)</span></td>
+<td>decae</td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(ARMA(p,q)\)</span></td>
+<td>decae (tras <span class="math inline">\(q\)</span>)</td>
+<td>decae (tras <span class="math inline">\(p\)</span>)</td>
+</tr>
+</tbody>
+</table>
+<p>Ninguna de las dos funciones se corta, por lo que en la práctica el orden se elige con criterios de información (AIC/BIC), p.&nbsp;ej. con <code>forecast::auto.arima()</code>.</p>
+</section>
+<section id="expresión-para-arma11" class="level3">
+<h3 class="anchored" data-anchor-id="expresión-para-arma11">Expresión para ARMA(1,1)</h3>
+<p>Con <span class="math inline">\(X_t = \phi X_{t-1} + Z_t + \theta Z_{t-1}\)</span> y <span class="math inline">\(|\phi|&lt;1\)</span>:</p>
+<p><span class="math display">\[
+\gamma(0) = \sigma^2\,\frac{1+2\phi\theta+\theta^2}{1-\phi^2},
+\]</span></p>
+<p><span class="math display">\[
+\rho(1) = \frac{(1+\phi\theta)(\phi+\theta)}{1+2\phi\theta+\theta^2},
+\qquad
+\rho(h) = \phi\,\rho(h-1) \ \ \text{para } h \ge 2 .
+\]</span></p>
+<p>Es decir, la ACF decae geométricamente a tasa <span class="math inline">\(\phi\)</span> a partir del rezago 1, pero con un “arranque” distinto al del <span class="math inline">\(AR(1)\)</span> puro. Si <span class="math inline">\(\theta=0\)</span> se recupera <span class="math inline">\(\rho(h)=\phi^h\)</span>; si <span class="math inline">\(\phi=0\)</span> se recupera la ACF del <span class="math inline">\(MA(1)\)</span>.</p>
+</section>
+<section id="plot-de-ambas-con-funciones-de-r" class="level3">
+<h3 class="anchored" data-anchor-id="plot-de-ambas-con-funciones-de-r">Plot de ambas con funciones de R</h3>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>acf_arma  <span class="ot">&lt;-</span> <span class="fu">ARMAacf</span>(<span class="at">ar =</span> <span class="fl">0.7</span>, <span class="at">ma =</span> <span class="fl">0.4</span>,  <span class="at">lag.max =</span> h)</span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>pacf_arma <span class="ot">&lt;-</span> <span class="fu">ARMAacf</span>(<span class="at">ar =</span> <span class="fl">0.7</span>, <span class="at">ma =</span> <span class="fl">0.4</span>,  <span class="at">lag.max =</span> h, <span class="at">pacf =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>acf_arma2  <span class="ot">&lt;-</span> <span class="fu">ARMAacf</span>(<span class="at">ar =</span> <span class="sc">-</span><span class="fl">0.6</span>, <span class="at">ma =</span> <span class="fl">0.5</span>, <span class="at">lag.max =</span> h)</span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>pacf_arma2 <span class="ot">&lt;-</span> <span class="fu">ARMAacf</span>(<span class="at">ar =</span> <span class="sc">-</span><span class="fl">0.6</span>, <span class="at">ma =</span> <span class="fl">0.5</span>, <span class="at">lag.max =</span> h, <span class="at">pacf =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-6"><a href="#cb35-6" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(<span class="at">mfrow =</span> <span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">2</span>), <span class="at">mar =</span> <span class="fu">c</span>(<span class="dv">4</span>, <span class="dv">4</span>, <span class="dv">3</span>, <span class="dv">1</span>))</span>
+<span id="cb35-7"><a href="#cb35-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-8"><a href="#cb35-8" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(<span class="dv">0</span><span class="sc">:</span>h, acf_arma, <span class="at">type =</span> <span class="st">"h"</span>, <span class="at">lwd =</span> <span class="dv">2</span>, <span class="at">col =</span> <span class="st">"steelblue"</span>,</span>
+<span id="cb35-9"><a href="#cb35-9" aria-hidden="true" tabindex="-1"></a>     <span class="at">xlab =</span> <span class="st">"Rezago h"</span>, <span class="at">ylab =</span> <span class="fu">expression</span>(<span class="fu">rho</span>(h)),</span>
+<span id="cb35-10"><a href="#cb35-10" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="fu">expression</span>(<span class="fu">paste</span>(<span class="st">"ACF ARMA(1,1): "</span>, phi <span class="sc">==</span> <span class="fl">0.7</span>, <span class="st">", "</span>, theta <span class="sc">==</span> <span class="fl">0.4</span>)))</span>
+<span id="cb35-11"><a href="#cb35-11" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">h =</span> <span class="dv">0</span>)</span>
+<span id="cb35-12"><a href="#cb35-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-13"><a href="#cb35-13" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(<span class="dv">1</span><span class="sc">:</span>h, pacf_arma, <span class="at">type =</span> <span class="st">"h"</span>, <span class="at">lwd =</span> <span class="dv">2</span>, <span class="at">col =</span> <span class="st">"firebrick"</span>,</span>
+<span id="cb35-14"><a href="#cb35-14" aria-hidden="true" tabindex="-1"></a>     <span class="at">xlab =</span> <span class="st">"Rezago h"</span>, <span class="at">ylab =</span> <span class="fu">expression</span>(<span class="fu">alpha</span>(h)), <span class="at">ylim =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">1</span>, <span class="dv">1</span>),</span>
+<span id="cb35-15"><a href="#cb35-15" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="fu">expression</span>(<span class="fu">paste</span>(<span class="st">"PACF ARMA(1,1): "</span>, phi <span class="sc">==</span> <span class="fl">0.7</span>, <span class="st">", "</span>, theta <span class="sc">==</span> <span class="fl">0.4</span>)))</span>
+<span id="cb35-16"><a href="#cb35-16" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">h =</span> <span class="dv">0</span>)</span>
+<span id="cb35-17"><a href="#cb35-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-18"><a href="#cb35-18" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(<span class="dv">0</span><span class="sc">:</span>h, acf_arma2, <span class="at">type =</span> <span class="st">"h"</span>, <span class="at">lwd =</span> <span class="dv">2</span>, <span class="at">col =</span> <span class="st">"steelblue"</span>,</span>
+<span id="cb35-19"><a href="#cb35-19" aria-hidden="true" tabindex="-1"></a>     <span class="at">xlab =</span> <span class="st">"Rezago h"</span>, <span class="at">ylab =</span> <span class="fu">expression</span>(<span class="fu">rho</span>(h)),</span>
+<span id="cb35-20"><a href="#cb35-20" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="fu">expression</span>(<span class="fu">paste</span>(<span class="st">"ACF ARMA(1,1): "</span>, phi <span class="sc">==</span> <span class="sc">-</span><span class="fl">0.6</span>, <span class="st">", "</span>, theta <span class="sc">==</span> <span class="fl">0.5</span>)))</span>
+<span id="cb35-21"><a href="#cb35-21" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">h =</span> <span class="dv">0</span>)</span>
+<span id="cb35-22"><a href="#cb35-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-23"><a href="#cb35-23" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(<span class="dv">1</span><span class="sc">:</span>h, pacf_arma2, <span class="at">type =</span> <span class="st">"h"</span>, <span class="at">lwd =</span> <span class="dv">2</span>, <span class="at">col =</span> <span class="st">"firebrick"</span>,</span>
+<span id="cb35-24"><a href="#cb35-24" aria-hidden="true" tabindex="-1"></a>     <span class="at">xlab =</span> <span class="st">"Rezago h"</span>, <span class="at">ylab =</span> <span class="fu">expression</span>(<span class="fu">alpha</span>(h)), <span class="at">ylim =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">1</span>, <span class="dv">1</span>),</span>
+<span id="cb35-25"><a href="#cb35-25" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="fu">expression</span>(<span class="fu">paste</span>(<span class="st">"PACF ARMA(1,1): "</span>, phi <span class="sc">==</span> <span class="sc">-</span><span class="fl">0.6</span>, <span class="st">", "</span>, theta <span class="sc">==</span> <span class="fl">0.5</span>)))</span>
+<span id="cb35-26"><a href="#cb35-26" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">h =</span> <span class="dv">0</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="modelos_ARMA_files/figure-html/acf-pacf-arma-1.png" class="img-fluid figure-img" width="864"></p>
+</figure>
+</div>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(par_default)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<p>Verificación numérica de la fórmula de <span class="math inline">\(\rho(1)\)</span> y decaimiento geométrico posterior:</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>phi1 <span class="ot">&lt;-</span> <span class="fl">0.7</span>; th1 <span class="ot">&lt;-</span> <span class="fl">0.4</span></span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>rho1_teo <span class="ot">&lt;-</span> (<span class="dv">1</span> <span class="sc">+</span> phi1<span class="sc">*</span>th1)<span class="sc">*</span>(phi1 <span class="sc">+</span> th1) <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="dv">2</span><span class="sc">*</span>phi1<span class="sc">*</span>th1 <span class="sc">+</span> th1<span class="sc">^</span><span class="dv">2</span>)</span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a><span class="fu">c</span>(<span class="at">rho1_formula =</span> rho1_teo, <span class="at">rho1_ARMAacf =</span> <span class="fu">unname</span>(acf_arma[<span class="dv">2</span>]))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>rho1_formula rho1_ARMAacf 
+   0.8186047    0.8186047 </code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="fu">c</span>(<span class="at">rho2_formula =</span> phi1<span class="sc">*</span>rho1_teo, <span class="at">rho2_ARMAacf =</span> <span class="fu">unname</span>(acf_arma[<span class="dv">3</span>]))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>rho2_formula rho2_ARMAacf 
+   0.5730233    0.5730233 </code></pre>
+</div>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>x_arma <span class="ot">&lt;-</span> <span class="fu">arima.sim</span>(<span class="at">n =</span> <span class="dv">500</span>, <span class="at">model =</span> <span class="fu">list</span>(<span class="at">ar =</span> <span class="fl">0.7</span>, <span class="at">ma =</span> <span class="fl">0.4</span>))</span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(<span class="at">mfrow =</span> <span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">2</span>), <span class="at">mar =</span> <span class="fu">c</span>(<span class="dv">4</span>, <span class="dv">4</span>, <span class="dv">3</span>, <span class="dv">1</span>))</span>
+<span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(x_arma, <span class="at">main =</span> <span class="st">"Realización ARMA(1,1)"</span>, <span class="at">ylab =</span> <span class="fu">expression</span>(X[t]))</span>
+<span id="cb41-5"><a href="#cb41-5" aria-hidden="true" tabindex="-1"></a><span class="fu">acf</span>(x_arma,  <span class="at">main =</span> <span class="st">"ACF muestral"</span>)</span>
+<span id="cb41-6"><a href="#cb41-6" aria-hidden="true" tabindex="-1"></a><span class="fu">pacf</span>(x_arma, <span class="at">main =</span> <span class="st">"PACF muestral"</span>)</span>
+<span id="cb41-7"><a href="#cb41-7" aria-hidden="true" tabindex="-1"></a><span class="fu">plot.new</span>(); <span class="fu">text</span>(.<span class="dv">5</span>, .<span class="dv">5</span>, <span class="fu">paste</span>(<span class="st">"auto.arima sugiere:</span><span class="sc">\n</span><span class="st">"</span>,</span>
+<span id="cb41-8"><a href="#cb41-8" aria-hidden="true" tabindex="-1"></a>      <span class="fu">paste</span>(forecast<span class="sc">::</span><span class="fu">auto.arima</span>(x_arma)<span class="sc">$</span>arma[<span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">6</span>,<span class="dv">2</span>)], <span class="at">collapse =</span> <span class="st">" - "</span>)), <span class="at">cex =</span> <span class="fl">1.1</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="modelos_ARMA_files/figure-html/acf-pacf-arma-muestral-1.png" class="img-fluid figure-img" width="864"></p>
+</figure>
+</div>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(par_default)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<p>Ni la ACF ni la PACF se cortan de manera limpia: ese patrón mixto es justamente lo que sugiere un ARMA en lugar de un AR o un MA puro.</p>
+</section>
+</section>
+<section id="raices-del-polinomio-1" class="level2">
+<h2 class="anchored" data-anchor-id="raices-del-polinomio-1">Raices del polinomio</h2>
+<p>Aquí hay que examinar <strong>dos</strong> polinomios simultáneamente.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>phi_arma   <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">0.5</span>, <span class="sc">-</span><span class="fl">0.4</span>)      <span class="co"># ARMA(2,2)</span></span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>theta_arma <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">0.7</span>,  <span class="fl">0.3</span>)</span>
+<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a>coef_phi   <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="sc">-</span>phi_arma)</span>
+<span id="cb43-5"><a href="#cb43-5" aria-hidden="true" tabindex="-1"></a>coef_theta <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">1</span>,  theta_arma)</span>
+<span id="cb43-6"><a href="#cb43-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-7"><a href="#cb43-7" aria-hidden="true" tabindex="-1"></a>r_phi   <span class="ot">&lt;-</span> <span class="fu">polyroot</span>(coef_phi)</span>
+<span id="cb43-8"><a href="#cb43-8" aria-hidden="true" tabindex="-1"></a>r_theta <span class="ot">&lt;-</span> <span class="fu">polyroot</span>(coef_theta)</span>
+<span id="cb43-9"><a href="#cb43-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-10"><a href="#cb43-10" aria-hidden="true" tabindex="-1"></a><span class="fu">data.frame</span>(</span>
+<span id="cb43-11"><a href="#cb43-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">polinomio =</span> <span class="fu">c</span>(<span class="fu">rep</span>(<span class="st">"Phi (AR)"</span>, <span class="fu">length</span>(r_phi)), <span class="fu">rep</span>(<span class="st">"Theta (MA)"</span>, <span class="fu">length</span>(r_theta))),</span>
+<span id="cb43-12"><a href="#cb43-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">raiz      =</span> <span class="fu">c</span>(r_phi, r_theta),</span>
+<span id="cb43-13"><a href="#cb43-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">modulo    =</span> <span class="fu">c</span>(<span class="fu">Mod</span>(r_phi), <span class="fu">Mod</span>(r_theta)),</span>
+<span id="cb43-14"><a href="#cb43-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">fuera     =</span> <span class="fu">c</span>(<span class="fu">Mod</span>(r_phi), <span class="fu">Mod</span>(r_theta)) <span class="sc">&gt;</span> <span class="dv">1</span></span>
+<span id="cb43-15"><a href="#cb43-15" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>   polinomio                raiz   modulo fuera
+1   Phi (AR)  0.625000+1.452369i 1.581139  TRUE
+2   Phi (AR)  0.625000-1.452369i 1.581139  TRUE
+3 Theta (MA) -1.166667+1.404358i 1.825742  TRUE
+4 Theta (MA) -1.166667-1.404358i 1.825742  TRUE</code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(<span class="at">mfrow =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>))</span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_raices</span>(r_phi,   <span class="st">"Phi(z): causalidad"</span>)</span>
+<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a><span class="fu">plot_raices</span>(r_theta, <span class="st">"Theta(z): invertibilidad"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="modelos_ARMA_files/figure-html/raices-arma-1.png" class="img-fluid figure-img" width="864"></p>
+</figure>
+</div>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(par_default)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb47"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(<span class="at">mfrow =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>))</span>
+<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a>UnitCircle<span class="sc">::</span><span class="fu">uc.check</span>(<span class="at">pol_ =</span> coef_phi,   <span class="at">print_output =</span> <span class="cn">TRUE</span>, <span class="at">plot_output =</span> <span class="cn">TRUE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>   real   complex outside
+1 0.625  1.452369    TRUE
+2 0.625 -1.452369    TRUE
+*Results are rounded to 6 digits.</code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb49"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>UnitCircle<span class="sc">::</span><span class="fu">uc.check</span>(<span class="at">pol_ =</span> coef_theta, <span class="at">print_output =</span> <span class="cn">TRUE</span>, <span class="at">plot_output =</span> <span class="cn">TRUE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>       real   complex outside
+1 -1.166667  1.404358    TRUE
+2 -1.166667 -1.404358    TRUE
+*Results are rounded to 6 digits.</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="modelos_ARMA_files/figure-html/raices-arma-paquete-1.png" class="img-fluid figure-img" width="864"></p>
+</figure>
+</div>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb51"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(par_default)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a>fit_arma <span class="ot">&lt;-</span> <span class="fu">Arima</span>(x_arma, <span class="at">order =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>), <span class="at">include.mean =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a><span class="fu">autoplot</span>(fit_arma) <span class="sc">+</span></span>
+<span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"Raíces inversas AR y MA del ARMA(1,1) estimado"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="modelos_ARMA_files/figure-html/raices-arma-forecast-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Si alguna raíz inversa quedara sobre o fuera del círculo, el modelo estimado sería no causal o no invertible y habría que reconsiderar el orden o diferenciar la serie.</p>
+</section>
+<section id="simulacion-1" class="level2">
+<h2 class="anchored" data-anchor-id="simulacion-1">Simulacion</h2>
+<p>Simulamos <span class="math inline">\(ARMA(1,1)\)</span>: <span class="math inline">\(X_t = \phi X_{t-1} + Z_t + \theta Z_{t-1}\)</span>, con una recursión propia que admite valores fuera de la región causal/invertible.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb53"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a>sim_arma11 <span class="ot">&lt;-</span> <span class="cf">function</span>(n, phi, theta, <span class="at">sd =</span> <span class="dv">1</span>) {</span>
+<span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a>  z <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(n, <span class="at">sd =</span> sd)</span>
+<span id="cb53-3"><a href="#cb53-3" aria-hidden="true" tabindex="-1"></a>  x <span class="ot">&lt;-</span> <span class="fu">numeric</span>(n)</span>
+<span id="cb53-4"><a href="#cb53-4" aria-hidden="true" tabindex="-1"></a>  x[<span class="dv">1</span>] <span class="ot">&lt;-</span> z[<span class="dv">1</span>]</span>
+<span id="cb53-5"><a href="#cb53-5" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (t <span class="cf">in</span> <span class="dv">2</span><span class="sc">:</span>n) x[t] <span class="ot">&lt;-</span> phi <span class="sc">*</span> x[t<span class="dv">-1</span>] <span class="sc">+</span> z[t] <span class="sc">+</span> theta <span class="sc">*</span> z[t<span class="dv">-1</span>]</span>
+<span id="cb53-6"><a href="#cb53-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ts</span>(x)</span>
+<span id="cb53-7"><a href="#cb53-7" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb53-8"><a href="#cb53-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-9"><a href="#cb53-9" aria-hidden="true" tabindex="-1"></a>a_ok    <span class="ot">&lt;-</span> <span class="fu">sim_arma11</span>(n, <span class="at">phi =</span> <span class="fl">0.7</span>,  <span class="at">theta =</span> <span class="fl">0.4</span>)   <span class="co"># causal e invertible</span></span>
+<span id="cb53-10"><a href="#cb53-10" aria-hidden="true" tabindex="-1"></a>a_unit  <span class="ot">&lt;-</span> <span class="fu">sim_arma11</span>(n, <span class="at">phi =</span> <span class="fl">1.0</span>,  <span class="at">theta =</span> <span class="fl">0.4</span>)   <span class="co"># raíz unitaria en Phi -&gt; ARIMA(0,1,1)</span></span>
+<span id="cb53-11"><a href="#cb53-11" aria-hidden="true" tabindex="-1"></a>a_exp   <span class="ot">&lt;-</span> <span class="fu">sim_arma11</span>(n, <span class="at">phi =</span> <span class="fl">1.05</span>, <span class="at">theta =</span> <span class="fl">0.4</span>)   <span class="co"># explosivo</span></span>
+<span id="cb53-12"><a href="#cb53-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb53-13"><a href="#cb53-13" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(<span class="at">mfrow =</span> <span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">1</span>), <span class="at">mar =</span> <span class="fu">c</span>(<span class="dv">4</span>, <span class="dv">4</span>, <span class="dv">3</span>, <span class="dv">1</span>))</span>
+<span id="cb53-14"><a href="#cb53-14" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(a_ok,   <span class="at">ylab =</span> <span class="fu">expression</span>(X[t]), <span class="at">col =</span> <span class="st">"steelblue"</span>,</span>
+<span id="cb53-15"><a href="#cb53-15" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="fu">expression</span>(<span class="fu">paste</span>(<span class="st">"ARMA(1,1): "</span>, phi <span class="sc">==</span> <span class="fl">0.7</span>, <span class="st">", "</span>, theta <span class="sc">==</span> <span class="fl">0.4</span>, <span class="st">" (causal e invertible)"</span>)))</span>
+<span id="cb53-16"><a href="#cb53-16" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">h =</span> <span class="dv">0</span>, <span class="at">lty =</span> <span class="dv">2</span>)</span>
+<span id="cb53-17"><a href="#cb53-17" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(a_unit, <span class="at">ylab =</span> <span class="fu">expression</span>(X[t]), <span class="at">col =</span> <span class="st">"darkorange"</span>,</span>
+<span id="cb53-18"><a href="#cb53-18" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="fu">expression</span>(<span class="fu">paste</span>(<span class="st">"ARMA(1,1): "</span>, phi <span class="sc">==</span> <span class="dv">1</span>, <span class="st">", "</span>, theta <span class="sc">==</span> <span class="fl">0.4</span>, <span class="st">" (raíz unitaria)"</span>)))</span>
+<span id="cb53-19"><a href="#cb53-19" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">h =</span> <span class="dv">0</span>, <span class="at">lty =</span> <span class="dv">2</span>)</span>
+<span id="cb53-20"><a href="#cb53-20" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(a_exp,  <span class="at">ylab =</span> <span class="fu">expression</span>(X[t]), <span class="at">col =</span> <span class="st">"firebrick"</span>,</span>
+<span id="cb53-21"><a href="#cb53-21" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="fu">expression</span>(<span class="fu">paste</span>(<span class="st">"ARMA(1,1): "</span>, phi <span class="sc">==</span> <span class="fl">1.05</span>, <span class="st">", "</span>, theta <span class="sc">==</span> <span class="fl">0.4</span>, <span class="st">" (explosivo)"</span>)))</span>
+<span id="cb53-22"><a href="#cb53-22" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">h =</span> <span class="dv">0</span>, <span class="at">lty =</span> <span class="dv">2</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="modelos_ARMA_files/figure-html/sim-arma11-1.png" class="img-fluid figure-img" width="864"></p>
+</figure>
+</div>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb54"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(par_default)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<p>Un cuarto caso ilustra el problema de invertibilidad manteniendo la estacionariedad, y un quinto la cancelación de raíces comunes:</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb55"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a>a_noinv <span class="ot">&lt;-</span> <span class="fu">sim_arma11</span>(n, <span class="at">phi =</span> <span class="fl">0.7</span>, <span class="at">theta =</span> <span class="fl">1.5</span>)   <span class="co"># estacionario, no invertible</span></span>
+<span id="cb55-2"><a href="#cb55-2" aria-hidden="true" tabindex="-1"></a>a_cancel <span class="ot">&lt;-</span> <span class="fu">sim_arma11</span>(n, <span class="at">phi =</span> <span class="fl">0.6</span>, <span class="at">theta =</span> <span class="sc">-</span><span class="fl">0.6</span>) <span class="co"># Phi y Theta comparten raíz -&gt; ruido blanco</span></span>
+<span id="cb55-3"><a href="#cb55-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb55-4"><a href="#cb55-4" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(<span class="at">mfrow =</span> <span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">2</span>), <span class="at">mar =</span> <span class="fu">c</span>(<span class="dv">4</span>, <span class="dv">4</span>, <span class="dv">3</span>, <span class="dv">1</span>))</span>
+<span id="cb55-5"><a href="#cb55-5" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(a_noinv, <span class="at">ylab =</span> <span class="fu">expression</span>(X[t]), <span class="at">col =</span> <span class="st">"purple4"</span>,</span>
+<span id="cb55-6"><a href="#cb55-6" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="fu">expression</span>(<span class="fu">paste</span>(phi <span class="sc">==</span> <span class="fl">0.7</span>, <span class="st">", "</span>, theta <span class="sc">==</span> <span class="fl">1.5</span>, <span class="st">": no invertible"</span>)))</span>
+<span id="cb55-7"><a href="#cb55-7" aria-hidden="true" tabindex="-1"></a><span class="fu">acf</span>(a_noinv, <span class="at">main =</span> <span class="st">"ACF"</span>)</span>
+<span id="cb55-8"><a href="#cb55-8" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(a_cancel, <span class="at">ylab =</span> <span class="fu">expression</span>(X[t]), <span class="at">col =</span> <span class="st">"darkgreen"</span>,</span>
+<span id="cb55-9"><a href="#cb55-9" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="fu">expression</span>(<span class="fu">paste</span>(phi <span class="sc">==</span> <span class="fl">0.6</span>, <span class="st">", "</span>, theta <span class="sc">==</span> <span class="sc">-</span><span class="fl">0.6</span>, <span class="st">": raíces comunes"</span>)))</span>
+<span id="cb55-10"><a href="#cb55-10" aria-hidden="true" tabindex="-1"></a><span class="fu">acf</span>(a_cancel, <span class="at">main =</span> <span class="st">"ACF (se ve como ruido blanco)"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="modelos_ARMA_files/figure-html/sim-arma11-extra-1.png" class="img-fluid figure-img" width="864"></p>
+</figure>
+</div>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb56"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(par_default)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
+<p>En el último panel, <span class="math inline">\(\Phi(B)=1-0.6B\)</span> y <span class="math inline">\(\Theta(B)=1-0.6B\)</span> se cancelan y el proceso es, en realidad, ruido blanco: un recordatorio de por qué conviene verificar que los dos polinomios no compartan raíces antes de interpretar los parámetros estimados.</p>
+</section>
+</section>
+<section id="resumen" class="level1">
+<h1>Resumen</h1>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th><span class="math inline">\(AR(p)\)</span></th>
+<th><span class="math inline">\(MA(q)\)</span></th>
+<th><span class="math inline">\(ARMA(p,q)\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Forma compacta</td>
+<td><span class="math inline">\(\Phi(B)X_t=Z_t\)</span></td>
+<td><span class="math inline">\(X_t=\Theta(B)Z_t\)</span></td>
+<td><span class="math inline">\(\Phi(B)X_t=\Theta(B)Z_t\)</span></td>
+</tr>
+<tr class="even">
+<td>Estacionariedad</td>
+<td>raíces de <span class="math inline">\(\Phi\)</span> fuera del círculo</td>
+<td>siempre</td>
+<td>raíces de <span class="math inline">\(\Phi\)</span> fuera</td>
+</tr>
+<tr class="odd">
+<td>Invertibilidad</td>
+<td>siempre</td>
+<td>raíces de <span class="math inline">\(\Theta\)</span> fuera</td>
+<td>raíces de <span class="math inline">\(\Theta\)</span> fuera</td>
+</tr>
+<tr class="even">
+<td>ACF</td>
+<td>decae</td>
+<td>se corta en <span class="math inline">\(q\)</span></td>
+<td>decae</td>
+</tr>
+<tr class="odd">
+<td>PACF</td>
+<td>se corta en <span class="math inline">\(p\)</span></td>
+<td>decae</td>
+<td>decae</td>
+</tr>
+<tr class="even">
+<td>Representación dual</td>
+<td><span class="math inline">\(MA(\infty)\)</span></td>
+<td><span class="math inline">\(AR(\infty)\)</span></td>
+<td>ambas</td>
+</tr>
+</tbody>
+</table>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/rbasaldud\.github\.io\/MSyST\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+      &nbsp;
+    </div>   
+    <div class="nav-footer-center">
+<p>Facultad de Ciencias, UNAM</p>
+</div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer>
+
+
+
+
+</body></html>
