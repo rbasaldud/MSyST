@@ -296,9 +296,9 @@ acf(x_exp,  main = expression(phi == 1.05))
 par(par_default)
 ```
 
-# Modelos de Medias Móviles
+# Modelos de Medias Móviles $MA(q)$
 
-Un proceso $\{X_t\}$ es de medias móviles de orden $q$, $MA(q)$, si
+Un proceso $\{X_t\}$ es de medias móviles de orden $q$ si satisface la ecuación:
 
 $$
 X_t = Z_t + \theta_1 Z_{t-1} + \cdots + \theta_q Z_{t-q},
@@ -312,19 +312,19 @@ X_t = \Theta(B)\, Z_t, \qquad
 \Theta(B) = 1 + \theta_1 B + \cdots + \theta_q B^q .
 $$
 
-Un $MA(q)$ es **siempre estacionario** (es una combinación lineal finita de ruido blanco), con
+Un $MA(q)$ siempre es estacionario de segundo orden, además
 
 $$
 \mathbb{E}[X_t]=0, \qquad \gamma(0) = \sigma^2\sum_{j=0}^{q}\theta_j^2, \quad \theta_0 = 1 .
 $$
 
-La condición relevante aquí no es la estacionariedad sino la **invertibilidad**: que las raíces de $\Theta(z)=0$ caigan **fuera** del círculo unitario, $|z_i|>1$. Eso permite escribir la representación $AR(\infty)$
+Para este modelo, la propiedad no trivial es la **invertibilidad**: que las raíces de $\Theta(B)$ caigan **fuera** del círculo unitario, es decir $|z_i|>1$. Eso permite escribir la representación $AR(\infty)$
 
 $$
-\Theta^{-1}(B) X_t = Z_t, \qquad X_t = -\sum_{j\ge 1}\pi_j X_{t-j} + Z_t .
+\Theta^{-1}(B) X_t = Z_t
 $$
 
-Para $MA(1)$, $\Theta(B)=1+\theta B$, la raíz es $z=-1/\theta$ y la invertibilidad equivale a $|\theta|<1$.
+Para un modelo $MA(1)$ dado por $\Theta(B)=1+\theta B$, la raíz es $z=-1/\theta$ y la invertibilidad equivale a $|\theta|<1$.
 
 ## ACF y PACF
 
@@ -343,19 +343,19 @@ de donde
 
 $$
 \rho(h) = \frac{\sum_{j=0}^{q-|h|}\theta_j\theta_{j+|h|}}{\sum_{j=0}^{q}\theta_j^2}
-\ \ (|h|\le q), \qquad
-\boxed{\rho(h) = 0 \ \text{ para } |h| > q.}
+\ \ (|h|\le q) \qquad
+\rho(h) = 0 \ \text{ para } |h| > q
 $$
 
-La ACF **se corta** en el rezago $q$, mientras que la PACF **decae** sin cortarse. Es exactamente el comportamiento dual al del $AR(p)$.
+La ACF **se corta** en el rezago $q$, mientras que la PACF **decae** sin cortarse. Es exactamente el comportamiento contrario al del $AR(p)$.
 
 ### Expresión para MA(1)
 
 $$
-\rho(1) = \frac{\theta}{1+\theta^2}, \qquad \rho(h) = 0 \ \ \text{para } h \ge 2 .
+\rho(1) = \frac{\theta}{1+\theta^2} \qquad \rho(h) = 0 \ \ \text{para } h \ge 2 
 $$
 
-Note que $|\rho(1)|\le 1/2$ siempre, y que $\theta$ y $1/\theta$ producen la **misma** ACF (problema de identificación que resuelve la invertibilidad: se elige la raíz con $|\theta|<1$).
+Sabemos que $|\rho(1)|\le 1/2$ siempre, y que $\theta$ y $1/\theta$ producen la **misma** ACF (problema de identificación que resuelve la invertibilidad: se elige la raíz con $|\theta|<1$).
 
 La PACF del $MA(1)$ invertible es
 
@@ -400,16 +400,18 @@ abline(h = 0)
 par(par_default)
 ```
 
-Comprobación de la no identificación entre $\theta$ y $1/\theta$, y versión muestral de un $MA(2)$:
+Por último, la comprobación de la no identificación entre $\theta$ y $1/\theta$ mediante la ACF, además de una versión muestral del ACF de un $MA(2)$ que se corta tras el rezago 2, y la PACF que decae.
 
 ```{r}
-#| label: acf-pacf-ma-muestral
+#| label: acf-pacf-ma-mue
 #| fig-width: 9
 #| fig-height: 6
 
 # misma ACF para theta = 0.5 y theta = 2
 rbind(theta_0.5 = ARMAacf(ma = 0.5, lag.max = 3),
       theta_2   = ARMAacf(ma = 2.0, lag.max = 3))
+
+
 
 x_ma2 <- arima.sim(n = 500, model = list(ma = c(0.7, 0.4)))
 
@@ -421,7 +423,6 @@ forecast::Pacf(x_ma2, main = "Pacf() de forecast")
 par(par_default)
 ```
 
-La ACF muestral se corta tras el rezago 2 y la PACF decae: la firma de un $MA(2)$.
 
 ## Raices del polinomio
 
@@ -431,7 +432,7 @@ $$
 \Theta(z) = 1 + \theta_1 z + \cdots + \theta_q z^q = 0,
 $$
 
-y la condición $|z_i|>1$ corresponde a **invertibilidad** (no a estacionariedad, que se cumple siempre). En `polyroot()` los coeficientes van con **signo positivo**: $c(1, \theta_1, \dots, \theta_q)$.
+y la condición $|z_i|>1$ corresponde a **invertibilidad**. Usamos `polyroot()` para encontrar las raíces (los coeficientes van con **signo positivo $(1, \theta_1, \dots, \theta_q)$ )
 
 ```{r}
 #| label: raices-ma
@@ -459,7 +460,7 @@ plot_raices(raices_ma, "MA(2): raíces de Theta(z)")
 UnitCircle::uc.check(pol_ = coef_ma, print_output = TRUE, plot_output = TRUE)
 ```
 
-Caso no invertible, para contrastar:
+Para contrastar, se muestran las gráficas para un $MA(1)$ con $\theta=1.5$, en este caso la raíz es $-0.66$ y por lo tanto no es invertible:
 
 ```{r}
 #| label: raices-ma-noinv
@@ -471,9 +472,9 @@ Mod(raices_ma_ni)
 plot_raices(raices_ma_ni, expression(paste("MA(1) con ", theta == 1.5, ": no invertible")))
 ```
 
-## Simulacion
+## Simulación
 
-Simulamos $MA(1)$: $X_t = Z_t + \theta Z_{t-1}$ con tres valores de $\theta$. Usamos `filter()` para poder incluir $|\theta|\ge 1$ (todos son estacionarios, pero sólo el primero es invertible).
+Simulamos un $MA(1)$: $X_t = Z_t + \theta Z_{t-1}$ con tres valores de $\theta$. Usamos `filter()` para poder incluir $|\theta|\ge 1$ (todos son estacionarios, pero sólo el primero es invertible).
 
 ```{r}
 #| label: sim-ma1
@@ -494,13 +495,16 @@ plot(m_inv,   ylab = expression(X[t]), col = "steelblue",
      main = expression(paste("MA(1) con ", theta == 0.8, ": estacionario e invertible")))
 abline(h = 0, lty = 2)
 plot(m_unit,  ylab = expression(X[t]), col = "darkorange",
-     main = expression(paste("MA(1) con ", theta == 1, ": raíz unitaria en Theta(z)")))
+     main = expression(paste("MA(1) con ", theta == 1, ": raíz unitaria en Theta(B)")))
 abline(h = 0, lty = 2)
 plot(m_noinv, ylab = expression(X[t]), col = "firebrick",
      main = expression(paste("MA(1) con ", theta == 1.25, ": estacionario, no invertible")))
 abline(h = 0, lty = 2)
 par(par_default)
 ```
+
+
+También podemos analizar las funciones de autocorrelación de los procesos anteriores.
 
 ```{r}
 #| label: sim-ma1-acf
@@ -514,7 +518,7 @@ acf(m_noinv, main = expression(theta == 1.25))
 par(par_default)
 ```
 
-A diferencia del $AR(1)$, **ninguna** de las tres trayectorias explota: el $MA(1)$ es estacionario para cualquier $\theta$. Lo que cambia es la invertibilidad, y con ella la posibilidad de recuperar $Z_t$ a partir del pasado observado de $X_t$. Note además que $\theta=0.8$ y $\theta=1/0.8=1.25$ generan ACF prácticamente idénticas: sólo la versión invertible es identificable en la estimación.
+A diferencia del $AR(1)$, ninguna de las tres trayectorias explota, pues el $MA(1)$ es estacionario para cualquier $\theta$. Lo que cambia es la invertibilidad, y con ella la posibilidad de recuperar $Z_t$ a partir del pasado observado de $X_t$. Además $\theta=0.8$ y $\theta=1/0.8=1.25$ generan las mismas ACF, por lo que sólo la versión invertible es identificable en la estimación.
 
 # Modelos ARMA
 
@@ -528,18 +532,23 @@ $$
 o de forma compacta con los polinomios de retraso:
 
 $$
-\boxed{\ \Phi(B)\,X_t = \Theta(B)\,Z_t\ }
+ \Phi(B)\,X_t = \Theta(B)\,Z_t
 $$
 
 con $\Phi(B)=1-\phi_1B-\cdots-\phi_pB^p$ y $\Theta(B)=1+\theta_1B+\cdots+\theta_qB^q$.
 
 Condiciones:
 
-- **Causalidad / estacionariedad**: raíces de $\Phi(z)$ fuera del círculo unitario.
-- **Invertibilidad**: raíces de $\Theta(z)$ fuera del círculo unitario.
-- **Identificabilidad**: $\Phi(z)$ y $\Theta(z)$ no deben tener raíces comunes (si las tienen, el modelo se reduce a uno de orden menor).
+- **Causalidad / estacionariedad**: raíces de $\Phi(B)$ fuera del círculo unitario.
+- **Invertibilidad**: raíces de $\Theta(B)$ fuera del círculo unitario.
+- **Identificabilidad**: $\Phi(B)$ y $\Theta(B)$ no deben tener raíces comunes (si las tienen, el modelo se reduce a uno de orden menor).
 
-Bajo causalidad, $X_t = \Psi(B)Z_t$ con $\Psi(B)=\Theta(B)/\Phi(B)=\sum_{j\ge0}\psi_j B^j$, coeficientes que en R se obtienen con `ARMAtoMA()`.
+Bajo causalidad, 
+$$
+X_t = \Psi(B)Z_t$ \qquad \text{con} \qquad  \Psi(B)=\Theta(B)/\Phi(B)=\sum_{j=0}^{\infty}\psi_j B^j
+$$
+
+Los coeficientes anteriores se obtienen en R con `ARMAtoMA()`.
 
 ```{r}
 #| label: psi-arma
@@ -570,7 +579,7 @@ Resultado clave para la identificación:
 | $MA(q)$     | se corta en $q$  | decae            |
 | $ARMA(p,q)$ | decae (tras $q$) | decae (tras $p$) |
 
-Ninguna de las dos funciones se corta, por lo que en la práctica el orden se elige con criterios de información (AIC/BIC), p. ej. con `forecast::auto.arima()`.
+Ninguna de las dos funciones se corta, por lo que en la práctica el orden se elige con criterios de información (AIC/BIC). En R la funci[on que ayuda a estimar los parámetros del modelo es `forecast::auto.arima()`.
 
 ### Expresión para ARMA(1,1)
 
@@ -767,9 +776,9 @@ En el último panel, $\Phi(B)=1-0.6B$ y $\Theta(B)=1-0.6B$ se cancelan y el proc
 
 |   | $AR(p)$ | $MA(q)$ | $ARMA(p,q)$ |
 |------------------|------------------|------------------|------------------|
-| Forma compacta | $\Phi(B)X_t=Z_t$ | $X_t=\Theta(B)Z_t$ | $\Phi(B)X_t=\Theta(B)Z_t$ |
-| Estacionariedad | raíces de $\Phi$ fuera del círculo | siempre | raíces de $\Phi$ fuera |
-| Invertibilidad | siempre | raíces de $\Theta$ fuera | raíces de $\Theta$ fuera |
-| ACF | decae | se corta en $q$ | decae |
-| PACF | se corta en $p$ | decae | decae |
-| Representación dual | $MA(\infty)$ | $AR(\infty)$ | ambas |
+| Notación | $\Phi(B)X_t=Z_t$ | $X_t=\Theta(B)Z_t$ | $\Phi(B)X_t=\Theta(B)Z_t$ |
+| Estacionariedad | Raíces de $\Phi$ fuera | Siempre | Raíces de $\Phi$ fuera |
+| Invertibilidad | Siempre | Raíces de $\Theta$ fuera | Raíces de $\Theta$ fuera |
+| ACF | Decae | Se corta en $q$ | Decae |
+| PACF | Se corta en $p$ | Decae | Decae |
+| Representación alternativa | $MA(\infty)$ | $AR(\infty)$ | Ambas |
