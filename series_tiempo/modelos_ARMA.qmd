@@ -211,7 +211,7 @@ plot_raices <- function(raices, titulo = "Raíces y círculo unitario") {
   text(Re(raices), Im(raices), labels = round(Mod(raices), 2), pos = 3, cex = .8)
   legend("topleft", bty = "n", pch = 19, cex = .8,
          col = c("forestgreen", "firebrick"),
-         legend = c("|z| > 1 (estacionario)", "|z| <= 1"))
+         legend = c("|z| > 1", "|z| <= 1"))
 }
 
 plot_raices(raices_ar, "Raices de AR(1) con phi=0.8")
@@ -400,7 +400,7 @@ abline(h = 0)
 par(par_default)
 ```
 
-Por último, la comprobación de la no identificación entre $\theta$ y $1/\theta$ mediante la ACF, además de una versión muestral del ACF de un $MA(2)$ que se corta tras el rezago 2, y la PACF que decae.
+Por último, la comprobación de la no identificación entre $\theta$ y $1/\theta$ mediante la ACF teórica de un proceso $MA(q)$ con $\theta=0.5$ y $\theta=2$, además de una versión muestral del ACF de un $MA(2)$ que se corta tras el rezago 2, y la PACF que decae.
 
 ```{r}
 #| label: acf-pacf-ma-mue
@@ -443,10 +443,9 @@ theta <- c(0.7, 0.4)                 # MA(2)
 coef_ma <- c(1, theta)               # 1 + 0.7z + 0.4z^2
 raices_ma <- polyroot(coef_ma)
 
-data.frame(
-  raiz   = raices_ma,
-  modulo = Mod(raices_ma),
-  invertible = Mod(raices_ma) > 1
+tabKable(data.frame(
+  Raiz   = raices_ma,
+  Modulo = Mod(raices_ma))
 )
 
 plot_raices(raices_ma, "MA(2): raíces de Theta(z)")
@@ -520,7 +519,7 @@ par(par_default)
 
 A diferencia del $AR(1)$, ninguna de las tres trayectorias explota, pues el $MA(1)$ es estacionario para cualquier $\theta$. Lo que cambia es la invertibilidad, y con ella la posibilidad de recuperar $Z_t$ a partir del pasado observado de $X_t$. Además $\theta=0.8$ y $\theta=1/0.8=1.25$ generan las mismas ACF, por lo que sólo la versión invertible es identificable en la estimación.
 
-# Modelos ARMA
+# Modelos $ARMA(p,q)$
 
 Un proceso $\{X_t\}$ es $ARMA(p,q)$ si
 
@@ -537,7 +536,7 @@ $$
 
 con $\Phi(B)=1-\phi_1B-\cdots-\phi_pB^p$ y $\Theta(B)=1+\theta_1B+\cdots+\theta_qB^q$.
 
-Condiciones:
+Las propiedades de interés son:
 
 - **Causalidad / estacionariedad**: raíces de $\Phi(B)$ fuera del círculo unitario.
 - **Invertibilidad**: raíces de $\Theta(B)$ fuera del círculo unitario.
@@ -557,21 +556,11 @@ ARMAtoMA(ar = 0.7, ma = 0.4, lag.max = 8)   # pesos psi_j de la representación 
 
 ## ACF y PACF
 
+Las funciones de autocorrelación serán heredadas de cada componente, es decir, la ACF será heredada del componente $MA(q)$ y la PACF será heredada del $AR(q)$.
+
 ### Expresión para ARMA(p,q)
 
-Para $h > q$ los términos de medias móviles desaparecen de las covarianzas cruzadas y la ACF satisface la **misma** ecuación en diferencias que en el caso autoregresivo:
-
-$$
-\rho(h) = \phi_1\rho(h-1) + \cdots + \phi_p\rho(h-p), \qquad h > q,
-$$
-
-con valores iniciales $\rho(0),\dots,\rho(q)$ determinados por ambos polinomios. En términos de la representación $MA(\infty)$,
-
-$$
-\gamma(h) = \sigma^2 \sum_{j\ge 0}\psi_j\,\psi_{j+|h|} .
-$$
-
-Resultado clave para la identificación:
+Una tabla que ayuda a la identificación:
 
 | Modelo      | ACF              | PACF             |
 |-------------|------------------|------------------|
@@ -579,7 +568,7 @@ Resultado clave para la identificación:
 | $MA(q)$     | se corta en $q$  | decae            |
 | $ARMA(p,q)$ | decae (tras $q$) | decae (tras $p$) |
 
-Ninguna de las dos funciones se corta, por lo que en la práctica el orden se elige con criterios de información (AIC/BIC). En R la funci[on que ayuda a estimar los parámetros del modelo es `forecast::auto.arima()`.
+Ninguna de las dos funciones se corta, por lo que en la práctica el orden se elige con criterios de información (AIC/BIC). En R la función que ayuda a estimar los parámetros del modelo es `forecast::auto.arima()`.
 
 ### Expresión para ARMA(1,1)
 
@@ -597,7 +586,7 @@ $$
 
 Es decir, la ACF decae geométricamente a tasa $\phi$ a partir del rezago 1, pero con un "arranque" distinto al del $AR(1)$ puro. Si $\theta=0$ se recupera $\rho(h)=\phi^h$; si $\phi=0$ se recupera la ACF del $MA(1)$.
 
-### Plot de ambas con funciones de R
+### Ejemplos
 
 ```{r}
 #| label: acf-pacf-arma
