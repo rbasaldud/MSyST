@@ -191,7 +191,7 @@ window.Quarto = {
   <li><a href="#raíces-del-polinomio" id="toc-raíces-del-polinomio" class="nav-link" data-scroll-target="#raíces-del-polinomio">Raíces del polinomio</a></li>
   <li><a href="#simulación" id="toc-simulación" class="nav-link" data-scroll-target="#simulación">Simulación</a></li>
   </ul></li>
-  <li><a href="#modelos-de-medias-móviles" id="toc-modelos-de-medias-móviles" class="nav-link" data-scroll-target="#modelos-de-medias-móviles">Modelos de Medias Móviles</a>
+  <li><a href="#modelos-de-medias-móviles-maq" id="toc-modelos-de-medias-móviles-maq" class="nav-link" data-scroll-target="#modelos-de-medias-móviles-maq">Modelos de Medias Móviles <span class="math inline">\(MA(q)\)</span></a>
   <ul class="collapse">
   <li><a href="#acf-y-pacf-1" id="toc-acf-y-pacf-1" class="nav-link" data-scroll-target="#acf-y-pacf-1">ACF y PACF</a>
   <ul class="collapse">
@@ -199,7 +199,7 @@ window.Quarto = {
   <li><a href="#expresión-para-ma1" id="toc-expresión-para-ma1" class="nav-link" data-scroll-target="#expresión-para-ma1">Expresión para MA(1)</a></li>
   </ul></li>
   <li><a href="#raices-del-polinomio" id="toc-raices-del-polinomio" class="nav-link" data-scroll-target="#raices-del-polinomio">Raices del polinomio</a></li>
-  <li><a href="#simulacion" id="toc-simulacion" class="nav-link" data-scroll-target="#simulacion">Simulacion</a></li>
+  <li><a href="#simulación-1" id="toc-simulación-1" class="nav-link" data-scroll-target="#simulación-1">Simulación</a></li>
   </ul></li>
   <li><a href="#modelos-arma" id="toc-modelos-arma" class="nav-link" data-scroll-target="#modelos-arma">Modelos ARMA</a>
   <ul class="collapse">
@@ -210,7 +210,7 @@ window.Quarto = {
   <li><a href="#plot-de-ambas-con-funciones-de-r" id="toc-plot-de-ambas-con-funciones-de-r" class="nav-link" data-scroll-target="#plot-de-ambas-con-funciones-de-r">Plot de ambas con funciones de R</a></li>
   </ul></li>
   <li><a href="#raices-del-polinomio-1" id="toc-raices-del-polinomio-1" class="nav-link" data-scroll-target="#raices-del-polinomio-1">Raices del polinomio</a></li>
-  <li><a href="#simulacion-1" id="toc-simulacion-1" class="nav-link" data-scroll-target="#simulacion-1">Simulacion</a></li>
+  <li><a href="#simulacion" id="toc-simulacion" class="nav-link" data-scroll-target="#simulacion">Simulacion</a></li>
   </ul></li>
   <li><a href="#resumen" id="toc-resumen" class="nav-link" data-scroll-target="#resumen">Resumen</a></li>
   </ul>
@@ -575,9 +575,9 @@ Note
 </div>
 </section>
 </section>
-<section id="modelos-de-medias-móviles" class="level1">
-<h1>Modelos de Medias Móviles</h1>
-<p>Un proceso <span class="math inline">\(\{X_t\}\)</span> es de medias móviles de orden <span class="math inline">\(q\)</span>, <span class="math inline">\(MA(q)\)</span>, si</p>
+<section id="modelos-de-medias-móviles-maq" class="level1">
+<h1>Modelos de Medias Móviles <span class="math inline">\(MA(q)\)</span></h1>
+<p>Un proceso <span class="math inline">\(\{X_t\}\)</span> es de medias móviles de orden <span class="math inline">\(q\)</span> si satisface la ecuación:</p>
 <p><span class="math display">\[
 X_t = Z_t + \theta_1 Z_{t-1} + \cdots + \theta_q Z_{t-q},
 \qquad Z_t \sim \mathrm{WN}(0,\sigma^2).
@@ -587,15 +587,15 @@ X_t = Z_t + \theta_1 Z_{t-1} + \cdots + \theta_q Z_{t-q},
 X_t = \Theta(B)\, Z_t, \qquad
 \Theta(B) = 1 + \theta_1 B + \cdots + \theta_q B^q .
 \]</span></p>
-<p>Un <span class="math inline">\(MA(q)\)</span> es <strong>siempre estacionario</strong> (es una combinación lineal finita de ruido blanco), con</p>
+<p>Un <span class="math inline">\(MA(q)\)</span> siempre es estacionario de segundo orden, además</p>
 <p><span class="math display">\[
 \mathbb{E}[X_t]=0, \qquad \gamma(0) = \sigma^2\sum_{j=0}^{q}\theta_j^2, \quad \theta_0 = 1 .
 \]</span></p>
-<p>La condición relevante aquí no es la estacionariedad sino la <strong>invertibilidad</strong>: que las raíces de <span class="math inline">\(\Theta(z)=0\)</span> caigan <strong>fuera</strong> del círculo unitario, <span class="math inline">\(|z_i|&gt;1\)</span>. Eso permite escribir la representación <span class="math inline">\(AR(\infty)\)</span></p>
+<p>Para este modelo, la propiedad no trivial es la <strong>invertibilidad</strong>: que las raíces de <span class="math inline">\(\Theta(B)\)</span> caigan <strong>fuera</strong> del círculo unitario, es decir <span class="math inline">\(|z_i|&gt;1\)</span>. Eso permite escribir la representación <span class="math inline">\(AR(\infty)\)</span></p>
 <p><span class="math display">\[
-\Theta^{-1}(B) X_t = Z_t, \qquad X_t = -\sum_{j\ge 1}\pi_j X_{t-j} + Z_t .
+\Theta^{-1}(B) X_t = Z_t
 \]</span></p>
-<p>Para <span class="math inline">\(MA(1)\)</span>, <span class="math inline">\(\Theta(B)=1+\theta B\)</span>, la raíz es <span class="math inline">\(z=-1/\theta\)</span> y la invertibilidad equivale a <span class="math inline">\(|\theta|&lt;1\)</span>.</p>
+<p>Para un modelo <span class="math inline">\(MA(1)\)</span> dado por <span class="math inline">\(\Theta(B)=1+\theta B\)</span>, la raíz es <span class="math inline">\(z=-1/\theta\)</span> y la invertibilidad equivale a <span class="math inline">\(|\theta|&lt;1\)</span>.</p>
 <section id="acf-y-pacf-1" class="level2">
 <h2 class="anchored" data-anchor-id="acf-y-pacf-1">ACF y PACF</h2>
 <section id="expresión-para-maq" class="level3">
@@ -611,17 +611,17 @@ X_t = \Theta(B)\, Z_t, \qquad
 <p>de donde</p>
 <p><span class="math display">\[
 \rho(h) = \frac{\sum_{j=0}^{q-|h|}\theta_j\theta_{j+|h|}}{\sum_{j=0}^{q}\theta_j^2}
-\ \ (|h|\le q), \qquad
-\boxed{\rho(h) = 0 \ \text{ para } |h| &gt; q.}
+\ \ (|h|\le q) \qquad
+\rho(h) = 0 \ \text{ para } |h| &gt; q
 \]</span></p>
-<p>La ACF <strong>se corta</strong> en el rezago <span class="math inline">\(q\)</span>, mientras que la PACF <strong>decae</strong> sin cortarse. Es exactamente el comportamiento dual al del <span class="math inline">\(AR(p)\)</span>.</p>
+<p>La ACF <strong>se corta</strong> en el rezago <span class="math inline">\(q\)</span>, mientras que la PACF <strong>decae</strong> sin cortarse. Es exactamente el comportamiento contrario al del <span class="math inline">\(AR(p)\)</span>.</p>
 </section>
 <section id="expresión-para-ma1" class="level3">
 <h3 class="anchored" data-anchor-id="expresión-para-ma1">Expresión para MA(1)</h3>
 <p><span class="math display">\[
-\rho(1) = \frac{\theta}{1+\theta^2}, \qquad \rho(h) = 0 \ \ \text{para } h \ge 2 .
+\rho(1) = \frac{\theta}{1+\theta^2} \qquad \rho(h) = 0 \ \ \text{para } h \ge 2
 \]</span></p>
-<p>Note que <span class="math inline">\(|\rho(1)|\le 1/2\)</span> siempre, y que <span class="math inline">\(\theta\)</span> y <span class="math inline">\(1/\theta\)</span> producen la <strong>misma</strong> ACF (problema de identificación que resuelve la invertibilidad: se elige la raíz con <span class="math inline">\(|\theta|&lt;1\)</span>).</p>
+<p>Sabemos que <span class="math inline">\(|\rho(1)|\le 1/2\)</span> siempre, y que <span class="math inline">\(\theta\)</span> y <span class="math inline">\(1/\theta\)</span> producen la <strong>misma</strong> ACF (problema de identificación que resuelve la invertibilidad: se elige la raíz con <span class="math inline">\(|\theta|&lt;1\)</span>).</p>
 <p>La PACF del <span class="math inline">\(MA(1)\)</span> invertible es</p>
 <p><span class="math display">\[
 \alpha(h) = -\frac{(-\theta)^h\,(1-\theta^2)}{1-\theta^{2(h+1)}}, \qquad h\ge 1,
@@ -669,7 +669,7 @@ X_t = \Theta(B)\, Z_t, \qquad
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(par_default)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
-<p>Comprobación de la no identificación entre <span class="math inline">\(\theta\)</span> y <span class="math inline">\(1/\theta\)</span>, y versión muestral de un <span class="math inline">\(MA(2)\)</span>:</p>
+<p>Por último, la comprobación de la no identificación entre <span class="math inline">\(\theta\)</span> y <span class="math inline">\(1/\theta\)</span> mediante la ACF, además de una versión muestral del ACF de un <span class="math inline">\(MA(2)\)</span> que se corta tras el rezago 2, y la PACF que decae.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
@@ -695,7 +695,7 @@ theta_2   1 0.4 0 0</code></pre>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="modelos_ARMA_files/figure-html/acf-pacf-ma-muestral-1.png" class="img-fluid figure-img" width="864"></p>
+<p><img src="modelos_ARMA_files/figure-html/acf-pacf-ma-mue-1.png" class="img-fluid figure-img" width="864"></p>
 </figure>
 </div>
 </div>
@@ -704,7 +704,6 @@ theta_2   1 0.4 0 0</code></pre>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(par_default)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
-<p>La ACF muestral se corta tras el rezago 2 y la PACF decae: la firma de un <span class="math inline">\(MA(2)\)</span>.</p>
 </section>
 </section>
 <section id="raices-del-polinomio" class="level2">
@@ -713,7 +712,7 @@ theta_2   1 0.4 0 0</code></pre>
 <p><span class="math display">\[
 \Theta(z) = 1 + \theta_1 z + \cdots + \theta_q z^q = 0,
 \]</span></p>
-<p>y la condición <span class="math inline">\(|z_i|&gt;1\)</span> corresponde a <strong>invertibilidad</strong> (no a estacionariedad, que se cumple siempre). En <code>polyroot()</code> los coeficientes van con <strong>signo positivo</strong>: <span class="math inline">\(c(1, \theta_1, \dots, \theta_q)\)</span>.</p>
+<p>y la condición <span class="math inline">\(|z_i|&gt;1\)</span> corresponde a <strong>invertibilidad</strong>. Usamos <code>polyroot()</code> para encontrar las raíces (los coeficientes van con **signo positivo <span class="math inline">\((1, \theta_1, \dots, \theta_q)\)</span> )</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
@@ -763,7 +762,7 @@ theta_2   1 0.4 0 0</code></pre>
 </div>
 </div>
 </div>
-<p>Caso no invertible, para contrastar:</p>
+<p>Para contrastar, se muestran las gráficas para un <span class="math inline">\(MA(1)\)</span> con <span class="math inline">\(\theta=1.5\)</span>, en este caso la raíz es <span class="math inline">\(-0.66\)</span> y por lo tanto no es invertible:</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
@@ -786,9 +785,9 @@ theta_2   1 0.4 0 0</code></pre>
 </div>
 </div>
 </section>
-<section id="simulacion" class="level2">
-<h2 class="anchored" data-anchor-id="simulacion">Simulacion</h2>
-<p>Simulamos <span class="math inline">\(MA(1)\)</span>: <span class="math inline">\(X_t = Z_t + \theta Z_{t-1}\)</span> con tres valores de <span class="math inline">\(\theta\)</span>. Usamos <code>filter()</code> para poder incluir <span class="math inline">\(|\theta|\ge 1\)</span> (todos son estacionarios, pero sólo el primero es invertible).</p>
+<section id="simulación-1" class="level2">
+<h2 class="anchored" data-anchor-id="simulación-1">Simulación</h2>
+<p>Simulamos un <span class="math inline">\(MA(1)\)</span>: <span class="math inline">\(X_t = Z_t + \theta Z_{t-1}\)</span> con tres valores de <span class="math inline">\(\theta\)</span>. Usamos <code>filter()</code> para poder incluir <span class="math inline">\(|\theta|\ge 1\)</span> (todos son estacionarios, pero sólo el primero es invertible).</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
@@ -806,7 +805,7 @@ theta_2   1 0.4 0 0</code></pre>
 <span id="cb29-12"><a href="#cb29-12" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="fu">expression</span>(<span class="fu">paste</span>(<span class="st">"MA(1) con "</span>, theta <span class="sc">==</span> <span class="fl">0.8</span>, <span class="st">": estacionario e invertible"</span>)))</span>
 <span id="cb29-13"><a href="#cb29-13" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">h =</span> <span class="dv">0</span>, <span class="at">lty =</span> <span class="dv">2</span>)</span>
 <span id="cb29-14"><a href="#cb29-14" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(m_unit,  <span class="at">ylab =</span> <span class="fu">expression</span>(X[t]), <span class="at">col =</span> <span class="st">"darkorange"</span>,</span>
-<span id="cb29-15"><a href="#cb29-15" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="fu">expression</span>(<span class="fu">paste</span>(<span class="st">"MA(1) con "</span>, theta <span class="sc">==</span> <span class="dv">1</span>, <span class="st">": raíz unitaria en Theta(z)"</span>)))</span>
+<span id="cb29-15"><a href="#cb29-15" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="fu">expression</span>(<span class="fu">paste</span>(<span class="st">"MA(1) con "</span>, theta <span class="sc">==</span> <span class="dv">1</span>, <span class="st">": raíz unitaria en Theta(B)"</span>)))</span>
 <span id="cb29-16"><a href="#cb29-16" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">h =</span> <span class="dv">0</span>, <span class="at">lty =</span> <span class="dv">2</span>)</span>
 <span id="cb29-17"><a href="#cb29-17" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(m_noinv, <span class="at">ylab =</span> <span class="fu">expression</span>(X[t]), <span class="at">col =</span> <span class="st">"firebrick"</span>,</span>
 <span id="cb29-18"><a href="#cb29-18" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="fu">expression</span>(<span class="fu">paste</span>(<span class="st">"MA(1) con "</span>, theta <span class="sc">==</span> <span class="fl">1.25</span>, <span class="st">": estacionario, no invertible"</span>)))</span>
@@ -824,6 +823,7 @@ theta_2   1 0.4 0 0</code></pre>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(par_default)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
+<p>También podemos analizar las funciones de autocorrelación de los procesos anteriores.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
@@ -844,7 +844,7 @@ theta_2   1 0.4 0 0</code></pre>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(par_default)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
-<p>A diferencia del <span class="math inline">\(AR(1)\)</span>, <strong>ninguna</strong> de las tres trayectorias explota: el <span class="math inline">\(MA(1)\)</span> es estacionario para cualquier <span class="math inline">\(\theta\)</span>. Lo que cambia es la invertibilidad, y con ella la posibilidad de recuperar <span class="math inline">\(Z_t\)</span> a partir del pasado observado de <span class="math inline">\(X_t\)</span>. Note además que <span class="math inline">\(\theta=0.8\)</span> y <span class="math inline">\(\theta=1/0.8=1.25\)</span> generan ACF prácticamente idénticas: sólo la versión invertible es identificable en la estimación.</p>
+<p>A diferencia del <span class="math inline">\(AR(1)\)</span>, ninguna de las tres trayectorias explota, pues el <span class="math inline">\(MA(1)\)</span> es estacionario para cualquier <span class="math inline">\(\theta\)</span>. Lo que cambia es la invertibilidad, y con ella la posibilidad de recuperar <span class="math inline">\(Z_t\)</span> a partir del pasado observado de <span class="math inline">\(X_t\)</span>. Además <span class="math inline">\(\theta=0.8\)</span> y <span class="math inline">\(\theta=1/0.8=1.25\)</span> generan las mismas ACF, por lo que sólo la versión invertible es identificable en la estimación.</p>
 </section>
 </section>
 <section id="modelos-arma" class="level1">
@@ -856,16 +856,19 @@ X_t - \phi_1 X_{t-1} - \cdots - \phi_p X_{t-p}
 \]</span></p>
 <p>o de forma compacta con los polinomios de retraso:</p>
 <p><span class="math display">\[
-\boxed{\ \Phi(B)\,X_t = \Theta(B)\,Z_t\ }
+\Phi(B)\,X_t = \Theta(B)\,Z_t
 \]</span></p>
 <p>con <span class="math inline">\(\Phi(B)=1-\phi_1B-\cdots-\phi_pB^p\)</span> y <span class="math inline">\(\Theta(B)=1+\theta_1B+\cdots+\theta_qB^q\)</span>.</p>
 <p>Condiciones:</p>
 <ul>
-<li><strong>Causalidad / estacionariedad</strong>: raíces de <span class="math inline">\(\Phi(z)\)</span> fuera del círculo unitario.</li>
-<li><strong>Invertibilidad</strong>: raíces de <span class="math inline">\(\Theta(z)\)</span> fuera del círculo unitario.</li>
-<li><strong>Identificabilidad</strong>: <span class="math inline">\(\Phi(z)\)</span> y <span class="math inline">\(\Theta(z)\)</span> no deben tener raíces comunes (si las tienen, el modelo se reduce a uno de orden menor).</li>
+<li><strong>Causalidad / estacionariedad</strong>: raíces de <span class="math inline">\(\Phi(B)\)</span> fuera del círculo unitario.</li>
+<li><strong>Invertibilidad</strong>: raíces de <span class="math inline">\(\Theta(B)\)</span> fuera del círculo unitario.</li>
+<li><strong>Identificabilidad</strong>: <span class="math inline">\(\Phi(B)\)</span> y <span class="math inline">\(\Theta(B)\)</span> no deben tener raíces comunes (si las tienen, el modelo se reduce a uno de orden menor).</li>
 </ul>
-<p>Bajo causalidad, <span class="math inline">\(X_t = \Psi(B)Z_t\)</span> con <span class="math inline">\(\Psi(B)=\Theta(B)/\Phi(B)=\sum_{j\ge0}\psi_j B^j\)</span>, coeficientes que en R se obtienen con <code>ARMAtoMA()</code>.</p>
+<p>Bajo causalidad, <span class="math display">\[
+X_t = \Psi(B)Z_t$ \qquad \text{con} \qquad  \Psi(B)=\Theta(B)/\Phi(B)=\sum_{j=0}^{\infty}\psi_j B^j
+\]</span></p>
+<p>Los coeficientes anteriores se obtienen en R con <code>ARMAtoMA()</code>.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
@@ -915,7 +918,7 @@ X_t - \phi_1 X_{t-1} - \cdots - \phi_p X_{t-p}
 </tr>
 </tbody>
 </table>
-<p>Ninguna de las dos funciones se corta, por lo que en la práctica el orden se elige con criterios de información (AIC/BIC), p.&nbsp;ej. con <code>forecast::auto.arima()</code>.</p>
+<p>Ninguna de las dos funciones se corta, por lo que en la práctica el orden se elige con criterios de información (AIC/BIC). En R la funci[on que ayuda a estimar los parámetros del modelo es <code>forecast::auto.arima()</code>.</p>
 </section>
 <section id="expresión-para-arma11" class="level3">
 <h3 class="anchored" data-anchor-id="expresión-para-arma11">Expresión para ARMA(1,1)</h3>
@@ -1120,8 +1123,8 @@ X_t - \phi_1 X_{t-1} - \cdots - \phi_p X_{t-p}
 </div>
 <p>Si alguna raíz inversa quedara sobre o fuera del círculo, el modelo estimado sería no causal o no invertible y habría que reconsiderar el orden o diferenciar la serie.</p>
 </section>
-<section id="simulacion-1" class="level2">
-<h2 class="anchored" data-anchor-id="simulacion-1">Simulacion</h2>
+<section id="simulacion" class="level2">
+<h2 class="anchored" data-anchor-id="simulacion">Simulacion</h2>
 <p>Simulamos <span class="math inline">\(ARMA(1,1)\)</span>: <span class="math inline">\(X_t = \phi X_{t-1} + Z_t + \theta Z_{t-1}\)</span>, con una recursión propia que admite valores fuera de la región causal/invertible.</p>
 <div class="cell">
 <details class="code-fold">
@@ -1210,40 +1213,40 @@ X_t - \phi_1 X_{t-1} - \cdots - \phi_p X_{t-p}
 </thead>
 <tbody>
 <tr class="odd">
-<td>Forma compacta</td>
+<td>Notación</td>
 <td><span class="math inline">\(\Phi(B)X_t=Z_t\)</span></td>
 <td><span class="math inline">\(X_t=\Theta(B)Z_t\)</span></td>
 <td><span class="math inline">\(\Phi(B)X_t=\Theta(B)Z_t\)</span></td>
 </tr>
 <tr class="even">
 <td>Estacionariedad</td>
-<td>raíces de <span class="math inline">\(\Phi\)</span> fuera del círculo</td>
-<td>siempre</td>
-<td>raíces de <span class="math inline">\(\Phi\)</span> fuera</td>
+<td>Raíces de <span class="math inline">\(\Phi\)</span> fuera</td>
+<td>Siempre</td>
+<td>Raíces de <span class="math inline">\(\Phi\)</span> fuera</td>
 </tr>
 <tr class="odd">
 <td>Invertibilidad</td>
-<td>siempre</td>
-<td>raíces de <span class="math inline">\(\Theta\)</span> fuera</td>
-<td>raíces de <span class="math inline">\(\Theta\)</span> fuera</td>
+<td>Siempre</td>
+<td>Raíces de <span class="math inline">\(\Theta\)</span> fuera</td>
+<td>Raíces de <span class="math inline">\(\Theta\)</span> fuera</td>
 </tr>
 <tr class="even">
 <td>ACF</td>
-<td>decae</td>
-<td>se corta en <span class="math inline">\(q\)</span></td>
-<td>decae</td>
+<td>Decae</td>
+<td>Se corta en <span class="math inline">\(q\)</span></td>
+<td>Decae</td>
 </tr>
 <tr class="odd">
 <td>PACF</td>
-<td>se corta en <span class="math inline">\(p\)</span></td>
-<td>decae</td>
-<td>decae</td>
+<td>Se corta en <span class="math inline">\(p\)</span></td>
+<td>Decae</td>
+<td>Decae</td>
 </tr>
 <tr class="even">
-<td>Representación dual</td>
+<td>Representación alternativa</td>
 <td><span class="math inline">\(MA(\infty)\)</span></td>
 <td><span class="math inline">\(AR(\infty)\)</span></td>
-<td>ambas</td>
+<td>Ambas</td>
 </tr>
 </tbody>
 </table>
