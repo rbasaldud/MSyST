@@ -16,13 +16,14 @@ format:
 
 set.seed(2026)
 
-# Paquetes usados a lo largo del documento
-# install.packages(c("UnitCircle", "forecast", "ggplot2"))
-library(UnitCircle)   # visualización de raíces respecto al círculo unitario
-library(forecast)     # Acf/Pacf y autoplot de raíces
-library(ggplot2)
-library(kableExtra)
 
+library(UnitCircle)   # raices respecto al circulo unitario
+library(forecast)     # acf/pacf y raíces
+library(ggplot2)
+library(kableExtra) # para tablas
+
+
+#funcion para tablas mas bonitas
 tabKable <- function(tabla,cap=""){
   tabla %>% 
     kbl(booktabs = TRUE, align = "c",caption = cap) %>%
@@ -224,8 +225,6 @@ Otra alternativa es con la función `uc.check()` de la paquetería `UnitCircle`
 #| fig-width: 6
 #| fig-height: 6
 
-# UnitCircle
-# uc.check() recibe el polinomio en orden creciente de potencia
 UnitCircle::uc.check(pol_ = coef_ar, print_output = TRUE, plot_output = TRUE)
 ```
 
@@ -370,6 +369,7 @@ que decae geométricamente y alterna de signo cuando $\theta>0$.
 #| fig-width: 9
 #| fig-height: 6
 
+#funciones teoricas de un modelo especificado
 acf_ma_pos  <- ARMAacf(ma = 0.8,  lag.max = h)
 pacf_ma_pos <- ARMAacf(ma = 0.8,  lag.max = h, pacf = TRUE)
 acf_ma_neg  <- ARMAacf(ma = -0.8, lag.max = h)
@@ -440,7 +440,7 @@ y la condición $|z_i|>1$ corresponde a **invertibilidad**. Usamos `polyroot()` 
 #| fig-height: 6
 
 theta <- c(0.7, 0.4)                 # MA(2)
-coef_ma <- c(1, theta)               # 1 + 0.7z + 0.4z^2
+coef_ma <- c(1, theta)               # plinomio 1 + 0.7z + 0.4z^2
 raices_ma <- polyroot(coef_ma)
 
 tabKable(data.frame(
@@ -466,7 +466,7 @@ Para contrastar, se muestran las gráficas para un $MA(1)$ con $\theta=1.5$, en 
 #| fig-width: 6
 #| fig-height: 6
 
-raices_ma_ni <- polyroot(c(1, 1.5))   # MA(1) con theta = 1.5 -> raíz -0.667
+raices_ma_ni <- polyroot(c(1, 1.5))   # MA(1) con theta = 1.5 -> raiz -0.667
 Mod(raices_ma_ni)
 plot_raices(raices_ma_ni, expression(paste("MA(1) con ", theta == 1.5, ": no invertible")))
 ```
@@ -521,7 +521,7 @@ A diferencia del $AR(1)$, ninguna de las tres trayectorias explota, pues el $MA(
 
 # Modelos $ARMA(p,q)$
 
-Un proceso $\{X_t\}$ es $ARMA(p,q)$ si
+Un proceso $\{X_t\}$ es $ARMA(p,q)$ si satisface la siguiente ecuación:
 
 $$
 X_t - \phi_1 X_{t-1} - \cdots - \phi_p X_{t-p}
@@ -540,11 +540,11 @@ Las propiedades de interés son:
 
 - **Causalidad / estacionariedad**: raíces de $\Phi(B)$ fuera del círculo unitario.
 - **Invertibilidad**: raíces de $\Theta(B)$ fuera del círculo unitario.
-- **Identificabilidad**: $\Phi(B)$ y $\Theta(B)$ no deben tener raíces comunes (si las tienen, el modelo se reduce a uno de orden menor).
+- **Identificabilidad**: $\Phi(B)$ y $\Theta(B)$ no deben tener raíces comunes, y si las tienen el modelo se reduce a uno de orden menor.
 
 Bajo causalidad, 
 $$
-X_t = \Psi(B)Z_t$ \qquad \text{con} \qquad  \Psi(B)=\Theta(B)/\Phi(B)=\sum_{j=0}^{\infty}\psi_j B^j
+X_t = \Psi(B)Z_t \qquad \text{con} \qquad  \Psi(B)=\Theta(B)/\Phi(B)=\sum_{j=0}^{\infty}\psi_j B^j
 $$
 
 Los coeficientes anteriores se obtienen en R con `ARMAtoMA()`.
@@ -556,7 +556,7 @@ ARMAtoMA(ar = 0.7, ma = 0.4, lag.max = 8)   # pesos psi_j de la representación 
 
 ## ACF y PACF
 
-Las funciones de autocorrelación serán heredadas de cada componente, es decir, la ACF será heredada del componente $MA(q)$ y la PACF será heredada del $AR(q)$.
+Las funciones de autocorrelación serán heredadas de cada componente, es decir, la ACF será heredada del componente $MA(q)$ y la PACF será heredada del $AR(q)$, esto nos ayudará a identificar los parámetros del modelo posteriormente. 
 
 ### Expresión para ARMA(p,q)
 
@@ -569,6 +569,28 @@ Una tabla que ayuda a la identificación:
 | $ARMA(p,q)$ | decae (tras $q$) | decae (tras $p$) |
 
 Ninguna de las dos funciones se corta, por lo que en la práctica el orden se elige con criterios de información (AIC/BIC). En R la función que ayuda a estimar los parámetros del modelo es `forecast::auto.arima()`.
+
+### auto.arima()
+
+La función que nos ayudará a realizar la estimación de los parámetros para una serie de tiempo observada es `auto.arima()` de la paquetería `forecast`.
+
+
+Por ejemplo, para el dataset `AirPassangers`
+
+
+```{r}
+#| label: ejemplo-autoarima
+
+datos_arma<- AirPassengers
+forecast::auto.arima(datos_arma)
+```
+
+
+
+### arima.sim()
+
+La función que nos ayuda a simular observaciones de un proceso completamente especficiado es `arima.sim`. Una limitante es que solo permite simular procesos estacionarios.
+
 
 ### Expresión para ARMA(1,1)
 
@@ -623,7 +645,7 @@ abline(h = 0)
 par(par_default)
 ```
 
-Verificación numérica de la fórmula de $\rho(1)$ y decaimiento geométrico posterior:
+Verificación numérica de la fórmula de $\rho(1)$ y decaimiento geométrico:
 
 ```{r}
 #| label: check-rho1
@@ -649,7 +671,7 @@ plot.new(); text(.5, .5, paste("auto.arima sugiere:\n",
 par(par_default)
 ```
 
-Ni la ACF ni la PACF se cortan de manera limpia: ese patrón mixto es justamente lo que sugiere un ARMA en lugar de un AR o un MA puro.
+Ni la ACF ni la PACF se cortan de manera limpia, y ese patrón mixto es lo que sugiere un ARMA en lugar de un AR o un MA puro.
 
 ## Raices del polinomio
 
@@ -723,7 +745,7 @@ sim_arma11 <- function(n, phi, theta, sd = 1) {
 }
 
 a_ok    <- sim_arma11(n, phi = 0.7,  theta = 0.4)   # causal e invertible
-a_unit  <- sim_arma11(n, phi = 1.0,  theta = 0.4)   # raíz unitaria en Phi -> ARIMA(0,1,1)
+a_unit  <- sim_arma11(n, phi = 1.0,  theta = 0.4)   # raiz unitaria en Phi -> ARIMA(0,1,1)
 a_exp   <- sim_arma11(n, phi = 1.05, theta = 0.4)   # explosivo
 
 par(mfrow = c(3, 1), mar = c(4, 4, 3, 1))
@@ -747,7 +769,7 @@ Un cuarto caso ilustra el problema de invertibilidad manteniendo la estacionarie
 #| fig-height: 5
 
 a_noinv <- sim_arma11(n, phi = 0.7, theta = 1.5)   # estacionario, no invertible
-a_cancel <- sim_arma11(n, phi = 0.6, theta = -0.6) # Phi y Theta comparten raíz -> ruido blanco
+a_cancel <- sim_arma11(n, phi = 0.6, theta = -0.6) # Phi y Theta comparten raiz -> ruido blanco
 
 par(mfrow = c(2, 2), mar = c(4, 4, 3, 1))
 plot(a_noinv, ylab = expression(X[t]), col = "purple4",
