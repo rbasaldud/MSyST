@@ -1,0 +1,378 @@
+---
+title: "Metodología Box-Jenkins: pronóstico de accidentes de tránsito mensuales"
+subtitle: "Un caso con tendencia decreciente y estacionalidad aditiva"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    embed-resources: true
+    code-fold: false
+execute:
+  warning: false
+  message: false
+---
+
+```{r setup}
+#| label: setup
+library(tidyverse)
+library(forecast)
+library(tseries)
+library(lubridate)
+library(patchwork)
+library(knitr)
+```
+
+## 1. Contexto del problema
+
+El **departamento de tránsito de una ciudad** lleva varios años invirtiendo en
+infraestructura vial más segura (semáforos inteligentes, ciclovías protegidas,
+reductores de velocidad). Como resultado, el número mensual de **accidentes viales
+reportados** muestra una **tendencia decreciente sostenida**. Sin embargo, ciertos
+meses del año — temporada de lluvias y las vacaciones de fin de año, con más tráfico
+y más conductores en carretera — siguen mostrando **picos estacionales que se
+repiten cada año**, independientemente de que el nivel general vaya bajando.
+
+El departamento necesita pronosticar los accidentes del próximo año para **decidir
+en qué meses reforzar los operativos de seguridad vial** y cuántos agentes de
+tránsito asignar. A diferencia de los dos documentos anteriores (ingresos con
+tendencia creciente, pasajeros con estacionalidad multiplicativa), este caso ilustra
+que la metodología Box-Jenkins se aplica igual sin importar si la tendencia sube o
+baja, y sirve para mostrar un caso donde, como veremos, **no hace falta ninguna
+transformación de varianza**.
+
+## 2. Descripción general de la serie
+
+```{r datos}
+#| label: simular-datos
+set.seed(2028)
+
+n     <- 120
+idx   <- 1:n
+fecha <- seq(as.Date("2015-01-01"), by = "month", length.out = n)
+
+tendencia_real     <- 500 - 1.3 * idx                                    # cae por mejoras en infraestructura
+estacionalidad_real <- 35 * sin(2 * pi * (idx - 10) / 12)                # picos en temporada de lluvias/fin de año
+ciclo_real         <- 15 * sin(2 * pi * idx / 48) + 8 * sin(2 * pi * idx / 30)
+ruido              <- rnorm(n, mean = 0, sd = 8)
+
+accidentes <- tendencia_real + estacionalidad_real + ciclo_real + ruido
+
+serie_df <- tibble(idx = idx, fecha = fecha, accidentes = accidentes)
+
+accidentes_ts <- ts(serie_df$accidentes, start = c(2015, 1), frequency = 12)
+```
+
+### 2.1 Visualización general
+
+```{r}
+#| label: fig-serie-general
+#| fig-cap: "Accidentes viales mensuales reportados, 2015-2024"
+ggplot(serie_df, aes(fecha, accidentes)) +
+  geom_line(color = "steelblue") +
+  geom_smooth(method = "lm", se = FALSE, color = "firebrick", linetype = "dashed") +
+  labs(x = "Fecha", y = "Número de accidentes",
+       title = "Accidentes de tránsito reportados por mes",
+       subtitle = "Tendencia decreciente (línea punteada) con oscilaciones estacionales") +
+  theme_minimal()
+```
+
+Se observa una caída sostenida en el nivel general de la serie — reflejo de las
+mejoras en infraestructura — sobre la cual se montan oscilaciones que se repiten con
+un patrón anual, y que **no parecen encogerse** conforme baja el nivel: buena señal
+de que el caso será **aditivo**, no multiplicativo.
+
+### 2.2 Estadística descriptiva y patrón mensual
+
+```{r}
+#| label: fig-boxplot-mes
+#| fig-cap: "Distribución de accidentes por mes del año"
+serie_df %>%
+  mutate(mes = month(fecha, label = TRUE, abbr = TRUE)) %>%
+  ggplot(aes(mes, accidentes)) +
+  geom_boxplot(fill = "steelblue", alpha = 0.5) +
+  labs(x = "Mes", y = "Accidentes",
+       title = "Meses de mayor y menor accidentalidad") +
+  theme_minimal()
+```
+
+```{r}
+#| label: resumen-datos
+summary(serie_df$accidentes)
+```
+
+Los meses de fin de año y temporada de lluvias destacan con medianas más altas — el
+patrón que el departamento ya sospechaba de forma cualitativa.
+
+## 3. Descomposición de la serie
+
+### 3.1 ¿Aditiva o multiplicativa?
+
+Como se discutió en 2.1, la amplitud estacional se mantiene aproximadamente
+constante aunque el nivel de la serie vaya bajando — el criterio para preferir una
+**descomposición aditiva**:
+$$X_t = m_t + s_t + Y_t.$$
+
+```{r}
+#| label: fig-descomposicion
+#| fig-cap: "Descomposición aditiva"
+descomp <- decompose(accidentes_ts, type = "additive")
+autoplot(descomp) +
+  labs(title = "Descomposición aditiva de los accidentes viales") +
+  theme_minimal()
+```
+
+### 3.2 Interpretación de cada componente
+
+- **Tendencia ($m_t$):** decreciente casi en línea recta — el efecto acumulado de
+  las políticas de seguridad vial. Es información valiosa por sí misma para
+  justificar la continuidad de esas inversiones ante autoridades municipales.
+- **Estacionalidad ($s_t$):** un patrón fijo en **número absoluto de accidentes**
+  (no en porcentaje, por ser aditivo): por ejemplo, "diciembre tiene típicamente 30
+  accidentes más que el promedio del año", sin importar si estamos en 2015 o en
+  2024.
+- **Residuo ($Y_t$):** aquí conviven el ciclo de mediano plazo (posiblemente ligado
+  a ciclos económicos que afectan el volumen de tráfico) y el ruido aleatorio mes a
+  mes. Como en los documentos anteriores, no es ruido blanco puro — todavía hay
+  estructura que un SARIMA puede capturar.
+
+## 4. Identificación (etapa 1 de Box-Jenkins)
+
+### 4.1 ACF y PACF de la serie original
+
+```{r}
+#| label: fig-acf-pacf-original
+#| fig-cap: "ACF y PACF de la serie original"
+ggAcf(accidentes_ts, lag.max = 36) + labs(title = "ACF - serie original") +
+  ggPacf(accidentes_ts, lag.max = 36) + labs(title = "PACF - serie original")
+```
+
+### 4.2 Pruebas de hipótesis sobre autocorrelación
+
+```{r}
+#| label: ljung-box-original
+Box.test(accidentes_ts, lag = 24, type = "Ljung-Box")
+```
+
+Se rechaza $H_0$ de no autocorrelación — esperado, dada la tendencia y la
+estacionalidad presentes.
+
+### 4.3 Pruebas de estacionariedad (ADF y KPSS)
+
+```{r}
+#| label: pruebas-estacionariedad
+adf.test(accidentes_ts)
+kpss.test(accidentes_ts, null = "Trend")
+```
+
+Ambas confirman no estacionariedad en media, congruente con la tendencia
+decreciente observada.
+
+### 4.4 Transformación Box-Cox: ¿hace falta aquí?
+
+```{r}
+#| label: box-cox
+lambda_opt <- BoxCox.lambda(accidentes_ts, method = "loglik")
+lambda_opt
+```
+
+El $\lambda$ óptimo estimado es `r round(lambda_opt, 3)`, **cercano a 1** — es decir,
+la transformación identidad (no transformar) ya es casi óptima. Esto contrasta con
+el documento del aeropuerto (donde $\lambda \approx 0$, favoreciendo el logaritmo):
+ahí la varianza crecía con el nivel de la serie, mientras que aquí, al ser un caso
+aditivo con amplitud estacional constante, **no hay heterocedasticidad que
+corregir**. Seguimos entonces trabajando directamente sobre `accidentes_ts`, sin
+transformar — otra decisión que depende de la evidencia y no de aplicar la
+transformación "por costumbre".
+
+### 4.5 Diferenciación regular y estacional
+
+```{r}
+#| label: diferenciacion-sugerida
+D_sugerido <- nsdiffs(accidentes_ts)
+serie_des  <- diff(accidentes_ts, lag = 12, differences = D_sugerido)
+
+d_sugerido <- ndiffs(serie_des)
+serie_estacionaria <- diff(serie_des, differences = d_sugerido)
+
+D_sugerido
+d_sugerido
+```
+
+Se sugiere $D = `r D_sugerido`$ diferenciación(es) estacional(es) y
+$d = `r d_sugerido`$ diferenciación(es) regular(es) adicional(es).
+
+### 4.6 ACF/PACF y prueba de hipótesis sobre la serie diferenciada
+
+```{r}
+#| label: fig-acf-pacf-diff
+#| fig-cap: "ACF y PACF tras diferenciar"
+ggAcf(serie_estacionaria, lag.max = 36) + labs(title = "ACF - serie diferenciada") +
+  ggPacf(serie_estacionaria, lag.max = 36) + labs(title = "PACF - serie diferenciada")
+```
+
+```{r}
+#| label: ljung-box-diferenciada
+Box.test(serie_estacionaria, lag = 24, type = "Ljung-Box")
+```
+
+Sigue habiendo autocorrelación significativa tras diferenciar — la señal de que aún
+queda estructura ARMA por capturar, y los rezagos significativos de la ACF/PACF
+orientan los órdenes candidatos de la siguiente sección.
+
+## 5. Estimación: propuesta de modelos candidatos
+
+### 5.1 Malla de órdenes a explorar
+
+```{r}
+#| label: malla-ordenes
+grid_ordenes <- expand_grid(
+  p = 0:2,
+  q = 0:2,
+  P = 0:1,
+  Q = 0:1
+)
+nrow(grid_ordenes)
+```
+
+### 5.2 Función de búsqueda con validación cruzada (métrica distinta a AICc)
+
+```{r}
+#| label: funcion-cv
+rolling_cv_rmse <- function(y, order, seasonal_order, period = 12,
+                             h = 6, min_train = 72) {
+  n <- length(y)
+  origenes <- seq(min_train, n - h, by = h)
+  if (length(origenes) == 0) return(NA_real_)
+
+  errores_cuadrados <- c()
+
+  for (origen in origenes) {
+    entrenamiento <- ts(y[1:origen], frequency = period)
+    prueba        <- y[(origen + 1):(origen + h)]
+
+    ajuste <- tryCatch(
+      Arima(entrenamiento, order = order,
+            seasonal = list(order = seasonal_order, period = period),
+            method = "CSS-ML"),
+      error = function(e) NULL, warning = function(w) NULL
+    )
+    if (is.null(ajuste)) next
+
+    pronostico <- tryCatch(
+      as.numeric(forecast(ajuste, h = h)$mean),
+      error = function(e) rep(NA_real_, h)
+    )
+
+    errores_cuadrados <- c(errores_cuadrados, (pronostico - prueba)^2)
+  }
+
+  if (length(errores_cuadrados) == 0) return(NA_real_)
+  sqrt(mean(errores_cuadrados, na.rm = TRUE))
+}
+```
+
+```{r}
+#| label: busqueda-malla
+#| cache: true
+resultados_grid <- grid_ordenes %>%
+  mutate(
+    rmse_cv = pmap_dbl(list(p, q, P, Q), function(p, q, P, Q) {
+      rolling_cv_rmse(
+        y = accidentes_ts,
+        order = c(p, d_sugerido, q),
+        seasonal_order = c(P, D_sugerido, Q)
+      )
+    })
+  ) %>%
+  filter(!is.na(rmse_cv)) %>%
+  arrange(rmse_cv)
+```
+
+### 5.3 Resultados de la búsqueda
+
+```{r}
+#| label: tbl-top-modelos
+resultados_grid %>%
+  slice_head(n = 10) %>%
+  kable(digits = 3,
+        caption = "Top 10 modelos según RMSE de validación cruzada (rolling-origin)")
+```
+
+## 6. Poder predictivo aparente de los modelos candidatos
+
+```{r}
+#| label: tbl-poder-aparente
+mejores_3 <- resultados_grid %>% slice_head(n = 3)
+
+tabla_comparativa <- mejores_3 %>%
+  mutate(
+    modelo_ajustado = pmap(list(p, q, P, Q), function(p, q, P, Q) {
+      Arima(accidentes_ts, order = c(p, d_sugerido, q),
+            seasonal = list(order = c(P, D_sugerido, Q), period = 12),
+            method = "CSS-ML")
+    }),
+    rmse_aparente = map_dbl(modelo_ajustado, ~ accuracy(.x)[1, "RMSE"]),
+    mae_aparente  = map_dbl(modelo_ajustado, ~ accuracy(.x)[1, "MAE"]),
+    aic           = map_dbl(modelo_ajustado, AIC)
+  )
+
+tabla_comparativa %>%
+  select(p, q, P, Q, rmse_cv, rmse_aparente, mae_aparente, aic) %>%
+  kable(digits = 3,
+        caption = "RMSE de validación cruzada vs. poder predictivo aparente (in-sample)")
+```
+
+Como en los documentos anteriores, el error aparente tiende a ser menor que el de
+validación cruzada. Elegimos el modelo con menor `rmse_cv`:
+
+```{r}
+#| label: modelo-final
+mejor <- resultados_grid %>% slice(1)
+
+modelo_final <- Arima(
+  accidentes_ts,
+  order = c(mejor$p, d_sugerido, mejor$q),
+  seasonal = list(order = c(mejor$P, D_sugerido, mejor$Q), period = 12),
+  method = "CSS-ML"
+)
+
+summary(modelo_final)
+```
+
+## 7. Diagnóstico del modelo final (etapa 3 de Box-Jenkins)
+
+```{r}
+#| label: fig-diagnostico
+#| fig-cap: "Diagnóstico de residuos del modelo final"
+checkresiduals(modelo_final)
+```
+
+## 8. Pronóstico (etapa 4 de Box-Jenkins)
+
+```{r}
+#| label: fig-pronostico
+#| fig-cap: "Pronóstico a 12 meses de accidentes viales"
+pronostico_final <- forecast(modelo_final, h = 12)
+
+autoplot(pronostico_final) +
+  labs(x = "Fecha", y = "Número de accidentes",
+       title = "Pronóstico a 12 meses") +
+  theme_minimal()
+```
+
+Como no hubo transformación de por medio, aquí el pronóstico puntual y sus
+intervalos se leen directamente en número de accidentes, sin ningún paso adicional
+de "deshacer" una transformación — a diferencia del documento del aeropuerto.
+
+## 9. Conclusiones
+
+- La tendencia decreciente confirma, al menos en la simulación, el efecto esperado
+  de las políticas de seguridad vial, y el SARIMA la separa con claridad del patrón
+  estacional recurrente.
+- El $\lambda$ de Box-Cox cercano a 1 fue la evidencia formal de que **no hacía
+  falta transformar** la serie — un buen contraste con el caso multiplicativo del
+  aeropuerto, y un recordatorio de que la transformación se decide con evidencia,
+  no por defecto.
+- Igual que en los documentos anteriores, la brecha entre el RMSE de validación
+  cruzada y el poder predictivo aparente (in-sample) confirma que conviene
+  seleccionar el modelo final con una métrica genuinamente fuera de muestra.
