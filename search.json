@@ -4,7 +4,7 @@
     "href": "index.html",
     "title": "Modelos de Supervivencia y Series de Tiempo",
     "section": "",
-    "text": "Series de tiempo\n\n\n\nTema\nPresentación\n\n\n\n\nMotivación del estudio de Series de Tiempo\nPresentación\n\n\nEjemplos de visualización en R\nPresentación\n\n\nModelo clásico y procesos estacionarios\nNotas\n\n\nMedidas de dependencia\nNotas\n\n\nAutocorrelación y autocorrelación parcial\nNotas\n\n\nModelos \\(AR(p)\\), \\(MA(q)\\) y \\(ARMA(p,q)\\)\nNotas\n\n\n\n\n\nRepositorio\nLos códigos de las presentaciones y ejemplos están disponibles en este repositorio"
+    "text": "Series de tiempo\n\n\n\nTema\nPresentación\n\n\n\n\nMotivación del estudio de Series de Tiempo\nPresentación\n\n\nEjemplos de visualización en R\nPresentación\n\n\nModelo clásico y procesos estacionarios\nNotas\n\n\nMedidas de dependencia\nNotas\n\n\nAutocorrelación y autocorrelación parcial\nNotas\n\n\nModelos \\(AR(p)\\), \\(MA(q)\\) y \\(ARMA(p,q)\\)\nNotas\n\n\nBox-Jenkins\nNotas\n\n\n\n\n\nRepositorio\nLos códigos de las presentaciones y ejemplos están disponibles en este repositorio"
   },
   {
     "objectID": "series_tiempo/ACF_PACF.html",
@@ -35,32 +35,67 @@
     "text": "Proceso AR(3)\n\n\n\n\n\n\n\n\n\n\n\n\nEl AR(3) puede mostrar un decaimiento más complejo (oscilaciones o “rebotes” antes de apagarse). Esto refleja una dependencia temporal más compleja: el valor de hoy no solo depende del de ayer, sino de una combinación de los últimos tres periodos."
   },
   {
-    "objectID": "series_tiempo/Dependencia.html",
-    "href": "series_tiempo/Dependencia.html",
-    "title": "Covarianza, Correlación y Dependencia Temporal",
+    "objectID": "series_tiempo/box_jenkins.html",
+    "href": "series_tiempo/box_jenkins.html",
+    "title": "Metodología Box-Jenkins: Costo operativo en CDMX",
     "section": "",
-    "text": "Cuando tenemos dos variables aleatorias \\(X\\) y \\(Y\\), una de las primeras preguntas naturales es si se mueven juntas, es decir: Si \\(X\\) aumenta, ¿\\(Y\\) tiende a aumentar, a disminuir, o no hay relación aparente? La covarianza es la primera herramienta que responde esto de forma cuantitativa:\n\\[ Cov(X,Y) = E\\big[(X-\\mu_X)(Y-\\mu_Y)\\big] \\]\nLa covarianza tiene un defecto importante: su magnitud depende de las unidades/magnitudes de las variables, lo que la hace difícil de interpretar o comparar entre distintos pares de variables.\nPor ejemplo, supongamos que tenemos registros de estatura (en cm) y peso (en kg). Si pasamos la estatura a metros, la covarianza con los registros del peso cambiará, sin embargo la correlación no.\n\n\n# A tibble: 2 × 3\n  Unidad_de_altura Cov_AlturaPeso Corr_AlturaPeso\n  &lt;chr&gt;                     &lt;dbl&gt;           &lt;dbl&gt;\n1 Centímetros              43.2             0.677\n2 Metros                    0.432           0.677\n\n\nEsto es porque la correlación normaliza la covarianza con las desviaciones estándar de cada variable:\n\\[ Corr(X,Y) = \\rho_{X,Y} = \\frac{Cov(X,Y)}{\\sigma_X \\, \\sigma_Y} \\]\nEsta normalización hace que \\(\\rho_{X,Y} \\in [-1, 1]\\) siempre, sin importar las unidades, lo cual la vuelve comparable e interpretable: \\(\\rho\\) cercano a \\(\\pm1\\) indica relación lineal fuerte, cercano a 0 indica relación lineal débil o nula.\nPodemos tener una confirmación gráfica si realizamos el scatter-plot con ambas versiones de la variable estatura, la forma de la nube de puntos no cambia."
+    "text": "Code\nlibrary(tidyverse)\nlibrary(forecast)\nlibrary(tseries)\nlibrary(lubridate)\nlibrary(patchwork)\nlibrary(knitr)"
   },
   {
-    "objectID": "series_tiempo/Dependencia.html#para-vectores-gaussianos-sigma-tiene-la-estructura-de-dependencia",
-    "href": "series_tiempo/Dependencia.html#para-vectores-gaussianos-sigma-tiene-la-estructura-de-dependencia",
-    "title": "Covarianza, Correlación y Dependencia Temporal",
-    "section": "Para vectores gaussianos, \\(\\Sigma\\) tiene la estructura de dependencia",
-    "text": "Para vectores gaussianos, \\(\\Sigma\\) tiene la estructura de dependencia\nSi \\(\\mathbf{X}\\) sigue una distribución normal multivariada, su distribución completa queda determinada únicamente por su vector de medias \\(\\boldsymbol{\\mu}\\) y su matriz de covarianzas \\(\\Sigma\\):\n\\[ \\mathbf{X} \\sim N(\\boldsymbol{\\mu}, \\Sigma) \\]\nSe puede ver cómo cambia la forma de la nube de puntos de una normal bivariada conforme variamos su matriz de covarianzas con gganimate\nConforme \\(\\rho\\) pasa de negativo a positivo, la nube de puntos rota: de una elipse orientada hacia abajo (correlación negativa), pasa por una nube circular (independencia, \\(\\rho=0\\)), hasta una elipse orientada hacia arriba (correlación positiva). La orientación y la excentricidad de esa elipse están completamente determinadas por \\(\\Sigma\\)."
+    "objectID": "series_tiempo/box_jenkins.html#contexto-del-problema",
+    "href": "series_tiempo/box_jenkins.html#contexto-del-problema",
+    "title": "Metodología Box-Jenkins: Costo operativo en CDMX",
+    "section": "1. Contexto del problema",
+    "text": "1. Contexto del problema\nUna empresa desea analizar el costo operativo mensual de las sucursales en la CDMX."
   },
   {
-    "objectID": "series_tiempo/Dependencia.html#y-si-el-vector-no-es-gaussiano",
-    "href": "series_tiempo/Dependencia.html#y-si-el-vector-no-es-gaussiano",
-    "title": "Covarianza, Correlación y Dependencia Temporal",
-    "section": "¿Y si el vector NO es gaussiano?",
-    "text": "¿Y si el vector NO es gaussiano?\n\\(\\Sigma\\) contiene toda la información de dependencia si el vector es de la familia gaussiana (más generalmente, de las distribuciones elípticas). Para vectores no gaussianos, dos distribuciones pueden compartir prácticamente la misma matriz de covarianzas y aun así verse completamente distintas.\nComparamos tres vectores aleatorios construidos para tener aproximadamente la misma covarianza (\\(\\rho \\approx 0.7\\)):\n\n\n# A tibble: 3 × 3\n  Distribucion          Cov_x1x2 Cor_x1x2\n  &lt;chr&gt;                    &lt;dbl&gt;    &lt;dbl&gt;\n1 Normal                   0.730    0.700\n2 t-multivariada (df=3)    0.495    0.681\n3 Mezcla bimodal           0.707    0.729\n\n\n\n\n\n\n\n\nLas tres nubes de puntos tienen una covarianza/correlación muestral muy similar (alrededor de 0.7 o su análogo), pero sus formas son completamente distintas: la normal multivariada es elíptica y compacta, la t-multivariada tiene colas más pesadas, y la mezcla bivariada tiene dos grupos claramente separados.\nEsto muestra que \\(\\Sigma\\) ya no resume toda la estructura de dependencia, y se necesita conocer la distribución conjunta completa, no solo sus dos primeros momentos. Esta idea ayuda a entender mejor por qué la estacionaridad débil (que solo condiciona a los primeros dos momentos) es menos restrictiva que la estacionaridad (todas las distribuciones finito dimensionales del proceso estocástico subyascente son invariantes ante traslaciones)."
+    "objectID": "series_tiempo/box_jenkins.html#descripción-general-de-la-serie",
+    "href": "series_tiempo/box_jenkins.html#descripción-general-de-la-serie",
+    "title": "Metodología Box-Jenkins: Costo operativo en CDMX",
+    "section": "2. Descripción general de la serie",
+    "text": "2. Descripción general de la serie\n\n\nCode\nset.seed(2028)\n\nn     &lt;- 120\nidx   &lt;- 1:n\nfecha &lt;- seq(as.Date(\"2015-01-01\"), by = \"month\", length.out = n)\n\ntendencia_real     &lt;- 50 - 1.3 * idx^2                                    # cae por mejoras en infraestructura\nestacionalidad_real &lt;- 3 * sin(2 * pi * (idx - 10) / 12)                # picos en temporada de lluvias/fin de año\nruido              &lt;- rnorm(n, mean = 0, sd = 5)\n\naccidentes &lt;- tendencia_real * estacionalidad_real * ruido \n\n\n\nserie_df &lt;- tibble(idx = idx, fecha = fecha, accidentes = cumsum(accidentes) + 200000)\n\naccidentes_ts &lt;- ts(serie_df$accidentes, start = c(2015, 1), frequency = 12)\n\n\n\n\nCode\nauto.arima(accidentes_ts)\n\n\nSeries: accidentes_ts \nARIMA(2,1,2)(0,0,1)[12] \n\nCoefficients:\n          ar1      ar2     ma1     ma2    sma1\n      -1.4496  -0.7382  1.7002  0.9138  0.3955\ns.e.   0.1095   0.1025  0.0744  0.0806  0.0982\n\nsigma^2 = 7.26e+09:  log likelihood = -1518.6\nAIC=3049.19   AICc=3049.94   BIC=3065.87\n\n\n\n2.1 Visualización general\nAl visualizar la serie, se puede observar una tendencia creciente así como una varianza no constante, este puede ser un indicio de un modelo multiplicativo.\n\n\nCode\nggplot(serie_df, aes(fecha, accidentes)) +\n  geom_line(color = \"steelblue\") +\n  labs(x = \"Fecha\", y = \"Número de accidentes\",\n       title = \"Costo operativo mensual\",\n       subtitle = \"Tendencia y varianza no constante\") +\n  theme_minimal()\n\n\n\n\n\n\n\n\nFigure 1: Costos reportados 2015-2024\n\n\n\n\n\n\n\n2.2 Estadísticas descriptivas y visualización de patrones\nSe puede analizar la distribución por mes.\n\n\nCode\nserie_df %&gt;%\n  mutate(mes = month(fecha, label = TRUE, abbr = TRUE)) %&gt;%\n  ggplot(aes(mes, accidentes)) +\n  geom_boxplot(fill = \"steelblue\", alpha = 0.5) +\n  labs(x = \"Mes\", y = \"Accidentes\",\n       title = \"Distribución por mes\") +\n  theme_minimal()\n\n\n\n\n\n\n\n\nFigure 2: Distribución por mes\n\n\n\n\n\n\n\nCode\nsummary(serie_df$accidentes)\n\n\n   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. \n  74656  188629  205334  459217  659017 1663799"
   },
   {
-    "objectID": "series_tiempo/Dependencia.html#ejemplo-1-y-x2",
-    "href": "series_tiempo/Dependencia.html#ejemplo-1-y-x2",
-    "title": "Covarianza, Correlación y Dependencia Temporal",
-    "section": "Ejemplo 1: \\(Y = X^2\\)",
-    "text": "Ejemplo 1: \\(Y = X^2\\)\nSi tomamos los valores no negativos de \\(X\\) su correlación (lineal) es prácticamente cero pero como la relación es monótona, el coeficiente de Spearman capturaría una correlación fuerte. Al tomar los valores negativos de \\(X\\) también, la relación ya no es monótona y por ende no se capturaría una correlación sin embargo es obvio que siguen siendo dependientes pues \\(Y\\) está completamente determinada por \\(X\\)."
+    "objectID": "series_tiempo/box_jenkins.html#descomposición-de-la-serie",
+    "href": "series_tiempo/box_jenkins.html#descomposición-de-la-serie",
+    "title": "Metodología Box-Jenkins: Costo operativo en CDMX",
+    "section": "3. Descomposición de la serie",
+    "text": "3. Descomposición de la serie\n\n3.1 ¿Aditiva o multiplicativa?\nComo se discutió antes, la presencia de tendencia y varianza no constante, puede ser indicio de un modelo aditivo que requiere diferenciación o de un modelo multiplicativo.\n\n\nCode\ndescomp &lt;- decompose(accidentes_ts, type = \"additive\")\nautoplot(descomp) +\n  labs(title = \"Descomposición aditiva\") +\n  theme_minimal()\n\n\n\n\n\n\n\n\nFigure 3: Descomposición aditiva\n\n\n\n\n\n\n\nCode\ndescompMult &lt;- decompose(accidentes_ts, type = \"multiplicative\")\nautoplot(descompMult) +\n  labs(title = \"Descomposición multiplicativa\") +\n  theme_minimal()\n\n\n\n\n\n\n\n\nFigure 4: Descomposición multiplicativa\n\n\n\n\n\n\n\n3.2 Interpretación de cada componente\n\nTendencia (\\(m_t\\)):\nEstacionalidad (\\(s_t\\)):\nResiduo (\\(Y_t\\)):"
+  },
+  {
+    "objectID": "series_tiempo/box_jenkins.html#identificación-etapa-1-de-box-jenkins",
+    "href": "series_tiempo/box_jenkins.html#identificación-etapa-1-de-box-jenkins",
+    "title": "Metodología Box-Jenkins: Costo operativo en CDMX",
+    "section": "4. Identificación (etapa 1 de Box-Jenkins)",
+    "text": "4. Identificación (etapa 1 de Box-Jenkins)\n\n4.1 ACF y PACF de la serie original\n\n\nCode\nggAcf(accidentes_ts, lag.max = 36) + labs(title = \"ACF - serie original\") +\n  ggPacf(accidentes_ts, lag.max = 36) + labs(title = \"PACF - serie original\")\n\n\n\n\n\n\n\n\nFigure 5: ACF y PACF de la serie original\n\n\n\n\n\n\n\n4.2 Pruebas de hipótesis sobre autocorrelación\n\n\nCode\nBox.test(accidentes_ts, lag = 24, type = \"Ljung-Box\")\n\n\n\n    Box-Ljung test\n\ndata:  accidentes_ts\nX-squared = 1190.2, df = 24, p-value &lt; 2.2e-16\n\n\nSe rechaza \\(H_0\\) de no autocorrelación.\n\n\n4.4 ¿Transformación Box-Cox?\nEs posible encontrar un valor óptimo de \\(\\lambda\\) para aplicar una transformación Box-Cox con la función BoxCox.lambda() de la paquetería forecast.\n\n\nCode\nlambda_opt &lt;- BoxCox.lambda(accidentes_ts, method = \"loglik\")\nlambda_opt\n\n\n[1] -0.1\n\n\n\n\n4.5 Diferenciación regular y estacional\n\n\nCode\nD_sugerido &lt;- nsdiffs(accidentes_ts)\n\nD_sugerido\n\n\n[1] 0\n\n\nCode\nserie_des  &lt;- diff(accidentes_ts, lag = 12)\n\nd_sugerido &lt;- ndiffs(serie_des)\nd_sugerido\n\n\n[1] 1\n\n\nCode\nserie_estacionaria &lt;- diff(serie_des)\n\n\n\n\n4.6 ACF/PACF y prueba de hipótesis sobre la serie diferenciada\n\n\nCode\nggAcf(serie_estacionaria, lag.max = 36) + labs(title = \"ACF - serie diferenciada\") +\n  ggPacf(serie_estacionaria, lag.max = 36) + labs(title = \"PACF - serie diferenciada\")\n\n\n\n\n\n\n\n\nFigure 6: ACF y PACF tras diferenciar\n\n\n\n\n\n\n\nCode\nBox.test(serie_estacionaria, lag = 24, type = \"Ljung-Box\")\n\n\n\n    Box-Ljung test\n\ndata:  serie_estacionaria\nX-squared = 46.65, df = 24, p-value = 0.003695\n\n\nSigue habiendo autocorrelación significativa tras diferenciar, esto es un indicio de que aún queda estructura ARMA por capturar, y los rezagos significativos de la ACF/PACF orientan los órdenes candidatos de la siguiente sección."
+  },
+  {
+    "objectID": "series_tiempo/box_jenkins.html#modelos-candidatos",
+    "href": "series_tiempo/box_jenkins.html#modelos-candidatos",
+    "title": "Metodología Box-Jenkins: Costo operativo en CDMX",
+    "section": "5. Modelos candidatos",
+    "text": "5. Modelos candidatos\n\n\nCode\n#auto.arima(serie_estacionaria)\n\nmod1&lt;- Arima(serie_estacionaria, order = c(3,0,0), seasonal = c(1,0,1))\n\n\n\nComparación mediante diversas métricas\nUn primer criterio es que sean modelos estacionarios causales e invertibles.\nSe suele evaluar la parsimonia del modelo, evitar la redundancia de parámetros, así como comparar algunas métricas según sea el objetivo final del modelo, como métricas que evaluan el poder predictivo (real y aparente)."
+  },
+  {
+    "objectID": "series_tiempo/box_jenkins.html#diagnóstico-del-modelo-final-etapa-3-de-box-jenkins",
+    "href": "series_tiempo/box_jenkins.html#diagnóstico-del-modelo-final-etapa-3-de-box-jenkins",
+    "title": "Metodología Box-Jenkins: Costo operativo en CDMX",
+    "section": "6. Diagnóstico del modelo final (etapa 3 de Box-Jenkins)",
+    "text": "6. Diagnóstico del modelo final (etapa 3 de Box-Jenkins)\nSe analizan los supuestos del modelo, esto permite que las estimaciones sean más confiables.\n\n\nCode\ncheckresiduals(mod1)\n\n\n\n    Ljung-Box test\n\ndata:  Residuals from ARIMA(3,0,0)(1,0,1)[12] with non-zero mean\nQ* = 27.679, df = 16, p-value = 0.03453\n\nModel df: 5.   Total lags used: 21\n\n\n\n\n\n\n\n\nFigure 7: Diagnóstico de residuos del modelo"
+  },
+  {
+    "objectID": "series_tiempo/box_jenkins.html#pronóstico-etapa-4-de-box-jenkins",
+    "href": "series_tiempo/box_jenkins.html#pronóstico-etapa-4-de-box-jenkins",
+    "title": "Metodología Box-Jenkins: Costo operativo en CDMX",
+    "section": "8. Pronóstico (etapa 4 de Box-Jenkins)",
+    "text": "8. Pronóstico (etapa 4 de Box-Jenkins)\n\n\nCode\npronostico_final &lt;- forecast(mod1, h = 12)\n\nautoplot(pronostico_final) +\n  labs(x = \"Fecha\", y = \"Número de accidentes\",\n       title = \"Pronóstico a 12 meses\") +\n  theme_minimal()\n\n\n\n\n\n\n\n\nFigure 8: Pronóstico a 12 meses de accidentes viales"
+  },
+  {
+    "objectID": "series_tiempo/box_jenkins.html#conclusiones",
+    "href": "series_tiempo/box_jenkins.html#conclusiones",
+    "title": "Metodología Box-Jenkins: Costo operativo en CDMX",
+    "section": "9. Conclusiones",
+    "text": "9. Conclusiones"
   },
   {
     "objectID": "series_tiempo/motivacion_3B.html#section",
@@ -180,6 +215,34 @@
     "title": "¿Por qué estudiar Series de Tiempo?",
     "section": "Proximamente",
     "text": "Proximamente\n\nEstacionariedad y transformaciones (diferenciación, logaritmos)\nAutocorrelación: ACF y PACF como herramientas de diagnóstico\nDescomposición clásica\nSuavizamiento y estimación de ciclicidad\nModelos ARIMA / SARIMA\nIncorporación de covariables externas (ARIMAX)\nEvaluación y validación de pronósticos"
+  },
+  {
+    "objectID": "series_tiempo/Dependencia.html",
+    "href": "series_tiempo/Dependencia.html",
+    "title": "Covarianza, Correlación y Dependencia Temporal",
+    "section": "",
+    "text": "Cuando tenemos dos variables aleatorias \\(X\\) y \\(Y\\), una de las primeras preguntas naturales es si se mueven juntas, es decir: Si \\(X\\) aumenta, ¿\\(Y\\) tiende a aumentar, a disminuir, o no hay relación aparente? La covarianza es la primera herramienta que responde esto de forma cuantitativa:\n\\[ Cov(X,Y) = E\\big[(X-\\mu_X)(Y-\\mu_Y)\\big] \\]\nLa covarianza tiene un defecto importante: su magnitud depende de las unidades/magnitudes de las variables, lo que la hace difícil de interpretar o comparar entre distintos pares de variables.\nPor ejemplo, supongamos que tenemos registros de estatura (en cm) y peso (en kg). Si pasamos la estatura a metros, la covarianza con los registros del peso cambiará, sin embargo la correlación no.\n\n\n# A tibble: 2 × 3\n  Unidad_de_altura Cov_AlturaPeso Corr_AlturaPeso\n  &lt;chr&gt;                     &lt;dbl&gt;           &lt;dbl&gt;\n1 Centímetros              43.2             0.677\n2 Metros                    0.432           0.677\n\n\nEsto es porque la correlación normaliza la covarianza con las desviaciones estándar de cada variable:\n\\[ Corr(X,Y) = \\rho_{X,Y} = \\frac{Cov(X,Y)}{\\sigma_X \\, \\sigma_Y} \\]\nEsta normalización hace que \\(\\rho_{X,Y} \\in [-1, 1]\\) siempre, sin importar las unidades, lo cual la vuelve comparable e interpretable: \\(\\rho\\) cercano a \\(\\pm1\\) indica relación lineal fuerte, cercano a 0 indica relación lineal débil o nula.\nPodemos tener una confirmación gráfica si realizamos el scatter-plot con ambas versiones de la variable estatura, la forma de la nube de puntos no cambia."
+  },
+  {
+    "objectID": "series_tiempo/Dependencia.html#para-vectores-gaussianos-sigma-tiene-la-estructura-de-dependencia",
+    "href": "series_tiempo/Dependencia.html#para-vectores-gaussianos-sigma-tiene-la-estructura-de-dependencia",
+    "title": "Covarianza, Correlación y Dependencia Temporal",
+    "section": "Para vectores gaussianos, \\(\\Sigma\\) tiene la estructura de dependencia",
+    "text": "Para vectores gaussianos, \\(\\Sigma\\) tiene la estructura de dependencia\nSi \\(\\mathbf{X}\\) sigue una distribución normal multivariada, su distribución completa queda determinada únicamente por su vector de medias \\(\\boldsymbol{\\mu}\\) y su matriz de covarianzas \\(\\Sigma\\):\n\\[ \\mathbf{X} \\sim N(\\boldsymbol{\\mu}, \\Sigma) \\]\nSe puede ver cómo cambia la forma de la nube de puntos de una normal bivariada conforme variamos su matriz de covarianzas con gganimate\nConforme \\(\\rho\\) pasa de negativo a positivo, la nube de puntos rota: de una elipse orientada hacia abajo (correlación negativa), pasa por una nube circular (independencia, \\(\\rho=0\\)), hasta una elipse orientada hacia arriba (correlación positiva). La orientación y la excentricidad de esa elipse están completamente determinadas por \\(\\Sigma\\)."
+  },
+  {
+    "objectID": "series_tiempo/Dependencia.html#y-si-el-vector-no-es-gaussiano",
+    "href": "series_tiempo/Dependencia.html#y-si-el-vector-no-es-gaussiano",
+    "title": "Covarianza, Correlación y Dependencia Temporal",
+    "section": "¿Y si el vector NO es gaussiano?",
+    "text": "¿Y si el vector NO es gaussiano?\n\\(\\Sigma\\) contiene toda la información de dependencia si el vector es de la familia gaussiana (más generalmente, de las distribuciones elípticas). Para vectores no gaussianos, dos distribuciones pueden compartir prácticamente la misma matriz de covarianzas y aun así verse completamente distintas.\nComparamos tres vectores aleatorios construidos para tener aproximadamente la misma covarianza (\\(\\rho \\approx 0.7\\)):\n\n\n# A tibble: 3 × 3\n  Distribucion          Cov_x1x2 Cor_x1x2\n  &lt;chr&gt;                    &lt;dbl&gt;    &lt;dbl&gt;\n1 Normal                   0.730    0.700\n2 t-multivariada (df=3)    0.495    0.681\n3 Mezcla bimodal           0.707    0.729\n\n\n\n\n\n\n\n\nLas tres nubes de puntos tienen una covarianza/correlación muestral muy similar (alrededor de 0.7 o su análogo), pero sus formas son completamente distintas: la normal multivariada es elíptica y compacta, la t-multivariada tiene colas más pesadas, y la mezcla bivariada tiene dos grupos claramente separados.\nEsto muestra que \\(\\Sigma\\) ya no resume toda la estructura de dependencia, y se necesita conocer la distribución conjunta completa, no solo sus dos primeros momentos. Esta idea ayuda a entender mejor por qué la estacionaridad débil (que solo condiciona a los primeros dos momentos) es menos restrictiva que la estacionaridad (todas las distribuciones finito dimensionales del proceso estocástico subyascente son invariantes ante traslaciones)."
+  },
+  {
+    "objectID": "series_tiempo/Dependencia.html#ejemplo-1-y-x2",
+    "href": "series_tiempo/Dependencia.html#ejemplo-1-y-x2",
+    "title": "Covarianza, Correlación y Dependencia Temporal",
+    "section": "Ejemplo 1: \\(Y = X^2\\)",
+    "text": "Ejemplo 1: \\(Y = X^2\\)\nSi tomamos los valores no negativos de \\(X\\) su correlación (lineal) es prácticamente cero pero como la relación es monótona, el coeficiente de Spearman capturaría una correlación fuerte. Al tomar los valores negativos de \\(X\\) también, la relación ya no es monótona y por ende no se capturaría una correlación sin embargo es obvio que siguen siendo dependientes pues \\(Y\\) está completamente determinada por \\(X\\)."
   },
   {
     "objectID": "series_tiempo/Componentes_y_estacionariedad.html",
