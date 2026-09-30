@@ -109,6 +109,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-label": "Search"
   }
 }</script>
+<link href="../site_libs/htmltools-fill-0.5.9/fill.css" rel="stylesheet">
+<script src="../site_libs/htmlwidgets-1.6.4/htmlwidgets.js"></script>
+<script src="../site_libs/plotly-binding-4.12.1/plotly.js"></script>
+<script src="../site_libs/typedarray-0.1/typedarray.min.js"></script>
+<script src="../site_libs/jquery-3.5.1/jquery.min.js"></script>
+<link href="../site_libs/crosstalk-1.2.2/css/crosstalk.min.css" rel="stylesheet">
+<script src="../site_libs/crosstalk-1.2.2/js/crosstalk.min.js"></script>
+<link href="../site_libs/plotly-htmlwidgets-css-2.25.2/plotly-htmlwidgets.css" rel="stylesheet">
+<script src="../site_libs/plotly-main-2.25.2/plotly-latest.min.js"></script>
 
   <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
   <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
@@ -182,8 +191,8 @@ window.Quarto = {
   <li><a href="#contexto-del-problema" id="toc-contexto-del-problema" class="nav-link active" data-scroll-target="#contexto-del-problema">1. Contexto del problema</a></li>
   <li><a href="#descripción-general-de-la-serie" id="toc-descripción-general-de-la-serie" class="nav-link" data-scroll-target="#descripción-general-de-la-serie">2. Descripción general de la serie</a>
   <ul class="collapse">
-  <li><a href="#visualización-general" id="toc-visualización-general" class="nav-link" data-scroll-target="#visualización-general">2.1 Visualización general</a></li>
-  <li><a href="#estadísticas-descriptivas-y-visualización-de-patrones" id="toc-estadísticas-descriptivas-y-visualización-de-patrones" class="nav-link" data-scroll-target="#estadísticas-descriptivas-y-visualización-de-patrones">2.2 Estadísticas descriptivas y visualización de patrones</a></li>
+  <li><a href="#visualización-de-los-costos" id="toc-visualización-de-los-costos" class="nav-link" data-scroll-target="#visualización-de-los-costos">2.1 Visualización de los costos</a></li>
+  <li><a href="#patrones" id="toc-patrones" class="nav-link" data-scroll-target="#patrones">2.2 Patrones</a></li>
   </ul></li>
   <li><a href="#descomposición-de-la-serie" id="toc-descomposición-de-la-serie" class="nav-link" data-scroll-target="#descomposición-de-la-serie">3. Descomposición de la serie</a>
   <ul class="collapse">
@@ -193,16 +202,13 @@ window.Quarto = {
   <li><a href="#identificación-etapa-1-de-box-jenkins" id="toc-identificación-etapa-1-de-box-jenkins" class="nav-link" data-scroll-target="#identificación-etapa-1-de-box-jenkins">4. Identificación (etapa 1 de Box-Jenkins)</a>
   <ul class="collapse">
   <li><a href="#acf-y-pacf-de-la-serie-original" id="toc-acf-y-pacf-de-la-serie-original" class="nav-link" data-scroll-target="#acf-y-pacf-de-la-serie-original">4.1 ACF y PACF de la serie original</a></li>
-  <li><a href="#pruebas-de-hipótesis-sobre-autocorrelación" id="toc-pruebas-de-hipótesis-sobre-autocorrelación" class="nav-link" data-scroll-target="#pruebas-de-hipótesis-sobre-autocorrelación">4.2 Pruebas de hipótesis sobre autocorrelación</a></li>
   <li><a href="#transformación-box-cox" id="toc-transformación-box-cox" class="nav-link" data-scroll-target="#transformación-box-cox">4.4 ¿Transformación Box-Cox?</a></li>
   <li><a href="#diferenciación-regular-y-estacional" id="toc-diferenciación-regular-y-estacional" class="nav-link" data-scroll-target="#diferenciación-regular-y-estacional">4.5 Diferenciación regular y estacional</a></li>
   <li><a href="#acfpacf-y-prueba-de-hipótesis-sobre-la-serie-diferenciada" id="toc-acfpacf-y-prueba-de-hipótesis-sobre-la-serie-diferenciada" class="nav-link" data-scroll-target="#acfpacf-y-prueba-de-hipótesis-sobre-la-serie-diferenciada">4.6 ACF/PACF y prueba de hipótesis sobre la serie diferenciada</a></li>
   </ul></li>
-  <li><a href="#modelos-candidatos-etapa-2-de-box-jenkins" id="toc-modelos-candidatos-etapa-2-de-box-jenkins" class="nav-link" data-scroll-target="#modelos-candidatos-etapa-2-de-box-jenkins">5. Modelos candidatos (etapa 2 de Box-Jenkins)</a>
-  <ul class="collapse">
-  <li><a href="#comparación-mediante-diversas-métricas" id="toc-comparación-mediante-diversas-métricas" class="nav-link" data-scroll-target="#comparación-mediante-diversas-métricas">Comparación mediante diversas métricas</a></li>
-  </ul></li>
+  <li><a href="#modelos-candidatos-etapa-2-de-box-jenkins" id="toc-modelos-candidatos-etapa-2-de-box-jenkins" class="nav-link" data-scroll-target="#modelos-candidatos-etapa-2-de-box-jenkins">5. Modelos candidatos (etapa 2 de Box-Jenkins)</a></li>
   <li><a href="#diagnóstico-del-modelo-final-etapa-3-de-box-jenkins" id="toc-diagnóstico-del-modelo-final-etapa-3-de-box-jenkins" class="nav-link" data-scroll-target="#diagnóstico-del-modelo-final-etapa-3-de-box-jenkins">6. Diagnóstico del modelo final (etapa 3 de Box-Jenkins)</a></li>
+  <li><a href="#evaluación-del-poder-predictivo" id="toc-evaluación-del-poder-predictivo" class="nav-link" data-scroll-target="#evaluación-del-poder-predictivo">7. Evaluación del poder predictivo</a></li>
   <li><a href="#pronóstico-etapa-4-de-box-jenkins" id="toc-pronóstico-etapa-4-de-box-jenkins" class="nav-link" data-scroll-target="#pronóstico-etapa-4-de-box-jenkins">8. Pronóstico (etapa 4 de Box-Jenkins)</a></li>
   <li><a href="#conclusiones" id="toc-conclusiones" class="nav-link" data-scroll-target="#conclusiones">9. Conclusiones</a></li>
   </ul>
@@ -244,15 +250,14 @@ window.Quarto = {
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tseries)</span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(lubridate)</span>
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(patchwork)</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(knitr)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(knitr)</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(TSstudio)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <section id="contexto-del-problema" class="level2">
 <h2 class="anchored" data-anchor-id="contexto-del-problema">1. Contexto del problema</h2>
-<p>Una empresa desea analizar el costo operativo mensual de las sucursales en la CDMX.</p>
-</section>
-<section id="descripción-general-de-la-serie" class="level2">
-<h2 class="anchored" data-anchor-id="descripción-general-de-la-serie">2. Descripción general de la serie</h2>
+<p>Una empresa desea analizar el costo operativo mensual de las sucursales en la CDMX, para ello se tienen registro de los costos desde Enero del 2015 hasta Diciembre del 2024. En principio no hay un objetivo claro para el proyecto, sin embargo un enfoque equilibrado es que la modelación realizada logre describir y tratar de explicar el fenómeno, además de presentar proyecciones para meses posteriores.</p>
+<p>Por facilidad del ejemplo, asumiremos que no hay valores faltantes, la información es confiable y se tiene un preprocesamiento correcto. En general, siempre habrá que confirmar esto cuando se trabaje con datos reales. El tratamiento de una serie de tiempo con valores faltantes es un problema para el que aún nos faltan herramientas.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
@@ -262,49 +267,37 @@ window.Quarto = {
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>idx   <span class="ot">&lt;-</span> <span class="dv">1</span><span class="sc">:</span>n</span>
 <span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>fecha <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="fu">as.Date</span>(<span class="st">"2015-01-01"</span>), <span class="at">by =</span> <span class="st">"month"</span>, <span class="at">length.out =</span> n)</span>
 <span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>tendencia_real     <span class="ot">&lt;-</span> <span class="dv">50</span> <span class="sc">-</span> <span class="fl">1.3</span> <span class="sc">*</span> idx<span class="sc">^</span><span class="dv">2</span>                                    <span class="co"># cae por mejoras en infraestructura</span></span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>estacionalidad_real <span class="ot">&lt;-</span> <span class="dv">3</span> <span class="sc">*</span> <span class="fu">sin</span>(<span class="dv">2</span> <span class="sc">*</span> pi <span class="sc">*</span> (idx <span class="sc">-</span> <span class="dv">10</span>) <span class="sc">/</span> <span class="dv">12</span>)                <span class="co"># picos en temporada de lluvias/fin de año</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>tendencia_real     <span class="ot">&lt;-</span> <span class="dv">50</span> <span class="sc">-</span> <span class="fl">1.3</span> <span class="sc">*</span> idx<span class="sc">^</span><span class="dv">2</span>                                    </span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>estacionalidad_real <span class="ot">&lt;-</span> <span class="dv">3</span> <span class="sc">*</span> <span class="fu">sin</span>(<span class="dv">2</span> <span class="sc">*</span> pi <span class="sc">*</span> (idx <span class="sc">-</span> <span class="dv">10</span>) <span class="sc">/</span> <span class="dv">12</span>)                </span>
 <span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>ruido              <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(n, <span class="at">mean =</span> <span class="dv">0</span>, <span class="at">sd =</span> <span class="dv">5</span>)</span>
 <span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>accidentes <span class="ot">&lt;-</span> tendencia_real <span class="sc">*</span> estacionalidad_real <span class="sc">*</span> ruido </span>
 <span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>serie_df <span class="ot">&lt;-</span> <span class="fu">tibble</span>(<span class="at">idx =</span> idx, <span class="at">fecha =</span> fecha, <span class="at">accidentes =</span> <span class="fu">cumsum</span>(accidentes) <span class="sc">+</span> <span class="dv">200000</span>)</span>
-<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="co"># para manejar con tidy</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>serie_df <span class="ot">&lt;-</span> <span class="fu">tibble</span>(<span class="at">idx =</span> idx, <span class="at">fecha =</span> fecha, <span class="at">accidentes =</span> <span class="fu">cumsum</span>(accidentes) <span class="sc">+</span> <span class="dv">200000</span>)</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="co"># objeto time series para funciones especificas, aqui asignamos el periodo estacional</span></span>
 <span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>accidentes_ts <span class="ot">&lt;-</span> <span class="fu">ts</span>(serie_df<span class="sc">$</span>accidentes, <span class="at">start =</span> <span class="fu">c</span>(<span class="dv">2015</span>, <span class="dv">1</span>), <span class="at">frequency =</span> <span class="dv">12</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
+</section>
+<section id="descripción-general-de-la-serie" class="level2">
+<h2 class="anchored" data-anchor-id="descripción-general-de-la-serie">2. Descripción general de la serie</h2>
+<p>Una exploración y descripción inteligente de los datos puede facilitar etapas posteriores (identificación de parámetros y proponer modelos). Puede ser complicado encontrar la gráfica/técnica que muestre hallazgos relevantes, es una buena práctica solamente presentar los hallazgos más importantes (para la toma de decisiones del negocio o para justificar deciciones dentro de la modelación), y se deben de acompañar de una interpretación dentro del contexto del problema, en este caso, dentro del contexto de la empresa.</p>
+<p>Cuando se tiene suficiente conocimiento del contexto del problema, también es posible encontrar correlación entre eventos económicos, políticos o sociales y características de la serie. Por ejemplo, el mes en el que empezó la pandemia del COVID también comenzó una tendencia decreciente en las ventas de un comercio, etc.</p>
+<p>Aunque en lo que resta del ejemplo omitiremos las interpretaciones de este tipo, es <strong>muy importante</strong> incluirlas dentro de un análisis.</p>
+<section id="visualización-de-los-costos" class="level3">
+<h3 class="anchored" data-anchor-id="visualización-de-los-costos">2.1 Visualización de los costos</h3>
+<p>Al visualizar la serie se puede observar una tendencia creciente, así como una varianza no constante, y esto puede ser un indicio de un modelo multiplicativo.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">auto.arima</span>(accidentes_ts)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
-<div class="cell-output cell-output-stdout">
-<pre><code>Series: accidentes_ts 
-ARIMA(2,1,2)(0,0,1)[12] 
-
-Coefficients:
-          ar1      ar2     ma1     ma2    sma1
-      -1.4496  -0.7382  1.7002  0.9138  0.3955
-s.e.   0.1095   0.1025  0.0744  0.0806  0.0982
-
-sigma^2 = 7.26e+09:  log likelihood = -1518.6
-AIC=3049.19   AICc=3049.94   BIC=3065.87</code></pre>
-</div>
-</div>
-<section id="visualización-general" class="level3">
-<h3 class="anchored" data-anchor-id="visualización-general">2.1 Visualización general</h3>
-<p>Al visualizar la serie, se puede observar una tendencia creciente así como una varianza no constante, este puede ser un indicio de un modelo multiplicativo.</p>
-<div class="cell">
-<details class="code-fold">
-<summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(serie_df, <span class="fu">aes</span>(fecha, accidentes)) <span class="sc">+</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">color =</span> <span class="st">"steelblue"</span>) <span class="sc">+</span></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Fecha"</span>, <span class="at">y =</span> <span class="st">"Número de accidentes"</span>,</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>       <span class="at">title =</span> <span class="st">"Costo operativo mensual"</span>,</span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>       <span class="at">subtitle =</span> <span class="st">"Tendencia y varianza no constante"</span>) <span class="sc">+</span></span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(serie_df, <span class="fu">aes</span>(fecha, accidentes)) <span class="sc">+</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">color =</span> <span class="st">"steelblue"</span>) <span class="sc">+</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Fecha"</span>, <span class="at">y =</span> <span class="st">"Número de accidentes"</span>,</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>       <span class="at">title =</span> <span class="st">"Costo operativo mensual"</span>,</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>       <span class="at">subtitle =</span> <span class="st">"Tendencia y varianza no constante"</span>) <span class="sc">+</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output-display">
 <div id="fig-serie-general" class="quarto-float quarto-figure quarto-figure-center anchored">
@@ -320,31 +313,37 @@ Figure&nbsp;1: Costos reportados 2015-2024
 </div>
 </div>
 </section>
-<section id="estadísticas-descriptivas-y-visualización-de-patrones" class="level3">
-<h3 class="anchored" data-anchor-id="estadísticas-descriptivas-y-visualización-de-patrones">2.2 Estadísticas descriptivas y visualización de patrones</h3>
-<p>Se puede analizar la distribución por mes.</p>
+<section id="patrones" class="level3">
+<h3 class="anchored" data-anchor-id="patrones">2.2 Patrones</h3>
+<p>En esta etapa (de un primer acercamiento a los datos) nos interesa visualizar patrones que puedan ser relevantes, en el caso de una serie de tiempo es de particular interés encontrar tendencia regular, patrones estacionales, tendencia estacional, varianza no constante, entre otros aspectos.</p>
+<p>Si también se tuviera acceso a covariables, se pueden utilizar técnicas de análisis multivariado que permitan una descripción conjunta de los datos.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>serie_df <span class="sc">%&gt;%</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">mes =</span> <span class="fu">month</span>(fecha, <span class="at">label =</span> <span class="cn">TRUE</span>, <span class="at">abbr =</span> <span class="cn">TRUE</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(mes, accidentes)) <span class="sc">+</span></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_boxplot</span>(<span class="at">fill =</span> <span class="st">"steelblue"</span>, <span class="at">alpha =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Mes"</span>, <span class="at">y =</span> <span class="st">"Accidentes"</span>,</span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>       <span class="at">title =</span> <span class="st">"Distribución por mes"</span>) <span class="sc">+</span></span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_seasonal</span>(accidentes_ts, <span class="at">type =</span> <span class="st">"box"</span>,<span class="at">title =</span> <span class="st">"Comportamiento de la serie por mes"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output-display">
-<div id="fig-boxplot-mes" class="quarto-float quarto-figure quarto-figure-center anchored">
-<figure class="quarto-float quarto-float-fig figure">
-<div aria-describedby="fig-boxplot-mes-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="box_jenkins_files/figure-html/fig-boxplot-mes-1.png" class="img-fluid figure-img" width="672">
+<div class="plotly html-widget html-fill-item" id="htmlwidget-6993edc2b3e4005ce8a7" style="width:100%;height:464px;"></div>
+<script type="application/json" data-for="htmlwidget-6993edc2b3e4005ce8a7">{"x":{"visdat":{"56653b45318d":["function () ","plotlyVisDat"],"56653bb83e61":["function () ","data"],"56653d0770e8":["function () ","data"],"56653385aea5":["function () ","data"],"5665d8ced10":["function () ","data"],"56651f1fbc63":["function () ","data"],"56655c89178b":["function () ","data"],"56652c68d623":["function () ","data"],"566516c2aa9c":["function () ","data"],"5665464ef370":["function () ","data"],"56656950621f":["function () ","data"],"56651c5a173d":["function () ","data"],"56655eabb455":["function () ","data"]},"cur_data":"56655eabb455","attrs":{"56653bb83e61":{"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"y":{},"type":"box","fillcolor":"rgba(228,26,28, 0.5)","line":{"color":"#E41A1C"},"marker":{"color":"#E41A1C"},"boxpoints":"all","jitter":0.29999999999999999,"pointpos":-1.8,"name":"Jan","showlegend":true,"legendgroup":"box_Jan","inherit":true},"56653d0770e8":{"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"y":{},"type":"box","fillcolor":"rgba(102,98,141, 0.5)","line":{"color":"#66628D"},"marker":{"color":"#66628D"},"boxpoints":"all","jitter":0.29999999999999999,"pointpos":-1.8,"name":"Feb","showlegend":true,"legendgroup":"box_Feb","inherit":true},"56653385aea5":{"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"y":{},"type":"box","fillcolor":"rgba(65,148,134, 0.5)","line":{"color":"#419486"},"marker":{"color":"#419486"},"boxpoints":"all","jitter":0.29999999999999999,"pointpos":-1.8,"name":"Mar","showlegend":true,"legendgroup":"box_Mar","inherit":true},"5665d8ced10":{"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"y":{},"type":"box","fillcolor":"rgba(90,157,90, 0.5)","line":{"color":"#5A9D5A"},"marker":{"color":"#5A9D5A"},"boxpoints":"all","jitter":0.29999999999999999,"pointpos":-1.8,"name":"Apr","showlegend":true,"legendgroup":"box_Apr","inherit":true},"56651f1fbc63":{"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"y":{},"type":"box","fillcolor":"rgba(145,86,154, 0.5)","line":{"color":"#91569A"},"marker":{"color":"#91569A"},"boxpoints":"all","jitter":0.29999999999999999,"pointpos":-1.8,"name":"May","showlegend":true,"legendgroup":"box_May","inherit":true},"56655c89178b":{"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"y":{},"type":"box","fillcolor":"rgba(217,109,59, 0.5)","line":{"color":"#D96D3B"},"marker":{"color":"#D96D3B"},"boxpoints":"all","jitter":0.29999999999999999,"pointpos":-1.8,"name":"Jun","showlegend":true,"legendgroup":"box_Jun","inherit":true},"56652c68d623":{"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"y":{},"type":"box","fillcolor":"rgba(255,173,18, 0.5)","line":{"color":"#FFAD12"},"marker":{"color":"#FFAD12"},"boxpoints":"all","jitter":0.29999999999999999,"pointpos":-1.8,"name":"Jul","showlegend":true,"legendgroup":"box_Jul","inherit":true},"566516c2aa9c":{"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"y":{},"type":"box","fillcolor":"rgba(246,239,50, 0.5)","line":{"color":"#F6EF32"},"marker":{"color":"#F6EF32"},"boxpoints":"all","jitter":0.29999999999999999,"pointpos":-1.8,"name":"Aug","showlegend":true,"legendgroup":"box_Aug","inherit":true},"5665464ef370":{"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"y":{},"type":"box","fillcolor":"rgba(182,116,42, 0.5)","line":{"color":"#B6742A"},"marker":{"color":"#B6742A"},"boxpoints":"all","jitter":0.29999999999999999,"pointpos":-1.8,"name":"Sep","showlegend":true,"legendgroup":"box_Sep","inherit":true},"56656950621f":{"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"y":{},"type":"box","fillcolor":"rgba(210,109,122, 0.5)","line":{"color":"#D26D7A"},"marker":{"color":"#D26D7A"},"boxpoints":"all","jitter":0.29999999999999999,"pointpos":-1.8,"name":"Oct","showlegend":true,"legendgroup":"box_Oct","inherit":true},"56651c5a173d":{"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"y":{},"type":"box","fillcolor":"rgba(221,135,180, 0.5)","line":{"color":"#DD87B4"},"marker":{"color":"#DD87B4"},"boxpoints":"all","jitter":0.29999999999999999,"pointpos":-1.8,"name":"Nov","showlegend":true,"legendgroup":"box_Nov","inherit":true},"56655eabb455":{"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"y":{},"type":"box","fillcolor":"rgba(153,153,153, 0.5)","line":{"color":"#999999"},"marker":{"color":"#999999"},"boxpoints":"all","jitter":0.29999999999999999,"pointpos":-1.8,"name":"Dec","showlegend":true,"legendgroup":"box_Dec","inherit":true}},"layout":{"margin":{"b":40,"l":60,"t":25,"r":10},"yaxis":{"domain":[0,1],"automargin":true,"title":"By Frequency Unit"},"title":"Comportamiento de la serie por mes","xaxis":{"domain":[0,1],"automargin":true},"hovermode":"closest","showlegend":true},"source":"A","config":{"modeBarButtonsToAdd":["hoverclosest","hovercompare"],"showSendToCloud":false},"data":[{"fillcolor":"rgba(228,26,28, 0.5)","y":[200070.42705587894,201145.12810910767,185095.18739333065,107636.10448173132,177108.88226028369,316102.58527545742,374700.30741853709,385637.73645391548,634334.24918129377,1368123.3035495533],"type":"box","line":{"color":"#E41A1C"},"marker":{"color":"#E41A1C","line":{"color":"rgba(31,119,180,1)"}},"boxpoints":"all","jitter":0.29999999999999999,"pointpos":-1.8,"name":"Jan","showlegend":true,"legendgroup":"box_Jan","xaxis":"x","yaxis":"y","frame":null},{"fillcolor":"rgba(102,98,141, 0.5)","y":[200240.58065734632,204349.9271233883,177820.09817947031,129541.86846320769,188029.25366744821,194826.6926669509,380991.46536507952,556593.62600335572,822461.02552983374,1070714.1165704019],"type":"box","line":{"color":"#66628D"},"marker":{"color":"#66628D","line":{"color":"rgba(255,127,14,1)"}},"boxpoints":"all","jitter":0.29999999999999999,"pointpos":-1.8,"name":"Feb","showlegend":true,"legendgroup":"box_Feb","xaxis":"x","yaxis":"y","frame":null},{"fillcolor":"rgba(65,148,134, 0.5)","y":[199501.6271980101,205728.46509013078,177094.93494473229,111103.86436185111,205460.95624366065,117923.12973841479,394301.00202699949,554886.55479349568,828319.10204773711,990953.96119724144],"type":"box","line":{"color":"#419486"},"marker":{"color":"#419486","line":{"color":"rgba(44,160,44,1)"}},"boxpoints":"all","jitter":0.29999999999999999,"pointpos":-1.8,"name":"Mar","showlegend":true,"legendgroup":"box_Mar","xaxis":"x","yaxis":"y","frame":null},{"fillcolor":"rgba(90,157,90, 0.5)","y":[199501.6271980101,205728.46509013078,177094.93494473229,111103.86436185116,205460.95624366071,117923.12973841481,394301.00202699954,554886.55479349499,828319.10204773757,990953.96119724296],"type":"box","line":{"color":"#5A9D5A"},"marker":{"color":"#5A9D5A","line":{"color":"rgba(214,39,40,1)"}},"boxpoints":"all","jitter":0.29999999999999999,"pointpos":-1.8,"name":"Apr","showlegend":true,"legendgroup":"box_Apr","xaxis":"x","yaxis":"y","frame":null},{"fillcolor":"rgba(145,86,154, 0.5)","y":[199214.68460208445,205206.67059672734,178426.59029485303,101644.22166082486,204513.11008387539,74655.990396281544,497636.01057602745,642986.64434123307,820023.40871436684,739638.61438206083],"type":"box","line":{"color":"#91569A"},"marker":{"color":"#91569A","line":{"color":"rgba(148,103,189,1)"}},"boxpoints":"all","jitter":0.29999999999999999,"pointpos":-1.8,"name":"May","showlegend":true,"legendgroup":"box_May","xaxis":"x","yaxis":"y","frame":null},{"fillcolor":"rgba(217,109,59, 0.5)","y":[199214.60647967318,199268.20857997597,157315.16095706425,90063.829430353944,202589.8225303418,128147.87368393534,439415.62838020647,813530.11842809233,1116679.5348565534,851567.13916586258],"type":"box","line":{"color":"#D96D3B"},"marker":{"color":"#D96D3B","line":{"color":"rgba(140,86,75,1)"}},"boxpoints":"all","jitter":0.29999999999999999,"pointpos":-1.8,"name":"Jun","showlegend":true,"legendgroup":"box_Jun","xaxis":"x","yaxis":"y","frame":null},{"fillcolor":"rgba(255,173,18, 0.5)","y":[199035.17152361581,190781.47457187998,162386.06102809898,181552.95626428508,166839.59526132647,118354.41976625839,291425.51268901688,707109.34690205031,1228134.77156677,1278956.307779056],"type":"box","line":{"color":"#FFAD12"},"marker":{"color":"#FFAD12","line":{"color":"rgba(227,119,194,1)"}},"boxpoints":"all","jitter":0.29999999999999999,"pointpos":-1.8,"name":"Jul","showlegend":true,"legendgroup":"box_Jul","xaxis":"x","yaxis":"y","frame":null},{"fillcolor":"rgba(246,239,50, 0.5)","y":[198294.57038834982,198552.39978969967,169785.5087707006,200795.92639820391,193905.93580150287,121660.44367960887,510637.64851609839,755720.45015181298,1437181.105452704,1392980.4975532666],"type":"box","line":{"color":"#F6EF32"},"marker":{"color":"#F6EF32","line":{"color":"rgba(127,127,127,1)"}},"boxpoints":"all","jitter":0.29999999999999999,"pointpos":-1.8,"name":"Aug","showlegend":true,"legendgroup":"box_Aug","xaxis":"x","yaxis":"y","frame":null},{"fillcolor":"rgba(182,116,42, 0.5)","y":[198377.75542315509,200018.61884789591,156195.17542268825,203747.3884091423,207009.93779192198,220379.58050517767,521144.57808612386,923979.40789257444,1576158.0708025873,1337851.4622442122],"type":"box","line":{"color":"#B6742A"},"marker":{"color":"#B6742A","line":{"color":"rgba(188,189,34,1)"}},"boxpoints":"all","jitter":0.29999999999999999,"pointpos":-1.8,"name":"Sep","showlegend":true,"legendgroup":"box_Sep","xaxis":"x","yaxis":"y","frame":null},{"fillcolor":"rgba(210,109,122, 0.5)","y":[198377.75542315509,200018.61884789591,156195.17542268825,203747.3884091423,207009.93779192196,220379.58050517773,521144.57808612398,923979.40789257432,1576158.0708025866,1337851.4622442112],"type":"box","line":{"color":"#D26D7A"},"marker":{"color":"#D26D7A","line":{"color":"rgba(23,190,207,1)"}},"boxpoints":"all","jitter":0.29999999999999999,"pointpos":-1.8,"name":"Oct","showlegend":true,"legendgroup":"box_Oct","xaxis":"x","yaxis":"y","frame":null},{"fillcolor":"rgba(221,135,180, 0.5)","y":[199663.16807822097,193249.4338644066,169864.85766284235,208496.088143181,188829.37625192694,165971.38374598525,614289.06726649182,831213.68609252363,1624287.6118761355,1386753.617189911],"type":"box","line":{"color":"#DD87B4"},"marker":{"color":"#DD87B4","line":{"color":"rgba(31,119,180,1)"}},"boxpoints":"all","jitter":0.29999999999999999,"pointpos":-1.8,"name":"Nov","showlegend":true,"legendgroup":"box_Nov","xaxis":"x","yaxis":"y","frame":null},{"fillcolor":"rgba(153,153,153, 0.5)","y":[197579.15425355162,195357.29891079926,164223.11205503438,118381.88615945264,235862.99953940266,260122.06746971852,398686.74452958972,799527.26663779037,1663798.7488591694,1388282.438901596],"type":"box","line":{"color":"#999999"},"marker":{"color":"#999999","line":{"color":"rgba(255,127,14,1)"}},"boxpoints":"all","jitter":0.29999999999999999,"pointpos":-1.8,"name":"Dec","showlegend":true,"legendgroup":"box_Dec","xaxis":"x","yaxis":"y","frame":null}],"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.20000000000000001,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script>
+<p>Distribución de cada mes</p>
 </div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-boxplot-mes-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;2: Distribución por mes
-</figcaption>
-</figure>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_seasonal</span>(accidentes_ts, <span class="at">type =</span> <span class="st">"cycle"</span>,<span class="at">title =</span> <span class="st">"Comportamiento de la serie por mes"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div class="plotly html-widget html-fill-item" id="htmlwidget-028d39526557c647d723" style="width:100%;height:464px;"></div>
+<script type="application/json" data-for="htmlwidget-028d39526557c647d723">{"x":{"visdat":{"56655acc6901":["function () ","plotlyVisDat"]},"cur_data":"56655acc6901","attrs":{"56655acc6901":{"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"x":[2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"y":[200070.42705587894,201145.12810910767,185095.18739333065,107636.10448173132,177108.88226028369,316102.58527545742,374700.30741853709,385637.73645391548,634334.24918129377,1368123.3035495533],"type":"scatter","mode":"lines","name":"Jan","line":{"color":"#E41A1C"},"showlegend":true,"legendgroup":"cycle_Jan","inherit":true},"56655acc6901.1":{"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"x":[2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"y":[200240.58065734632,204349.9271233883,177820.09817947031,129541.86846320769,188029.25366744821,194826.6926669509,380991.46536507952,556593.62600335572,822461.02552983374,1070714.1165704019],"type":"scatter","mode":"lines","name":"Feb","line":{"color":"#66628D"},"showlegend":true,"legendgroup":"cycle_Feb","inherit":true},"56655acc6901.2":{"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"x":[2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"y":[199501.6271980101,205728.46509013078,177094.93494473229,111103.86436185111,205460.95624366065,117923.12973841479,394301.00202699949,554886.55479349568,828319.10204773711,990953.96119724144],"type":"scatter","mode":"lines","name":"Mar","line":{"color":"#419486"},"showlegend":true,"legendgroup":"cycle_Mar","inherit":true},"56655acc6901.3":{"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"x":[2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"y":[199501.6271980101,205728.46509013078,177094.93494473229,111103.86436185116,205460.95624366071,117923.12973841481,394301.00202699954,554886.55479349499,828319.10204773757,990953.96119724296],"type":"scatter","mode":"lines","name":"Apr","line":{"color":"#5A9D5A"},"showlegend":true,"legendgroup":"cycle_Apr","inherit":true},"56655acc6901.4":{"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"x":[2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"y":[199214.68460208445,205206.67059672734,178426.59029485303,101644.22166082486,204513.11008387539,74655.990396281544,497636.01057602745,642986.64434123307,820023.40871436684,739638.61438206083],"type":"scatter","mode":"lines","name":"May","line":{"color":"#91569A"},"showlegend":true,"legendgroup":"cycle_May","inherit":true},"56655acc6901.5":{"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"x":[2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"y":[199214.60647967318,199268.20857997597,157315.16095706425,90063.829430353944,202589.8225303418,128147.87368393534,439415.62838020647,813530.11842809233,1116679.5348565534,851567.13916586258],"type":"scatter","mode":"lines","name":"Jun","line":{"color":"#D96D3B"},"showlegend":true,"legendgroup":"cycle_Jun","inherit":true},"56655acc6901.6":{"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"x":[2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"y":[199035.17152361581,190781.47457187998,162386.06102809898,181552.95626428508,166839.59526132647,118354.41976625839,291425.51268901688,707109.34690205031,1228134.77156677,1278956.307779056],"type":"scatter","mode":"lines","name":"Jul","line":{"color":"#FFAD12"},"showlegend":true,"legendgroup":"cycle_Jul","inherit":true},"56655acc6901.7":{"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"x":[2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"y":[198294.57038834982,198552.39978969967,169785.5087707006,200795.92639820391,193905.93580150287,121660.44367960887,510637.64851609839,755720.45015181298,1437181.105452704,1392980.4975532666],"type":"scatter","mode":"lines","name":"Aug","line":{"color":"#F6EF32"},"showlegend":true,"legendgroup":"cycle_Aug","inherit":true},"56655acc6901.8":{"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"x":[2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"y":[198377.75542315509,200018.61884789591,156195.17542268825,203747.3884091423,207009.93779192198,220379.58050517767,521144.57808612386,923979.40789257444,1576158.0708025873,1337851.4622442122],"type":"scatter","mode":"lines","name":"Sep","line":{"color":"#B6742A"},"showlegend":true,"legendgroup":"cycle_Sep","inherit":true},"56655acc6901.9":{"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"x":[2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"y":[198377.75542315509,200018.61884789591,156195.17542268825,203747.3884091423,207009.93779192196,220379.58050517773,521144.57808612398,923979.40789257432,1576158.0708025866,1337851.4622442112],"type":"scatter","mode":"lines","name":"Oct","line":{"color":"#D26D7A"},"showlegend":true,"legendgroup":"cycle_Oct","inherit":true},"56655acc6901.10":{"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"x":[2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"y":[199663.16807822097,193249.4338644066,169864.85766284235,208496.088143181,188829.37625192694,165971.38374598525,614289.06726649182,831213.68609252363,1624287.6118761355,1386753.617189911],"type":"scatter","mode":"lines","name":"Nov","line":{"color":"#DD87B4"},"showlegend":true,"legendgroup":"cycle_Nov","inherit":true},"56655acc6901.11":{"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"x":[2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"y":[197579.15425355162,195357.29891079926,164223.11205503438,118381.88615945264,235862.99953940266,260122.06746971852,398686.74452958972,799527.26663779037,1663798.7488591694,1388282.438901596],"type":"scatter","mode":"lines","name":"Dec","line":{"color":"#999999"},"showlegend":true,"legendgroup":"cycle_Dec","inherit":true}},"layout":{"margin":{"b":40,"l":60,"t":25,"r":10},"yaxis":{"domain":[0,1],"automargin":true,"title":"By Frequency Unit"},"title":"Comportamiento de la serie por mes","xaxis":{"domain":[0,1],"automargin":true,"title":[]},"hovermode":"closest","showlegend":true},"source":"A","config":{"modeBarButtonsToAdd":["hoverclosest","hovercompare"],"showSendToCloud":false},"data":[{"x":[2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"y":[200070.42705587894,201145.12810910767,185095.18739333065,107636.10448173132,177108.88226028369,316102.58527545742,374700.30741853709,385637.73645391548,634334.24918129377,1368123.3035495533],"type":"scatter","mode":"lines","name":"Jan","line":{"color":"#E41A1C"},"showlegend":true,"legendgroup":"cycle_Jan","marker":{"color":"rgba(31,119,180,1)","line":{"color":"rgba(31,119,180,1)"}},"error_y":{"color":"rgba(31,119,180,1)"},"error_x":{"color":"rgba(31,119,180,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":[2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"y":[200240.58065734632,204349.9271233883,177820.09817947031,129541.86846320769,188029.25366744821,194826.6926669509,380991.46536507952,556593.62600335572,822461.02552983374,1070714.1165704019],"type":"scatter","mode":"lines","name":"Feb","line":{"color":"#66628D"},"showlegend":true,"legendgroup":"cycle_Feb","marker":{"color":"rgba(255,127,14,1)","line":{"color":"rgba(255,127,14,1)"}},"error_y":{"color":"rgba(255,127,14,1)"},"error_x":{"color":"rgba(255,127,14,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":[2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"y":[199501.6271980101,205728.46509013078,177094.93494473229,111103.86436185111,205460.95624366065,117923.12973841479,394301.00202699949,554886.55479349568,828319.10204773711,990953.96119724144],"type":"scatter","mode":"lines","name":"Mar","line":{"color":"#419486"},"showlegend":true,"legendgroup":"cycle_Mar","marker":{"color":"rgba(44,160,44,1)","line":{"color":"rgba(44,160,44,1)"}},"error_y":{"color":"rgba(44,160,44,1)"},"error_x":{"color":"rgba(44,160,44,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":[2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"y":[199501.6271980101,205728.46509013078,177094.93494473229,111103.86436185116,205460.95624366071,117923.12973841481,394301.00202699954,554886.55479349499,828319.10204773757,990953.96119724296],"type":"scatter","mode":"lines","name":"Apr","line":{"color":"#5A9D5A"},"showlegend":true,"legendgroup":"cycle_Apr","marker":{"color":"rgba(214,39,40,1)","line":{"color":"rgba(214,39,40,1)"}},"error_y":{"color":"rgba(214,39,40,1)"},"error_x":{"color":"rgba(214,39,40,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":[2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"y":[199214.68460208445,205206.67059672734,178426.59029485303,101644.22166082486,204513.11008387539,74655.990396281544,497636.01057602745,642986.64434123307,820023.40871436684,739638.61438206083],"type":"scatter","mode":"lines","name":"May","line":{"color":"#91569A"},"showlegend":true,"legendgroup":"cycle_May","marker":{"color":"rgba(148,103,189,1)","line":{"color":"rgba(148,103,189,1)"}},"error_y":{"color":"rgba(148,103,189,1)"},"error_x":{"color":"rgba(148,103,189,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":[2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"y":[199214.60647967318,199268.20857997597,157315.16095706425,90063.829430353944,202589.8225303418,128147.87368393534,439415.62838020647,813530.11842809233,1116679.5348565534,851567.13916586258],"type":"scatter","mode":"lines","name":"Jun","line":{"color":"#D96D3B"},"showlegend":true,"legendgroup":"cycle_Jun","marker":{"color":"rgba(140,86,75,1)","line":{"color":"rgba(140,86,75,1)"}},"error_y":{"color":"rgba(140,86,75,1)"},"error_x":{"color":"rgba(140,86,75,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":[2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"y":[199035.17152361581,190781.47457187998,162386.06102809898,181552.95626428508,166839.59526132647,118354.41976625839,291425.51268901688,707109.34690205031,1228134.77156677,1278956.307779056],"type":"scatter","mode":"lines","name":"Jul","line":{"color":"#FFAD12"},"showlegend":true,"legendgroup":"cycle_Jul","marker":{"color":"rgba(227,119,194,1)","line":{"color":"rgba(227,119,194,1)"}},"error_y":{"color":"rgba(227,119,194,1)"},"error_x":{"color":"rgba(227,119,194,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":[2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"y":[198294.57038834982,198552.39978969967,169785.5087707006,200795.92639820391,193905.93580150287,121660.44367960887,510637.64851609839,755720.45015181298,1437181.105452704,1392980.4975532666],"type":"scatter","mode":"lines","name":"Aug","line":{"color":"#F6EF32"},"showlegend":true,"legendgroup":"cycle_Aug","marker":{"color":"rgba(127,127,127,1)","line":{"color":"rgba(127,127,127,1)"}},"error_y":{"color":"rgba(127,127,127,1)"},"error_x":{"color":"rgba(127,127,127,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":[2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"y":[198377.75542315509,200018.61884789591,156195.17542268825,203747.3884091423,207009.93779192198,220379.58050517767,521144.57808612386,923979.40789257444,1576158.0708025873,1337851.4622442122],"type":"scatter","mode":"lines","name":"Sep","line":{"color":"#B6742A"},"showlegend":true,"legendgroup":"cycle_Sep","marker":{"color":"rgba(188,189,34,1)","line":{"color":"rgba(188,189,34,1)"}},"error_y":{"color":"rgba(188,189,34,1)"},"error_x":{"color":"rgba(188,189,34,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":[2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"y":[198377.75542315509,200018.61884789591,156195.17542268825,203747.3884091423,207009.93779192196,220379.58050517773,521144.57808612398,923979.40789257432,1576158.0708025866,1337851.4622442112],"type":"scatter","mode":"lines","name":"Oct","line":{"color":"#D26D7A"},"showlegend":true,"legendgroup":"cycle_Oct","marker":{"color":"rgba(23,190,207,1)","line":{"color":"rgba(23,190,207,1)"}},"error_y":{"color":"rgba(23,190,207,1)"},"error_x":{"color":"rgba(23,190,207,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":[2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"y":[199663.16807822097,193249.4338644066,169864.85766284235,208496.088143181,188829.37625192694,165971.38374598525,614289.06726649182,831213.68609252363,1624287.6118761355,1386753.617189911],"type":"scatter","mode":"lines","name":"Nov","line":{"color":"#DD87B4"},"showlegend":true,"legendgroup":"cycle_Nov","marker":{"color":"rgba(31,119,180,1)","line":{"color":"rgba(31,119,180,1)"}},"error_y":{"color":"rgba(31,119,180,1)"},"error_x":{"color":"rgba(31,119,180,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":[2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],"y":[197579.15425355162,195357.29891079926,164223.11205503438,118381.88615945264,235862.99953940266,260122.06746971852,398686.74452958972,799527.26663779037,1663798.7488591694,1388282.438901596],"type":"scatter","mode":"lines","name":"Dec","line":{"color":"#999999"},"showlegend":true,"legendgroup":"cycle_Dec","marker":{"color":"rgba(255,127,14,1)","line":{"color":"rgba(255,127,14,1)"}},"error_y":{"color":"rgba(255,127,14,1)"},"error_x":{"color":"rgba(255,127,14,1)"},"xaxis":"x","yaxis":"y","frame":null}],"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.20000000000000001,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script>
+<p>Distribución de cada mes</p>
 </div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ts_seasonal</span>(accidentes_ts, <span class="at">type =</span> <span class="st">"normal"</span>,<span class="at">title =</span> <span class="st">"Comportamiento de la serie por mes"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div class="plotly html-widget html-fill-item" id="htmlwidget-9483b9ee5d32ca298161" style="width:100%;height:464px;"></div>
+<script type="application/json" data-for="htmlwidget-9483b9ee5d32ca298161">{"x":{"visdat":{"56652201ef39":["function () ","plotlyVisDat"]},"cur_data":"56652201ef39","attrs":{"56652201ef39":{"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"x":["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],"y":[200070.42705587894,200240.58065734632,199501.6271980101,199501.6271980101,199214.68460208445,199214.60647967318,199035.17152361581,198294.57038834982,198377.75542315509,198377.75542315509,199663.16807822097,197579.15425355162],"type":"scatter","mode":"lines","name":2015,"line":{"color":"#440154FF"},"inherit":true},"56652201ef39.1":{"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"x":["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],"y":[201145.12810910767,204349.9271233883,205728.46509013078,205728.46509013078,205206.67059672734,199268.20857997597,190781.47457187998,198552.39978969967,200018.61884789591,200018.61884789591,193249.4338644066,195357.29891079926],"type":"scatter","mode":"lines","name":2016,"line":{"color":"#482878FF"},"inherit":true},"56652201ef39.2":{"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"x":["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],"y":[185095.18739333065,177820.09817947031,177094.93494473229,177094.93494473229,178426.59029485303,157315.16095706425,162386.06102809898,169785.5087707006,156195.17542268825,156195.17542268825,169864.85766284235,164223.11205503438],"type":"scatter","mode":"lines","name":2017,"line":{"color":"#3E4A89FF"},"inherit":true},"56652201ef39.3":{"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"x":["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],"y":[107636.10448173132,129541.86846320769,111103.86436185111,111103.86436185116,101644.22166082486,90063.829430353944,181552.95626428508,200795.92639820391,203747.3884091423,203747.3884091423,208496.088143181,118381.88615945264],"type":"scatter","mode":"lines","name":2018,"line":{"color":"#31688EFF"},"inherit":true},"56652201ef39.4":{"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"x":["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],"y":[177108.88226028369,188029.25366744821,205460.95624366065,205460.95624366071,204513.11008387539,202589.8225303418,166839.59526132647,193905.93580150287,207009.93779192198,207009.93779192196,188829.37625192694,235862.99953940266],"type":"scatter","mode":"lines","name":2019,"line":{"color":"#26828EFF"},"inherit":true},"56652201ef39.5":{"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"x":["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],"y":[316102.58527545742,194826.6926669509,117923.12973841479,117923.12973841481,74655.990396281544,128147.87368393534,118354.41976625839,121660.44367960887,220379.58050517767,220379.58050517773,165971.38374598525,260122.06746971852],"type":"scatter","mode":"lines","name":2020,"line":{"color":"#1F9E89FF"},"inherit":true},"56652201ef39.6":{"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"x":["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],"y":[374700.30741853709,380991.46536507952,394301.00202699949,394301.00202699954,497636.01057602745,439415.62838020647,291425.51268901688,510637.64851609839,521144.57808612386,521144.57808612398,614289.06726649182,398686.74452958972],"type":"scatter","mode":"lines","name":2021,"line":{"color":"#35B779FF"},"inherit":true},"56652201ef39.7":{"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"x":["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],"y":[385637.73645391548,556593.62600335572,554886.55479349568,554886.55479349499,642986.64434123307,813530.11842809233,707109.34690205031,755720.45015181298,923979.40789257444,923979.40789257432,831213.68609252363,799527.26663779037],"type":"scatter","mode":"lines","name":2022,"line":{"color":"#6DCD59FF"},"inherit":true},"56652201ef39.8":{"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"x":["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],"y":[634334.24918129377,822461.02552983374,828319.10204773711,828319.10204773757,820023.40871436684,1116679.5348565534,1228134.77156677,1437181.105452704,1576158.0708025873,1576158.0708025866,1624287.6118761355,1663798.7488591694],"type":"scatter","mode":"lines","name":2023,"line":{"color":"#B4DE2CFF"},"inherit":true},"56652201ef39.9":{"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"x":["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],"y":[1368123.3035495533,1070714.1165704019,990953.96119724144,990953.96119724296,739638.61438206083,851567.13916586258,1278956.307779056,1392980.4975532666,1337851.4622442122,1337851.4622442112,1386753.617189911,1388282.438901596],"type":"scatter","mode":"lines","name":2024,"line":{"color":"#FDE725FF"},"inherit":true}},"layout":{"margin":{"b":40,"l":60,"t":25,"r":10},"yaxis":{"domain":[0,1],"automargin":true,"title":"By Frequency Cycle"},"title":"Comportamiento de la serie por mes","xaxis":{"domain":[0,1],"automargin":true,"title":[],"type":"category","categoryorder":"array","categoryarray":["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]},"hovermode":"closest","showlegend":true},"source":"A","config":{"modeBarButtonsToAdd":["hoverclosest","hovercompare"],"showSendToCloud":false},"data":[{"x":["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],"y":[200070.42705587894,200240.58065734632,199501.6271980101,199501.6271980101,199214.68460208445,199214.60647967318,199035.17152361581,198294.57038834982,198377.75542315509,198377.75542315509,199663.16807822097,197579.15425355162],"type":"scatter","mode":"lines","name":2015,"line":{"color":"#440154FF"},"marker":{"color":"rgba(31,119,180,1)","line":{"color":"rgba(31,119,180,1)"}},"error_y":{"color":"rgba(31,119,180,1)"},"error_x":{"color":"rgba(31,119,180,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],"y":[201145.12810910767,204349.9271233883,205728.46509013078,205728.46509013078,205206.67059672734,199268.20857997597,190781.47457187998,198552.39978969967,200018.61884789591,200018.61884789591,193249.4338644066,195357.29891079926],"type":"scatter","mode":"lines","name":2016,"line":{"color":"#482878FF"},"marker":{"color":"rgba(255,127,14,1)","line":{"color":"rgba(255,127,14,1)"}},"error_y":{"color":"rgba(255,127,14,1)"},"error_x":{"color":"rgba(255,127,14,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],"y":[185095.18739333065,177820.09817947031,177094.93494473229,177094.93494473229,178426.59029485303,157315.16095706425,162386.06102809898,169785.5087707006,156195.17542268825,156195.17542268825,169864.85766284235,164223.11205503438],"type":"scatter","mode":"lines","name":2017,"line":{"color":"#3E4A89FF"},"marker":{"color":"rgba(44,160,44,1)","line":{"color":"rgba(44,160,44,1)"}},"error_y":{"color":"rgba(44,160,44,1)"},"error_x":{"color":"rgba(44,160,44,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],"y":[107636.10448173132,129541.86846320769,111103.86436185111,111103.86436185116,101644.22166082486,90063.829430353944,181552.95626428508,200795.92639820391,203747.3884091423,203747.3884091423,208496.088143181,118381.88615945264],"type":"scatter","mode":"lines","name":2018,"line":{"color":"#31688EFF"},"marker":{"color":"rgba(214,39,40,1)","line":{"color":"rgba(214,39,40,1)"}},"error_y":{"color":"rgba(214,39,40,1)"},"error_x":{"color":"rgba(214,39,40,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],"y":[177108.88226028369,188029.25366744821,205460.95624366065,205460.95624366071,204513.11008387539,202589.8225303418,166839.59526132647,193905.93580150287,207009.93779192198,207009.93779192196,188829.37625192694,235862.99953940266],"type":"scatter","mode":"lines","name":2019,"line":{"color":"#26828EFF"},"marker":{"color":"rgba(148,103,189,1)","line":{"color":"rgba(148,103,189,1)"}},"error_y":{"color":"rgba(148,103,189,1)"},"error_x":{"color":"rgba(148,103,189,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],"y":[316102.58527545742,194826.6926669509,117923.12973841479,117923.12973841481,74655.990396281544,128147.87368393534,118354.41976625839,121660.44367960887,220379.58050517767,220379.58050517773,165971.38374598525,260122.06746971852],"type":"scatter","mode":"lines","name":2020,"line":{"color":"#1F9E89FF"},"marker":{"color":"rgba(140,86,75,1)","line":{"color":"rgba(140,86,75,1)"}},"error_y":{"color":"rgba(140,86,75,1)"},"error_x":{"color":"rgba(140,86,75,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],"y":[374700.30741853709,380991.46536507952,394301.00202699949,394301.00202699954,497636.01057602745,439415.62838020647,291425.51268901688,510637.64851609839,521144.57808612386,521144.57808612398,614289.06726649182,398686.74452958972],"type":"scatter","mode":"lines","name":2021,"line":{"color":"#35B779FF"},"marker":{"color":"rgba(227,119,194,1)","line":{"color":"rgba(227,119,194,1)"}},"error_y":{"color":"rgba(227,119,194,1)"},"error_x":{"color":"rgba(227,119,194,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],"y":[385637.73645391548,556593.62600335572,554886.55479349568,554886.55479349499,642986.64434123307,813530.11842809233,707109.34690205031,755720.45015181298,923979.40789257444,923979.40789257432,831213.68609252363,799527.26663779037],"type":"scatter","mode":"lines","name":2022,"line":{"color":"#6DCD59FF"},"marker":{"color":"rgba(127,127,127,1)","line":{"color":"rgba(127,127,127,1)"}},"error_y":{"color":"rgba(127,127,127,1)"},"error_x":{"color":"rgba(127,127,127,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],"y":[634334.24918129377,822461.02552983374,828319.10204773711,828319.10204773757,820023.40871436684,1116679.5348565534,1228134.77156677,1437181.105452704,1576158.0708025873,1576158.0708025866,1624287.6118761355,1663798.7488591694],"type":"scatter","mode":"lines","name":2023,"line":{"color":"#B4DE2CFF"},"marker":{"color":"rgba(188,189,34,1)","line":{"color":"rgba(188,189,34,1)"}},"error_y":{"color":"rgba(188,189,34,1)"},"error_x":{"color":"rgba(188,189,34,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],"y":[1368123.3035495533,1070714.1165704019,990953.96119724144,990953.96119724296,739638.61438206083,851567.13916586258,1278956.307779056,1392980.4975532666,1337851.4622442122,1337851.4622442112,1386753.617189911,1388282.438901596],"type":"scatter","mode":"lines","name":2024,"line":{"color":"#FDE725FF"},"marker":{"color":"rgba(23,190,207,1)","line":{"color":"rgba(23,190,207,1)"}},"error_y":{"color":"rgba(23,190,207,1)"},"error_x":{"color":"rgba(23,190,207,1)"},"xaxis":"x","yaxis":"y","frame":null}],"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.20000000000000001,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script>
+<p>Distribución de cada mes</p>
 </div>
 </div>
 <div class="cell">
@@ -357,20 +356,37 @@ Figure&nbsp;2: Distribución por mes
   74656  188629  205334  459217  659017 1663799 </code></pre>
 </div>
 </div>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co">#auto.arima(accidentes_ts)</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Series: accidentes_ts </span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="co">#ARIMA(2,1,2)(0,0,1)[12] </span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="co">#Coefficients:</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="co">#          ar1      ar2     ma1     ma2    sma1</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="co">#      -1.4496  -0.7382  1.7002  0.9138  0.3955</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="co"># s.e.   0.1095   0.1025  0.0744  0.0806  0.0982</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a><span class="co">#sigma^2 = 7.26e+09:  log likelihood = -1518.6</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a><span class="co"># AIC=3049.19   AICc=3049.94   BIC=3065.87</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</div>
 </section>
 </section>
 <section id="descomposición-de-la-serie" class="level2">
 <h2 class="anchored" data-anchor-id="descomposición-de-la-serie">3. Descomposición de la serie</h2>
+<p>En esta etapa buscamos estimar los componentes de la serie bajo un modelo aditivo o multiplicativo, para posteriormente describir cada uno en términos del contexto del problema.</p>
 <section id="aditiva-o-multiplicativa" class="level3">
 <h3 class="anchored" data-anchor-id="aditiva-o-multiplicativa">3.1 ¿Aditiva o multiplicativa?</h3>
-<p>Como se discutió antes, la presencia de tendencia y varianza no constante, puede ser indicio de un modelo aditivo que requiere diferenciación o de un modelo multiplicativo.</p>
+<p>Como se discutió antes, la presencia de tendencia y varianza no constante, puede ser indicio de un modelo aditivo que requiere diferenciación o de un modelo multiplicativo. Cuando ambas estimaciones son similares, tal vez el componente estacional no es dominante dentro de la serie.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>descomp <span class="ot">&lt;-</span> <span class="fu">decompose</span>(accidentes_ts, <span class="at">type =</span> <span class="st">"additive"</span>)</span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="fu">autoplot</span>(descomp) <span class="sc">+</span></span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Descomposición aditiva"</span>) <span class="sc">+</span></span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>descomp <span class="ot">&lt;-</span> <span class="fu">decompose</span>(accidentes_ts, <span class="at">type =</span> <span class="st">"additive"</span>)</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="fu">autoplot</span>(descomp) <span class="sc">+</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Descomposición aditiva"</span>) <span class="sc">+</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output-display">
 <div id="fig-descomposicion" class="quarto-float quarto-figure quarto-figure-center anchored">
@@ -379,7 +395,7 @@ Figure&nbsp;2: Distribución por mes
 <img src="box_jenkins_files/figure-html/fig-descomposicion-1.png" class="img-fluid figure-img" width="672">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-descomposicion-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;3: Descomposición aditiva
+Figure&nbsp;2: Descomposición aditiva
 </figcaption>
 </figure>
 </div>
@@ -388,10 +404,10 @@ Figure&nbsp;3: Descomposición aditiva
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>descompMult <span class="ot">&lt;-</span> <span class="fu">decompose</span>(accidentes_ts, <span class="at">type =</span> <span class="st">"multiplicative"</span>)</span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="fu">autoplot</span>(descompMult) <span class="sc">+</span></span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Descomposición multiplicativa"</span>) <span class="sc">+</span></span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>descompMult <span class="ot">&lt;-</span> <span class="fu">decompose</span>(accidentes_ts, <span class="at">type =</span> <span class="st">"multiplicative"</span>)</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="fu">autoplot</span>(descompMult) <span class="sc">+</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Descomposición multiplicativa"</span>) <span class="sc">+</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output-display">
 <div id="fig-descomposicion2" class="quarto-float quarto-figure quarto-figure-center anchored">
@@ -400,7 +416,7 @@ Figure&nbsp;3: Descomposición aditiva
 <img src="box_jenkins_files/figure-html/fig-descomposicion2-1.png" class="img-fluid figure-img" width="672">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-descomposicion2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;4: Descomposición multiplicativa
+Figure&nbsp;3: Descomposición multiplicativa
 </figcaption>
 </figure>
 </div>
@@ -418,14 +434,15 @@ Figure&nbsp;4: Descomposición multiplicativa
 </section>
 <section id="identificación-etapa-1-de-box-jenkins" class="level2">
 <h2 class="anchored" data-anchor-id="identificación-etapa-1-de-box-jenkins">4. Identificación (etapa 1 de Box-Jenkins)</h2>
+<p>Luego de una descripción de los datos, el paso sugerido es explorar transformaciones a los datos y analizar las funciones de autocorrelación muestral, con el objetivo de identificar patrones asociados a modelos ARIMA, ARMA estacional puro o SARIMA.</p>
 <section id="acf-y-pacf-de-la-serie-original" class="level3">
 <h3 class="anchored" data-anchor-id="acf-y-pacf-de-la-serie-original">4.1 ACF y PACF de la serie original</h3>
 <p>Como la ACF decrece lento, es un indicio de que será necesario realizar una diferenciación regular. Por el otro lado, la PACF parece mostrar un patrón estacional (forma de campana repetida), sin embargo no es significativo. Esto no quiere decir que no será necesario incluir un componente que modele la parte estacional, solamente aún no tenemos suficiente evidencia.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggAcf</span>(accidentes_ts, <span class="at">lag.max =</span> <span class="dv">36</span>) <span class="sc">+</span> <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"ACF - serie original"</span>) <span class="sc">+</span></span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggPacf</span>(accidentes_ts, <span class="at">lag.max =</span> <span class="dv">36</span>) <span class="sc">+</span> <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"PACF - serie original"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggAcf</span>(accidentes_ts, <span class="at">lag.max =</span> <span class="dv">36</span>) <span class="sc">+</span> <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"ACF - serie original"</span>) <span class="sc">+</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggPacf</span>(accidentes_ts, <span class="at">lag.max =</span> <span class="dv">36</span>) <span class="sc">+</span> <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"PACF - serie original"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output-display">
 <div id="fig-acf-pacf-original" class="quarto-float quarto-figure quarto-figure-center anchored">
@@ -434,30 +451,12 @@ Figure&nbsp;4: Descomposición multiplicativa
 <img src="box_jenkins_files/figure-html/fig-acf-pacf-original-1.png" class="img-fluid figure-img" width="672">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-acf-pacf-original-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;5: ACF y PACF de la serie original
+Figure&nbsp;4: ACF y PACF de la serie original
 </figcaption>
 </figure>
 </div>
 </div>
 </div>
-</section>
-<section id="pruebas-de-hipótesis-sobre-autocorrelación" class="level3">
-<h3 class="anchored" data-anchor-id="pruebas-de-hipótesis-sobre-autocorrelación">4.2 Pruebas de hipótesis sobre autocorrelación</h3>
-<p>Realizar pruebas de hipótesis para contrastar la cantidad de rezagos no significativos puede ayudar a respaldar nuestra decisión sobre el valor de los parámetros. Por ejemplo, puede no ser claro si la ACF se corta en el rezago 2 o 3, y estas pruebas de hipótesis pueden ayudar a tomar una decisión.</p>
-<div class="cell">
-<details class="code-fold">
-<summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">Box.test</span>(accidentes_ts, <span class="at">lag =</span> <span class="dv">24</span>, <span class="at">type =</span> <span class="st">"Ljung-Box"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
-<div class="cell-output cell-output-stdout">
-<pre><code>
-    Box-Ljung test
-
-data:  accidentes_ts
-X-squared = 1190.2, df = 24, p-value &lt; 2.2e-16</code></pre>
-</div>
-</div>
-<p>Se rechaza <span class="math inline">\(H_0\)</span> de no autocorrelación.</p>
 </section>
 <section id="transformación-box-cox" class="level3">
 <h3 class="anchored" data-anchor-id="transformación-box-cox">4.4 ¿Transformación Box-Cox?</h3>
@@ -465,8 +464,8 @@ X-squared = 1190.2, df = 24, p-value &lt; 2.2e-16</code></pre>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>lambda_opt <span class="ot">&lt;-</span> <span class="fu">BoxCox.lambda</span>(accidentes_ts, <span class="at">method =</span> <span class="st">"loglik"</span>)</span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>lambda_opt</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>lambda_opt <span class="ot">&lt;-</span> <span class="fu">BoxCox.lambda</span>(accidentes_ts, <span class="at">method =</span> <span class="st">"loglik"</span>)</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>lambda_opt</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] -0.1</code></pre>
@@ -479,45 +478,45 @@ X-squared = 1190.2, df = 24, p-value &lt; 2.2e-16</code></pre>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>D_sugerido <span class="ot">&lt;-</span> <span class="fu">nsdiffs</span>(accidentes_ts)</span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>D_sugerido</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>D_sugerido <span class="ot">&lt;-</span> <span class="fu">nsdiffs</span>(accidentes_ts)</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>D_sugerido</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 0</code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>d_sugerido <span class="ot">&lt;-</span> <span class="fu">ndiffs</span>(accidentes_ts)</span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>d_sugerido</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>d_sugerido <span class="ot">&lt;-</span> <span class="fu">ndiffs</span>(accidentes_ts)</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>d_sugerido</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 1</code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>serie_diferenciada <span class="ot">&lt;-</span> <span class="fu">diff</span>(accidentes_ts)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>serie_diferenciada <span class="ot">&lt;-</span> <span class="fu">diff</span>(accidentes_ts)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
-<p>Luego de realizar una diferenciación regular, la serie aún mantiene una comportamiento heterocedastico, esto sugiere un componente multiplicativo.</p>
+<p>Luego de realizar una diferenciación regular, la serie aún mantiene una comportamiento heterocedastico, esto sugiere un componente multiplicativo. Además de que esto cambia la interpretación del modelo.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co"># para no tener problemas con los indices de tiempo</span></span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>serie_diferenciada_df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
-<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">fecha =</span> <span class="fu">time</span>(serie_diferenciada),</span>
-<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">accidentes =</span> <span class="fu">as.numeric</span>(serie_diferenciada)</span>
-<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(serie_diferenciada_df, <span class="fu">aes</span>(fecha, accidentes)) <span class="sc">+</span></span>
-<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">color =</span> <span class="st">"steelblue"</span>) <span class="sc">+</span></span>
-<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
-<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Fecha"</span>,</span>
-<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Costos operativos"</span>,</span>
-<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Serie diferenciada"</span>,</span>
-<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">subtitle =</span> <span class="st">"d=1"</span></span>
-<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
-<span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co"># para no tener problemas con los indices de tiempo</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>serie_diferenciada_df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">fecha =</span> <span class="fu">time</span>(serie_diferenciada),</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">accidentes =</span> <span class="fu">as.numeric</span>(serie_diferenciada)</span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(serie_diferenciada_df, <span class="fu">aes</span>(fecha, accidentes)) <span class="sc">+</span></span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">color =</span> <span class="st">"steelblue"</span>) <span class="sc">+</span></span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Fecha"</span>,</span>
+<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Costos operativos"</span>,</span>
+<span id="cb20-12"><a href="#cb20-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Serie diferenciada"</span>,</span>
+<span id="cb20-13"><a href="#cb20-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">subtitle =</span> <span class="st">"d=1"</span></span>
+<span id="cb20-14"><a href="#cb20-14" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb20-15"><a href="#cb20-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output-display">
 <div id="fig-serie-dif" class="quarto-float quarto-figure quarto-figure-center anchored">
@@ -526,7 +525,7 @@ X-squared = 1190.2, df = 24, p-value &lt; 2.2e-16</code></pre>
 <img src="box_jenkins_files/figure-html/fig-serie-dif-1.png" class="img-fluid figure-img" width="672">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-serie-dif-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;6: Costos reportados 2015-2024
+Figure&nbsp;5: Costos reportados 2015-2024
 </figcaption>
 </figure>
 </div>
@@ -539,8 +538,8 @@ Figure&nbsp;6: Costos reportados 2015-2024
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggAcf</span>(serie_diferenciada, <span class="at">lag.max =</span> <span class="dv">36</span>) <span class="sc">+</span> <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"ACF serie diferenciada"</span>) <span class="sc">+</span></span>
-<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggPacf</span>(serie_diferenciada, <span class="at">lag.max =</span> <span class="dv">36</span>) <span class="sc">+</span> <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"PACF serie diferenciada"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggAcf</span>(serie_diferenciada, <span class="at">lag.max =</span> <span class="dv">36</span>) <span class="sc">+</span> <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"ACF serie diferenciada"</span>) <span class="sc">+</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggPacf</span>(serie_diferenciada, <span class="at">lag.max =</span> <span class="dv">36</span>) <span class="sc">+</span> <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"PACF serie diferenciada"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output-display">
 <div id="fig-acf-pacf-diff" class="quarto-float quarto-figure quarto-figure-center anchored">
@@ -549,37 +548,53 @@ Figure&nbsp;6: Costos reportados 2015-2024
 <img src="box_jenkins_files/figure-html/fig-acf-pacf-diff-1.png" class="img-fluid figure-img" width="672">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-acf-pacf-diff-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;7: ACF y PACF tras diferenciar
+Figure&nbsp;6: ACF y PACF tras diferenciar
 </figcaption>
 </figure>
 </div>
 </div>
 </div>
-<div class="cell">
-<details class="code-fold">
-<summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">Box.test</span>(serie_diferenciada, <span class="at">lag =</span> <span class="dv">24</span>, <span class="at">type =</span> <span class="st">"Ljung-Box"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
-<div class="cell-output cell-output-stdout">
-<pre><code>
-    Box-Ljung test
-
-data:  serie_diferenciada
-X-squared = 63.817, df = 24, p-value = 1.812e-05</code></pre>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Realizar las transformaciones sobre la serie original unicamente es para la identificación, cuando se ajuste un modelo debe ser sobre la serie original, indicando las diferenciaciones o transformaciones como parámetros.</p>
 </div>
 </div>
 </section>
 </section>
 <section id="modelos-candidatos-etapa-2-de-box-jenkins" class="level2">
 <h2 class="anchored" data-anchor-id="modelos-candidatos-etapa-2-de-box-jenkins">5. Modelos candidatos (etapa 2 de Box-Jenkins)</h2>
+<p>Como los patrones de la ACF y PACF de la serie diferenciada no son claros, no es sencillo identificar a simple vista los órdenes <span class="math inline">\(p\)</span>, <span class="math inline">\(q\)</span>, <span class="math inline">\(P\)</span> y <span class="math inline">\(Q\)</span>. En este caso es razonable apoyarse en la búsqueda automática y complementarla con modelos que permitan responder preguntas concretas:</p>
+<ul>
+<li><strong>M1:</strong> ARIMA(2,1,2)(0,0,1)[12], el modelo propuesto por <code>auto.arima()</code>.</li>
+<li><strong>M2:</strong> ARIMA(2,1,2) sin componente estacional, para evaluar si la parte estacional realmente aporta.</li>
+<li><strong>M3:</strong> ARIMA(1,1,1)(0,0,1)[12], una alternativa más parsimoniosa.</li>
+<li><strong>M4:</strong> el resultado de <code>auto.arima()</code> con búsqueda exhaustiva (sin <em>stepwise</em> ni aproximaciones), para verificar que la búsqueda por defecto no se quedó en un óptimo local.</li>
+</ul>
+<p>No se aplica la transformación Box-Cox en los candidatos, pues los criterios de información de modelos con y sin transformación no son comparables entre sí, además de que las predicciones tendrían que regresarse a la escala original y suelen ser malas. La heterocedasticidad se revisará con los residuos en la etapa de diagnóstico.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">auto.arima</span>(serie_diferenciada)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>espec <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>  <span class="st">"M1: ARIMA(2,1,2)(0,0,1)[12]"</span> <span class="ot">=</span> <span class="fu">list</span>(<span class="at">order =</span> <span class="fu">c</span>(<span class="dv">2</span>,<span class="dv">1</span>,<span class="dv">2</span>), <span class="at">seasonal =</span> <span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">1</span>)),</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">"M2: ARIMA(2,1,2)"</span>            <span class="ot">=</span> <span class="fu">list</span>(<span class="at">order =</span> <span class="fu">c</span>(<span class="dv">2</span>,<span class="dv">1</span>,<span class="dv">2</span>), <span class="at">seasonal =</span> <span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>)),</span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>  <span class="st">"M3: ARIMA(1,1,1)(0,0,1)[12]"</span> <span class="ot">=</span> <span class="fu">list</span>(<span class="at">order =</span> <span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">1</span>,<span class="dv">1</span>), <span class="at">seasonal =</span> <span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">1</span>)))</span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>ajustes <span class="ot">&lt;-</span> <span class="fu">map</span>(espec, <span class="sc">~</span> <span class="fu">Arima</span>(accidentes_ts, <span class="at">order =</span> .x<span class="sc">$</span>order, <span class="at">seasonal =</span> .x<span class="sc">$</span>seasonal))</span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>mod_auto_exh <span class="ot">&lt;-</span> <span class="fu">auto.arima</span>(accidentes_ts, <span class="at">stepwise =</span> <span class="cn">FALSE</span>, <span class="at">approximation =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a>mod_auto_exh</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>Series: serie_diferenciada 
-ARIMA(2,0,2)(0,0,1)[12] with zero mean 
+<pre><code>Series: accidentes_ts 
+ARIMA(2,1,2)(0,0,1)[12] 
 
 Coefficients:
           ar1      ar2     ma1     ma2    sma1
@@ -591,29 +606,143 @@ AIC=3049.19   AICc=3049.94   BIC=3065.87</code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>mod1<span class="ot">&lt;-</span> <span class="fu">Arima</span>(serie_diferenciada, <span class="at">order =</span> <span class="fu">c</span>(<span class="dv">2</span>,<span class="dv">0</span>,<span class="dv">2</span>), <span class="at">seasonal =</span> <span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">1</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>ajustes[[<span class="st">"M4: auto.arima exhaustivo"</span>]] <span class="ot">&lt;-</span> mod_auto_exh</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
-<section id="comparación-mediante-diversas-métricas" class="level3">
-<h3 class="anchored" data-anchor-id="comparación-mediante-diversas-métricas">Comparación mediante diversas métricas</h3>
-<p>Un primer criterio es que sean modelos estacionarios causales e invertibles.</p>
-<p>Se suele evaluar la parsimonia del modelo, evitar la redundancia de parámetros, así como comparar algunas métricas según sea el objetivo final del modelo, como métricas que evaluan el poder predictivo (real y aparente).</p>
+<section id="criterios-de-información-y-ajuste-aparente" class="level4">
+<h4 class="anchored" data-anchor-id="criterios-de-información-y-ajuste-aparente">Criterios de información y ajuste aparente</h4>
+<p>Los criterios de información (AIC, AICc y BIC) penalizan la verosimilitud por el número de parámetros, el BIC penaliza más fuerte y tiende a elegir modelos más parsimoniosos. Las métricas de error calculadas sobre los mismos datos con los que se ajustó el modelo (RMSE y MAE) miden el poder predictivo <strong>aparente</strong>, que siempre es optimista. El poder predictivo <strong>real</strong> se evalúa con datos que el modelo no vio (nuevas observaciones)</p>
+<p>Es importante recordar que los criterios de información solo son comparables entre modelos con el mismo orden de diferenciación (<span class="math inline">\(d\)</span> y <span class="math inline">\(D\)</span>), pues en caso contrario la verosimilitud se calcula sobre series distintas.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>comparacion <span class="ot">&lt;-</span> <span class="fu">imap_dfr</span>(ajustes, <span class="sc">~</span> {</span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>  a <span class="ot">&lt;-</span> <span class="fu">accuracy</span>(.x)</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tibble</span>(</span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">modelo     =</span> .y,</span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">d          =</span> .x<span class="sc">$</span>arma[<span class="dv">6</span>],</span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">D          =</span> .x<span class="sc">$</span>arma[<span class="dv">7</span>],</span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">logLik     =</span> <span class="fu">as.numeric</span>(<span class="fu">logLik</span>(.x)),</span>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">AIC        =</span> .x<span class="sc">$</span>aic,</span>
+<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">AICc       =</span> .x<span class="sc">$</span>aicc,</span>
+<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">BIC        =</span> .x<span class="sc">$</span>bic,</span>
+<span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">RMSE       =</span> <span class="fu">as.numeric</span>(a[, <span class="st">"RMSE"</span>]),</span>
+<span id="cb25-12"><a href="#cb25-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">MAE        =</span> <span class="fu">as.numeric</span>(a[, <span class="st">"MAE"</span>])</span>
+<span id="cb25-13"><a href="#cb25-13" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb25-14"><a href="#cb25-14" aria-hidden="true" tabindex="-1"></a>}) <span class="sc">|&gt;</span> <span class="fu">arrange</span>(D, AICc)</span>
+<span id="cb25-15"><a href="#cb25-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-16"><a href="#cb25-16" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(comparacion, <span class="at">digits =</span> <span class="dv">1</span>, <span class="at">caption =</span> <span class="st">"Comparación de modelos candidatos (ajuste aparente)"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<caption>Comparación de modelos candidatos (ajuste aparente)</caption>
+<colgroup>
+<col style="width: 35%">
+<col style="width: 3%">
+<col style="width: 3%">
+<col style="width: 10%">
+<col style="width: 8%">
+<col style="width: 8%">
+<col style="width: 8%">
+<col style="width: 10%">
+<col style="width: 10%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">modelo</th>
+<th style="text-align: right;">d</th>
+<th style="text-align: right;">D</th>
+<th style="text-align: right;">logLik</th>
+<th style="text-align: right;">AIC</th>
+<th style="text-align: right;">AICc</th>
+<th style="text-align: right;">BIC</th>
+<th style="text-align: right;">RMSE</th>
+<th style="text-align: right;">MAE</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">M1: ARIMA(2,1,2)(0,0,1)[12]</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">-1518.6</td>
+<td style="text-align: right;">3049.2</td>
+<td style="text-align: right;">3049.9</td>
+<td style="text-align: right;">3065.9</td>
+<td style="text-align: right;">83046.9</td>
+<td style="text-align: right;">51779.7</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">M4: auto.arima exhaustivo</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">-1518.6</td>
+<td style="text-align: right;">3049.2</td>
+<td style="text-align: right;">3049.9</td>
+<td style="text-align: right;">3065.9</td>
+<td style="text-align: right;">83046.9</td>
+<td style="text-align: right;">51779.7</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">M3: ARIMA(1,1,1)(0,0,1)[12]</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">-1523.0</td>
+<td style="text-align: right;">3054.0</td>
+<td style="text-align: right;">3054.3</td>
+<td style="text-align: right;">3065.1</td>
+<td style="text-align: right;">86596.3</td>
+<td style="text-align: right;">50439.8</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">M2: ARIMA(2,1,2)</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">-1525.1</td>
+<td style="text-align: right;">3060.1</td>
+<td style="text-align: right;">3060.7</td>
+<td style="text-align: right;">3074.0</td>
+<td style="text-align: right;">88584.0</td>
+<td style="text-align: right;">52948.8</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>mod_final <span class="ot">&lt;-</span> ajustes[[<span class="st">"M1: ARIMA(2,1,2)(0,0,1)[12]"</span>]]</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>mod_final</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Series: accidentes_ts 
+ARIMA(2,1,2)(0,0,1)[12] 
+
+Coefficients:
+          ar1      ar2     ma1     ma2    sma1
+      -1.4496  -0.7382  1.7002  0.9138  0.3955
+s.e.   0.1095   0.1025  0.0744  0.0806  0.0982
+
+sigma^2 = 7.26e+09:  log likelihood = -1518.6
+AIC=3049.19   AICc=3049.94   BIC=3065.87</code></pre>
+</div>
+</div>
 </section>
 </section>
 <section id="diagnóstico-del-modelo-final-etapa-3-de-box-jenkins" class="level2">
 <h2 class="anchored" data-anchor-id="diagnóstico-del-modelo-final-etapa-3-de-box-jenkins">6. Diagnóstico del modelo final (etapa 3 de Box-Jenkins)</h2>
-<p>Se analizan los supuestos del modelo, esto permite que las estimaciones sean más confiables.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="fu">checkresiduals</span>(mod1)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="fu">checkresiduals</span>(mod_final)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>
     Ljung-Box test
 
-data:  Residuals from ARIMA(2,0,2)(0,0,1)[12] with non-zero mean
-Q* = 32.498, df = 19, p-value = 0.02745
+data:  Residuals from ARIMA(2,1,2)(0,0,1)[12]
+Q* = 32.563, df = 19, p-value = 0.02698
 
 Model df: 5.   Total lags used: 24</code></pre>
 </div>
@@ -624,22 +753,25 @@ Model df: 5.   Total lags used: 24</code></pre>
 <img src="box_jenkins_files/figure-html/fig-diagnostico-1.png" class="img-fluid figure-img" width="672">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-diagnostico-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;8: Diagnóstico de residuos del modelo
+Figure&nbsp;7: Diagnóstico de residuos del modelo
 </figcaption>
 </figure>
 </div>
 </div>
 </div>
 </section>
+<section id="evaluación-del-poder-predictivo" class="level2">
+<h2 class="anchored" data-anchor-id="evaluación-del-poder-predictivo">7. Evaluación del poder predictivo</h2>
+</section>
 <section id="pronóstico-etapa-4-de-box-jenkins" class="level2">
 <h2 class="anchored" data-anchor-id="pronóstico-etapa-4-de-box-jenkins">8. Pronóstico (etapa 4 de Box-Jenkins)</h2>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>pronostico_final <span class="ot">&lt;-</span> <span class="fu">forecast</span>(mod1, <span class="at">h =</span> <span class="dv">12</span>)</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>pronostico_final <span class="ot">&lt;-</span> <span class="fu">forecast</span>(mod_final, <span class="at">h =</span> <span class="dv">12</span>)</span>
 <span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a><span class="fu">autoplot</span>(pronostico_final) <span class="sc">+</span></span>
-<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Fecha"</span>, <span class="at">y =</span> <span class="st">"Número de accidentes"</span>,</span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Fecha"</span>, <span class="at">y =</span> <span class="st">"Costo operativo"</span>,</span>
 <span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>       <span class="at">title =</span> <span class="st">"Pronóstico a 12 meses"</span>) <span class="sc">+</span></span>
 <span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
@@ -650,7 +782,7 @@ Figure&nbsp;8: Diagnóstico de residuos del modelo
 <img src="box_jenkins_files/figure-html/fig-pronostico-1.png" class="img-fluid figure-img" width="672">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-pronostico-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;9: Pronóstico a 12 meses de accidentes viales
+Figure&nbsp;8: Pronóstico a 12 meses de costos operativos
 </figcaption>
 </figure>
 </div>
