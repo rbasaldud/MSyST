@@ -20,13 +20,16 @@ library(tseries)
 library(lubridate)
 library(patchwork)
 library(knitr)
+library(TSstudio)
 ```
 
 ## 1. Contexto del problema
 
-Una empresa desea analizar el costo operativo mensual de las sucursales en la CDMX. 
+Una empresa desea analizar el costo operativo mensual de las sucursales en la CDMX, para ello se tienen registro de los costos desde Enero del 2015 hasta Diciembre del 2024. En principio no hay un objetivo claro para el proyecto, sin embargo un enfoque equilibrado es que la modelación realizada logre describir y tratar de explicar el fenómeno, además de presentar proyecciones para meses posteriores.
 
-## 2. Descripción general de la serie
+
+Por facilidad del ejemplo, asumiremos que no hay valores faltantes, la información es confiable y se tiene un preprocesamiento correcto. En general, siempre habrá que confirmar esto cuando se trabaje con datos reales. El tratamiento de una serie de tiempo con valores faltantes es un problema para el que aún nos faltan herramientas. 
+
 
 ```{r}
 #| label: datos
@@ -36,34 +39,32 @@ n     <- 120
 idx   <- 1:n
 fecha <- seq(as.Date("2015-01-01"), by = "month", length.out = n)
 
-tendencia_real     <- 50 - 1.3 * idx^2                                    # cae por mejoras en infraestructura
-estacionalidad_real <- 3 * sin(2 * pi * (idx - 10) / 12)                # picos en temporada de lluvias/fin de año
+tendencia_real     <- 50 - 1.3 * idx^2                                    
+estacionalidad_real <- 3 * sin(2 * pi * (idx - 10) / 12)                
 ruido              <- rnorm(n, mean = 0, sd = 5)
 
 accidentes <- tendencia_real * estacionalidad_real * ruido 
 
-
-
+# para manejar con tidy
 serie_df <- tibble(idx = idx, fecha = fecha, accidentes = cumsum(accidentes) + 200000)
 
+# objeto time series para funciones especificas, aqui asignamos el periodo estacional
 accidentes_ts <- ts(serie_df$accidentes, start = c(2015, 1), frequency = 12)
 ```
 
 
+## 2. Descripción general de la serie
 
-```{r}
-#| label: spoiler
+Una exploración y descripción inteligente de los datos puede facilitar etapas posteriores (identificación de parámetros y proponer modelos). Puede ser complicado encontrar la gráfica/técnica que muestre hallazgos relevantes, es una buena práctica solamente presentar los hallazgos más importantes (para la toma de decisiones del negocio o para justificar deciciones dentro de la modelación), y se deben de acompañar de una interpretación dentro del contexto del problema, en este caso, dentro del contexto de la empresa.
 
-auto.arima(accidentes_ts)
+Cuando se tiene suficiente conocimiento del contexto del problema, también es posible encontrar correlación entre eventos económicos, políticos o sociales y características de la serie. Por ejemplo, el mes en el que empezó la pandemia del COVID también comenzó una tendencia decreciente en las ventas de un comercio, etc.
 
-```
-
-
+Aunque en lo que resta del ejemplo omitiremos las interpretaciones de este tipo, es **muy importante** incluirlas dentro de un análisis. 
 
 
-### 2.1 Visualización general
+### 2.1 Visualización de los costos
 
-Al visualizar la serie, se puede observar una tendencia creciente así como una varianza no constante, este puede ser un indicio de un modelo multiplicativo.
+Al visualizar la serie se puede observar una tendencia creciente, así como una varianza no constante, y esto puede ser un indicio de un modelo multiplicativo. 
 
 ```{r}
 #| label: fig-serie-general
@@ -77,36 +78,56 @@ ggplot(serie_df, aes(fecha, accidentes)) +
 ```
 
 
+### 2.2 Patrones
 
-### 2.2 Estadísticas descriptivas y visualización de patrones
+En esta etapa (de un primer acercamiento a los datos) nos interesa visualizar patrones que puedan ser relevantes, en el caso de una serie de tiempo es de particular interés encontrar tendencia regular, patrones estacionales, tendencia estacional, varianza no constante, entre otros aspectos. 
 
-Se puede analizar la distribución por mes.
+Si también se tuviera acceso a covariables, se pueden utilizar técnicas de análisis multivariado que permitan una descripción conjunta de los datos. 
+
 
 ```{r}
-#| label: fig-boxplot-mes
-#| fig-cap: "Distribución por mes"
-serie_df %>%
-  mutate(mes = month(fecha, label = TRUE, abbr = TRUE)) %>%
-  ggplot(aes(mes, accidentes)) +
-  geom_boxplot(fill = "steelblue", alpha = 0.5) +
-  labs(x = "Mes", y = "Accidentes",
-       title = "Distribución por mes") +
-  theme_minimal()
+#| label: comportamiento-mes-anual
+#| fig-cap: "Distribución de cada mes"
+
+ts_seasonal(accidentes_ts, type = "box",title = "Comportamiento de la serie por mes")
+ts_seasonal(accidentes_ts, type = "cycle",title = "Comportamiento de la serie por mes")
+ts_seasonal(accidentes_ts, type = "normal",title = "Comportamiento de la serie por mes")
+
 ```
+
 
 ```{r}
 #| label: resumen-datos
-
 summary(serie_df$accidentes)
+```
+
+
+
+```{r}
+#| label: spoiler
+
+#auto.arima(accidentes_ts)
+# Series: accidentes_ts 
+#ARIMA(2,1,2)(0,0,1)[12] 
+
+#Coefficients:
+#          ar1      ar2     ma1     ma2    sma1
+#      -1.4496  -0.7382  1.7002  0.9138  0.3955
+# s.e.   0.1095   0.1025  0.0744  0.0806  0.0982
+
+#sigma^2 = 7.26e+09:  log likelihood = -1518.6
+# AIC=3049.19   AICc=3049.94   BIC=3065.87
 ```
 
 
 
 ## 3. Descomposición de la serie
 
+En esta etapa buscamos estimar los componentes de la serie bajo un modelo aditivo o multiplicativo, para posteriormente describir cada uno en términos del contexto del problema.
+
 ### 3.1 ¿Aditiva o multiplicativa?
 
-Como se discutió antes, la presencia de tendencia y varianza no constante, puede ser indicio de un modelo aditivo que requiere diferenciación o de un modelo multiplicativo.
+Como se discutió antes, la presencia de tendencia y varianza no constante, puede ser indicio de un modelo aditivo que requiere diferenciación o de un modelo multiplicativo. Cuando ambas estimaciones son similares, tal vez el componente estacional no es dominante dentro de la serie. 
 
 
 ```{r}
@@ -139,6 +160,8 @@ autoplot(descompMult) +
 
 ## 4. Identificación (etapa 1 de Box-Jenkins)
 
+Luego de una descripción de los datos, el paso sugerido es explorar transformaciones a los datos y analizar las funciones de autocorrelación muestral, con el objetivo de identificar patrones asociados a modelos ARIMA, ARMA estacional puro o SARIMA.
+
 ### 4.1 ACF y PACF de la serie original
 
 Como la ACF decrece lento, es un indicio de que será necesario realizar una diferenciación regular. Por el otro lado, la PACF parece mostrar un patrón estacional (forma de campana repetida), sin embargo no es significativo. Esto no quiere decir que no será necesario incluir un componente que modele la parte estacional, solamente aún no tenemos suficiente evidencia.
@@ -150,15 +173,7 @@ ggAcf(accidentes_ts, lag.max = 36) + labs(title = "ACF - serie original") +
   ggPacf(accidentes_ts, lag.max = 36) + labs(title = "PACF - serie original")
 ```
 
-### 4.2 Pruebas de hipótesis sobre autocorrelación
 
-Realizar pruebas de hipótesis para contrastar la cantidad de rezagos no significativos puede ayudar a respaldar nuestra decisión sobre el valor de los parámetros. Por ejemplo, puede no ser claro si la ACF se corta en el rezago 2 o 3, y estas pruebas de hipótesis pueden ayudar a tomar una decisión.
-```{r}
-#| label: ljung-box-original
-Box.test(accidentes_ts, lag = 24, type = "Ljung-Box")
-```
-
-Se rechaza $H_0$ de no autocorrelación. 
 
 
 ### 4.4 ¿Transformación Box-Cox?
@@ -197,7 +212,7 @@ serie_diferenciada <- diff(accidentes_ts)
 ```
 
 
-Luego de realizar una diferenciación regular, la serie aún mantiene una comportamiento heterocedastico, esto sugiere un componente multiplicativo. 
+Luego de realizar una diferenciación regular, la serie aún mantiene una comportamiento heterocedastico, esto sugiere un componente multiplicativo. Además de que esto cambia la interpretación del modelo.
 
 
 ```{r}
@@ -232,57 +247,103 @@ ggAcf(serie_diferenciada, lag.max = 36) + labs(title = "ACF serie diferenciada")
   ggPacf(serie_diferenciada, lag.max = 36) + labs(title = "PACF serie diferenciada")
 ```
 
-```{r}
-#| label: ljung-box-diferenciada
-Box.test(serie_diferenciada, lag = 24, type = "Ljung-Box")
-```
 
+
+::: callout-note
+Realizar las transformaciones sobre la serie original unicamente es para la identificación, cuando se ajuste un modelo debe ser sobre la serie original, indicando las diferenciaciones o transformaciones como parámetros.
+:::
 
 
 ## 5. Modelos candidatos (etapa 2 de Box-Jenkins)
 
+Como los patrones de la ACF y PACF de la serie diferenciada no son claros, no es sencillo identificar a simple vista los órdenes $p$, $q$, $P$ y $Q$. En este caso es razonable apoyarse en la búsqueda automática y complementarla con modelos que permitan responder preguntas concretas:
+
+- **M1:** ARIMA(2,1,2)(0,0,1)[12], el modelo propuesto por `auto.arima()`.
+- **M2:** ARIMA(2,1,2) sin componente estacional, para evaluar si la parte estacional realmente aporta.
+- **M3:** ARIMA(1,1,1)(0,0,1)[12], una alternativa más parsimoniosa.
+- **M4:** el resultado de `auto.arima()` con búsqueda exhaustiva (sin *stepwise* ni aproximaciones), para verificar que la búsqueda por defecto no se quedó en un óptimo local.
+
+No se aplica la transformación Box-Cox en los candidatos, pues los criterios de información de modelos con y sin transformación no son comparables entre sí, además de que las predicciones tendrían que regresarse a la escala original y suelen ser malas. La heterocedasticidad se revisará con los residuos en la etapa de diagnóstico.
+
+
 
 ```{r}
-#| label: modelos
+#| label: espec-modelos
 
-auto.arima(serie_diferenciada)
+espec <- list(
+  "M1: ARIMA(2,1,2)(0,0,1)[12]" = list(order = c(2,1,2), seasonal = c(0,0,1)),
+  "M2: ARIMA(2,1,2)"            = list(order = c(2,1,2), seasonal = c(0,0,0)),
+  "M3: ARIMA(1,1,1)(0,0,1)[12]" = list(order = c(1,1,1), seasonal = c(0,0,1)))
 
-mod1<- Arima(serie_diferenciada, order = c(2,0,2), seasonal = c(0,0,1))
+ajustes <- map(espec, ~ Arima(accidentes_ts, order = .x$order, seasonal = .x$seasonal))
 
+mod_auto_exh <- auto.arima(accidentes_ts, stepwise = FALSE, approximation = FALSE)
+mod_auto_exh
 
-
+ajustes[["M4: auto.arima exhaustivo"]] <- mod_auto_exh
 ```
 
 
-### Comparación mediante diversas métricas
+#### Criterios de información y ajuste aparente
 
-Un primer criterio es que sean modelos estacionarios causales e invertibles.
+Los criterios de información (AIC, AICc y BIC) penalizan la verosimilitud por el número de parámetros, el BIC penaliza más fuerte y tiende a elegir modelos más parsimoniosos. Las métricas de error calculadas sobre los mismos datos con los que se ajustó el modelo (RMSE y MAE) miden el poder predictivo **aparente**, que siempre es optimista. El poder predictivo **real** se evalúa con datos que el modelo no vio (nuevas observaciones)
 
-Se suele evaluar la parsimonia del modelo, evitar la redundancia de parámetros, así como comparar algunas métricas según sea el objetivo final del modelo, como métricas que evaluan el poder predictivo (real y aparente).
+Es importante recordar que los criterios de información solo son comparables entre modelos con el mismo orden de diferenciación ($d$ y $D$), pues en caso contrario la verosimilitud se calcula sobre series distintas. 
 
+
+
+```{r}
+#| label: criterios-info
+
+comparacion <- imap_dfr(ajustes, ~ {
+  a <- accuracy(.x)
+  tibble(
+    modelo     = .y,
+    d          = .x$arma[6],
+    D          = .x$arma[7],
+    logLik     = as.numeric(logLik(.x)),
+    AIC        = .x$aic,
+    AICc       = .x$aicc,
+    BIC        = .x$bic,
+    RMSE       = as.numeric(a[, "RMSE"]),
+    MAE        = as.numeric(a[, "MAE"])
+  )
+}) |> arrange(D, AICc)
+
+kable(comparacion, digits = 1, caption = "Comparación de modelos candidatos (ajuste aparente)")
+```
+
+
+```{r}
+#| label: modelo-final
+
+mod_final <- ajustes[["M1: ARIMA(2,1,2)(0,0,1)[12]"]]
+mod_final
+```
 
 ## 6. Diagnóstico del modelo final (etapa 3 de Box-Jenkins)
 
-Se analizan los supuestos del modelo, esto permite que las estimaciones sean más confiables.
 
 ```{r}
 #| label: fig-diagnostico
 #| fig-cap: "Diagnóstico de residuos del modelo"
-checkresiduals(mod1)
+checkresiduals(mod_final)
 
 ```
 
+
+## 7. Evaluación del poder predictivo
 
 
 ## 8. Pronóstico (etapa 4 de Box-Jenkins)
 
 ```{r}
 #| label: fig-pronostico
-#| fig-cap: "Pronóstico a 12 meses de accidentes viales"
-pronostico_final <- forecast(mod1, h = 12)
+#| fig-cap: "Pronóstico a 12 meses de costos operativos"
+pronostico_final <- forecast(mod_final, h = 12)
 
 autoplot(pronostico_final) +
-  labs(x = "Fecha", y = "Número de accidentes",
+  labs(x = "Fecha", y = "Costo operativo",
        title = "Pronóstico a 12 meses") +
   theme_minimal()
 
@@ -293,3 +354,4 @@ autoplot(pronostico_final) +
 
 
 ## 9. Conclusiones
+
