@@ -141,6 +141,8 @@ autoplot(descompMult) +
 
 ### 4.1 ACF y PACF de la serie original
 
+Como la ACF decrece lento, es un indicio de que será necesario realizar una diferenciación regular. Por el otro lado, la PACF parece mostrar un patrón estacional (forma de campana repetida), sin embargo no es significativo. Esto no quiere decir que no será necesario incluir un componente que modele la parte estacional, solamente aún no tenemos suficiente evidencia.
+
 ```{r}
 #| label: fig-acf-pacf-original
 #| fig-cap: "ACF y PACF de la serie original"
@@ -150,6 +152,7 @@ ggAcf(accidentes_ts, lag.max = 36) + labs(title = "ACF - serie original") +
 
 ### 4.2 Pruebas de hipótesis sobre autocorrelación
 
+Realizar pruebas de hipótesis para contrastar la cantidad de rezagos no significativos puede ayudar a respaldar nuestra decisión sobre el valor de los parámetros. Por ejemplo, puede no ser claro si la ACF se corta en el rezago 2 o 3, y estas pruebas de hipótesis pueden ayudar a tomar una decisión.
 ```{r}
 #| label: ljung-box-original
 Box.test(accidentes_ts, lag = 24, type = "Ljung-Box")
@@ -160,7 +163,7 @@ Se rechaza $H_0$ de no autocorrelación.
 
 ### 4.4 ¿Transformación Box-Cox?
 
-Es posible encontrar un valor óptimo de $\lambda$ para aplicar una transformación Box-Cox con la función `BoxCox.lambda()` de la paquetería `forecast`. 
+Es posible encontrar un valor óptimo de $\lambda$ para aplicar una transformación Box-Cox con la función `BoxCox.lambda()` de la paquetería `forecast`. En este caso, un $\lambda$ cercano a cero sugiere el uso de la transformación logaritmo. Esto puede rreglar de forma aparante algunos problemas de supuestos o estacionaridad sin embargo causará problemas al hacer predicciones (pues las predicciones estarán en escala logarítmica y habrá que "exponenciar" los resultados).
 
 ```{r}
 #| label: box-cox
@@ -174,6 +177,8 @@ lambda_opt
 
 ### 4.5 Diferenciación regular y estacional
 
+Hay funciones en R que encuentran el valor de $d$ y $D$ óptimo, en nuestro ejemplo, se recomienda no aplicar diferenciación estacional y solo una diferenciación regular.
+
 ```{r}
 #| label: diferenciacion-sugerida
 
@@ -181,47 +186,68 @@ D_sugerido <- nsdiffs(accidentes_ts)
 
 D_sugerido
 
-serie_des  <- diff(accidentes_ts, lag = 12)
 
-d_sugerido <- ndiffs(serie_des)
+d_sugerido <- ndiffs(accidentes_ts)
 d_sugerido
 
-serie_estacionaria <- diff(serie_des)
 
+serie_diferenciada <- diff(accidentes_ts)
 
 
 ```
 
 
+Luego de realizar una diferenciación regular, la serie aún mantiene una comportamiento heterocedastico, esto sugiere un componente multiplicativo. 
+
+
+```{r}
+#| label: fig-serie-dif
+#| fig-cap: "Costos reportados 2015-2024"
+
+# para no tener problemas con los indices de tiempo
+serie_diferenciada_df <- data.frame(
+  fecha = time(serie_diferenciada),
+  accidentes = as.numeric(serie_diferenciada)
+)
+
+ggplot(serie_diferenciada_df, aes(fecha, accidentes)) +
+  geom_line(color = "steelblue") +
+  labs(
+    x = "Fecha",
+    y = "Costos operativos",
+    title = "Serie diferenciada",
+    subtitle = "d=1"
+  ) +
+  theme_minimal()
+```
+
 ### 4.6 ACF/PACF y prueba de hipótesis sobre la serie diferenciada
+
+Parece que los patrones de las funciones de autocorrelación no son claros.
 
 ```{r}
 #| label: fig-acf-pacf-diff
 #| fig-cap: "ACF y PACF tras diferenciar"
-ggAcf(serie_estacionaria, lag.max = 36) + labs(title = "ACF - serie diferenciada") +
-  ggPacf(serie_estacionaria, lag.max = 36) + labs(title = "PACF - serie diferenciada")
+ggAcf(serie_diferenciada, lag.max = 36) + labs(title = "ACF serie diferenciada") +
+  ggPacf(serie_diferenciada, lag.max = 36) + labs(title = "PACF serie diferenciada")
 ```
 
 ```{r}
 #| label: ljung-box-diferenciada
-Box.test(serie_estacionaria, lag = 24, type = "Ljung-Box")
+Box.test(serie_diferenciada, lag = 24, type = "Ljung-Box")
 ```
 
-Sigue habiendo autocorrelación significativa tras diferenciar, esto es un indicio de que aún
-queda estructura ARMA por capturar, y los rezagos significativos de la ACF/PACF
-orientan los órdenes candidatos de la siguiente sección.
 
 
-## 5. Modelos candidatos
+## 5. Modelos candidatos (etapa 2 de Box-Jenkins)
 
 
 ```{r}
 #| label: modelos
 
+auto.arima(serie_diferenciada)
 
-#auto.arima(serie_estacionaria)
-
-mod1<- Arima(serie_estacionaria, order = c(3,0,0), seasonal = c(1,0,1))
+mod1<- Arima(serie_diferenciada, order = c(2,0,2), seasonal = c(0,0,1))
 
 
 
