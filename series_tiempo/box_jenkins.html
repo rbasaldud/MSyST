@@ -198,7 +198,7 @@ window.Quarto = {
   <li><a href="#diferenciación-regular-y-estacional" id="toc-diferenciación-regular-y-estacional" class="nav-link" data-scroll-target="#diferenciación-regular-y-estacional">4.5 Diferenciación regular y estacional</a></li>
   <li><a href="#acfpacf-y-prueba-de-hipótesis-sobre-la-serie-diferenciada" id="toc-acfpacf-y-prueba-de-hipótesis-sobre-la-serie-diferenciada" class="nav-link" data-scroll-target="#acfpacf-y-prueba-de-hipótesis-sobre-la-serie-diferenciada">4.6 ACF/PACF y prueba de hipótesis sobre la serie diferenciada</a></li>
   </ul></li>
-  <li><a href="#modelos-candidatos" id="toc-modelos-candidatos" class="nav-link" data-scroll-target="#modelos-candidatos">5. Modelos candidatos</a>
+  <li><a href="#modelos-candidatos-etapa-2-de-box-jenkins" id="toc-modelos-candidatos-etapa-2-de-box-jenkins" class="nav-link" data-scroll-target="#modelos-candidatos-etapa-2-de-box-jenkins">5. Modelos candidatos (etapa 2 de Box-Jenkins)</a>
   <ul class="collapse">
   <li><a href="#comparación-mediante-diversas-métricas" id="toc-comparación-mediante-diversas-métricas" class="nav-link" data-scroll-target="#comparación-mediante-diversas-métricas">Comparación mediante diversas métricas</a></li>
   </ul></li>
@@ -420,6 +420,7 @@ Figure&nbsp;4: Descomposición multiplicativa
 <h2 class="anchored" data-anchor-id="identificación-etapa-1-de-box-jenkins">4. Identificación (etapa 1 de Box-Jenkins)</h2>
 <section id="acf-y-pacf-de-la-serie-original" class="level3">
 <h3 class="anchored" data-anchor-id="acf-y-pacf-de-la-serie-original">4.1 ACF y PACF de la serie original</h3>
+<p>Como la ACF decrece lento, es un indicio de que será necesario realizar una diferenciación regular. Por el otro lado, la PACF parece mostrar un patrón estacional (forma de campana repetida), sin embargo no es significativo. Esto no quiere decir que no será necesario incluir un componente que modele la parte estacional, solamente aún no tenemos suficiente evidencia.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
@@ -442,6 +443,7 @@ Figure&nbsp;5: ACF y PACF de la serie original
 </section>
 <section id="pruebas-de-hipótesis-sobre-autocorrelación" class="level3">
 <h3 class="anchored" data-anchor-id="pruebas-de-hipótesis-sobre-autocorrelación">4.2 Pruebas de hipótesis sobre autocorrelación</h3>
+<p>Realizar pruebas de hipótesis para contrastar la cantidad de rezagos no significativos puede ayudar a respaldar nuestra decisión sobre el valor de los parámetros. Por ejemplo, puede no ser claro si la ACF se corta en el rezago 2 o 3, y estas pruebas de hipótesis pueden ayudar a tomar una decisión.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
@@ -459,7 +461,7 @@ X-squared = 1190.2, df = 24, p-value &lt; 2.2e-16</code></pre>
 </section>
 <section id="transformación-box-cox" class="level3">
 <h3 class="anchored" data-anchor-id="transformación-box-cox">4.4 ¿Transformación Box-Cox?</h3>
-<p>Es posible encontrar un valor óptimo de <span class="math inline">\(\lambda\)</span> para aplicar una transformación Box-Cox con la función <code>BoxCox.lambda()</code> de la paquetería <code>forecast</code>.</p>
+<p>Es posible encontrar un valor óptimo de <span class="math inline">\(\lambda\)</span> para aplicar una transformación Box-Cox con la función <code>BoxCox.lambda()</code> de la paquetería <code>forecast</code>. En este caso, un <span class="math inline">\(\lambda\)</span> cercano a cero sugiere el uso de la transformación logaritmo. Esto puede rreglar de forma aparante algunos problemas de supuestos o estacionaridad sin embargo causará problemas al hacer predicciones (pues las predicciones estarán en escala logarítmica y habrá que “exponenciar” los resultados).</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
@@ -473,6 +475,7 @@ X-squared = 1190.2, df = 24, p-value &lt; 2.2e-16</code></pre>
 </section>
 <section id="diferenciación-regular-y-estacional" class="level3">
 <h3 class="anchored" data-anchor-id="diferenciación-regular-y-estacional">4.5 Diferenciación regular y estacional</h3>
+<p>Hay funciones en R que encuentran el valor de <span class="math inline">\(d\)</span> y <span class="math inline">\(D\)</span> óptimo, en nuestro ejemplo, se recomienda no aplicar diferenciación estacional y solo una diferenciación regular.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
@@ -485,27 +488,59 @@ X-squared = 1190.2, df = 24, p-value &lt; 2.2e-16</code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>serie_des  <span class="ot">&lt;-</span> <span class="fu">diff</span>(accidentes_ts, <span class="at">lag =</span> <span class="dv">12</span>)</span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>d_sugerido <span class="ot">&lt;-</span> <span class="fu">ndiffs</span>(serie_des)</span>
-<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>d_sugerido</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>d_sugerido <span class="ot">&lt;-</span> <span class="fu">ndiffs</span>(accidentes_ts)</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>d_sugerido</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>[1] 1</code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>serie_estacionaria <span class="ot">&lt;-</span> <span class="fu">diff</span>(serie_des)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>serie_diferenciada <span class="ot">&lt;-</span> <span class="fu">diff</span>(accidentes_ts)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
+</div>
+<p>Luego de realizar una diferenciación regular, la serie aún mantiene una comportamiento heterocedastico, esto sugiere un componente multiplicativo.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co"># para no tener problemas con los indices de tiempo</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>serie_diferenciada_df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">fecha =</span> <span class="fu">time</span>(serie_diferenciada),</span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">accidentes =</span> <span class="fu">as.numeric</span>(serie_diferenciada)</span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(serie_diferenciada_df, <span class="fu">aes</span>(fecha, accidentes)) <span class="sc">+</span></span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">color =</span> <span class="st">"steelblue"</span>) <span class="sc">+</span></span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Fecha"</span>,</span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Costos operativos"</span>,</span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Serie diferenciada"</span>,</span>
+<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">subtitle =</span> <span class="st">"d=1"</span></span>
+<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output-display">
+<div id="fig-serie-dif" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-serie-dif-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="box_jenkins_files/figure-html/fig-serie-dif-1.png" class="img-fluid figure-img" width="672">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-serie-dif-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;6: Costos reportados 2015-2024
+</figcaption>
+</figure>
+</div>
+</div>
 </div>
 </section>
 <section id="acfpacf-y-prueba-de-hipótesis-sobre-la-serie-diferenciada" class="level3">
 <h3 class="anchored" data-anchor-id="acfpacf-y-prueba-de-hipótesis-sobre-la-serie-diferenciada">4.6 ACF/PACF y prueba de hipótesis sobre la serie diferenciada</h3>
+<p>Parece que los patrones de las funciones de autocorrelación no son claros.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggAcf</span>(serie_estacionaria, <span class="at">lag.max =</span> <span class="dv">36</span>) <span class="sc">+</span> <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"ACF - serie diferenciada"</span>) <span class="sc">+</span></span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggPacf</span>(serie_estacionaria, <span class="at">lag.max =</span> <span class="dv">36</span>) <span class="sc">+</span> <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"PACF - serie diferenciada"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggAcf</span>(serie_diferenciada, <span class="at">lag.max =</span> <span class="dv">36</span>) <span class="sc">+</span> <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"ACF serie diferenciada"</span>) <span class="sc">+</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggPacf</span>(serie_diferenciada, <span class="at">lag.max =</span> <span class="dv">36</span>) <span class="sc">+</span> <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"PACF serie diferenciada"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output-display">
 <div id="fig-acf-pacf-diff" class="quarto-float quarto-figure quarto-figure-center anchored">
@@ -514,7 +549,7 @@ X-squared = 1190.2, df = 24, p-value &lt; 2.2e-16</code></pre>
 <img src="box_jenkins_files/figure-html/fig-acf-pacf-diff-1.png" class="img-fluid figure-img" width="672">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-acf-pacf-diff-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;6: ACF y PACF tras diferenciar
+Figure&nbsp;7: ACF y PACF tras diferenciar
 </figcaption>
 </figure>
 </div>
@@ -523,27 +558,40 @@ Figure&nbsp;6: ACF y PACF tras diferenciar
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">Box.test</span>(serie_estacionaria, <span class="at">lag =</span> <span class="dv">24</span>, <span class="at">type =</span> <span class="st">"Ljung-Box"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">Box.test</span>(serie_diferenciada, <span class="at">lag =</span> <span class="dv">24</span>, <span class="at">type =</span> <span class="st">"Ljung-Box"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>
     Box-Ljung test
 
-data:  serie_estacionaria
-X-squared = 46.65, df = 24, p-value = 0.003695</code></pre>
+data:  serie_diferenciada
+X-squared = 63.817, df = 24, p-value = 1.812e-05</code></pre>
 </div>
 </div>
-<p>Sigue habiendo autocorrelación significativa tras diferenciar, esto es un indicio de que aún queda estructura ARMA por capturar, y los rezagos significativos de la ACF/PACF orientan los órdenes candidatos de la siguiente sección.</p>
 </section>
 </section>
-<section id="modelos-candidatos" class="level2">
-<h2 class="anchored" data-anchor-id="modelos-candidatos">5. Modelos candidatos</h2>
+<section id="modelos-candidatos-etapa-2-de-box-jenkins" class="level2">
+<h2 class="anchored" data-anchor-id="modelos-candidatos-etapa-2-de-box-jenkins">5. Modelos candidatos (etapa 2 de Box-Jenkins)</h2>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co">#auto.arima(serie_estacionaria)</span></span>
-<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>mod1<span class="ot">&lt;-</span> <span class="fu">Arima</span>(serie_estacionaria, <span class="at">order =</span> <span class="fu">c</span>(<span class="dv">3</span>,<span class="dv">0</span>,<span class="dv">0</span>), <span class="at">seasonal =</span> <span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">0</span>,<span class="dv">1</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">auto.arima</span>(serie_diferenciada)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Series: serie_diferenciada 
+ARIMA(2,0,2)(0,0,1)[12] with zero mean 
+
+Coefficients:
+          ar1      ar2     ma1     ma2    sma1
+      -1.4496  -0.7382  1.7002  0.9138  0.3955
+s.e.   0.1095   0.1025  0.0744  0.0806  0.0982
+
+sigma^2 = 7.26e+09:  log likelihood = -1518.6
+AIC=3049.19   AICc=3049.94   BIC=3065.87</code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>mod1<span class="ot">&lt;-</span> <span class="fu">Arima</span>(serie_diferenciada, <span class="at">order =</span> <span class="fu">c</span>(<span class="dv">2</span>,<span class="dv">0</span>,<span class="dv">2</span>), <span class="at">seasonal =</span> <span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">1</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 </div>
 <section id="comparación-mediante-diversas-métricas" class="level3">
@@ -558,16 +606,16 @@ X-squared = 46.65, df = 24, p-value = 0.003695</code></pre>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">checkresiduals</span>(mod1)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="fu">checkresiduals</span>(mod1)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>
     Ljung-Box test
 
-data:  Residuals from ARIMA(3,0,0)(1,0,1)[12] with non-zero mean
-Q* = 27.679, df = 16, p-value = 0.03453
+data:  Residuals from ARIMA(2,0,2)(0,0,1)[12] with non-zero mean
+Q* = 32.498, df = 19, p-value = 0.02745
 
-Model df: 5.   Total lags used: 21</code></pre>
+Model df: 5.   Total lags used: 24</code></pre>
 </div>
 <div class="cell-output-display">
 <div id="fig-diagnostico" class="quarto-float quarto-figure quarto-figure-center anchored">
@@ -576,7 +624,7 @@ Model df: 5.   Total lags used: 21</code></pre>
 <img src="box_jenkins_files/figure-html/fig-diagnostico-1.png" class="img-fluid figure-img" width="672">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-diagnostico-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;7: Diagnóstico de residuos del modelo
+Figure&nbsp;8: Diagnóstico de residuos del modelo
 </figcaption>
 </figure>
 </div>
@@ -588,12 +636,12 @@ Figure&nbsp;7: Diagnóstico de residuos del modelo
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>pronostico_final <span class="ot">&lt;-</span> <span class="fu">forecast</span>(mod1, <span class="at">h =</span> <span class="dv">12</span>)</span>
-<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a><span class="fu">autoplot</span>(pronostico_final) <span class="sc">+</span></span>
-<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Fecha"</span>, <span class="at">y =</span> <span class="st">"Número de accidentes"</span>,</span>
-<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>       <span class="at">title =</span> <span class="st">"Pronóstico a 12 meses"</span>) <span class="sc">+</span></span>
-<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>pronostico_final <span class="ot">&lt;-</span> <span class="fu">forecast</span>(mod1, <span class="at">h =</span> <span class="dv">12</span>)</span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a><span class="fu">autoplot</span>(pronostico_final) <span class="sc">+</span></span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Fecha"</span>, <span class="at">y =</span> <span class="st">"Número de accidentes"</span>,</span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>       <span class="at">title =</span> <span class="st">"Pronóstico a 12 meses"</span>) <span class="sc">+</span></span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </details>
 <div class="cell-output-display">
 <div id="fig-pronostico" class="quarto-float quarto-figure quarto-figure-center anchored">
@@ -602,7 +650,7 @@ Figure&nbsp;7: Diagnóstico de residuos del modelo
 <img src="box_jenkins_files/figure-html/fig-pronostico-1.png" class="img-fluid figure-img" width="672">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-pronostico-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;8: Pronóstico a 12 meses de accidentes viales
+Figure&nbsp;9: Pronóstico a 12 meses de accidentes viales
 </figcaption>
 </figure>
 </div>
