@@ -1,0 +1,172 @@
+---
+title: "Plantilla"
+author: "Nombre"
+date: "Facultad de Ciencias, UNAM"
+output: 
+  bookdown::pdf_document2:
+    number_sections: false
+    toc: true
+    highlight: tango
+    extra_dependencies: ["float"]
+    latex_engine: xelatex 
+    keep_tex: true
+
+header-includes:
+  - \usepackage{float} 
+
+lang: es   
+geometry: margin=1.5cm
+urlcolor: blue
+---
+
+\newpage
+
+```{r setup,include=FALSE}
+#Limpiamos entorno
+rm(list = ls(all.names = TRUE))
+gc() #Liberamos memoria
+
+# config generales del documento, por default todos los chunks de codigo tendran esta configuracion 
+knitr::opts_chunk$set(
+	error = F, #no muestra error
+	fig.align = "center", #graficas centradas
+	fig.cap = " ", #pie de grafica en blanco
+	fig.dim = c(4, 4), #dimensiones de la grafica
+	message = FALSE,
+	warning = FALSE,
+	echo = F, # imprime salida del codigo pero no muestra el codigo en el pdf
+	fig.pos="H") #grafica en el orden de aparicion
+
+#paqueterias
+
+library(naniar) # para datos faltantes
+library(ggplot2)
+library(visdat)
+library(dplyr)
+library(stringr)
+library(tidyr)
+library(leaflet)
+library(RColorBrewer) #paletas de colores
+library(factoextra)
+library(patchwork) 
+library(readxl) #xls
+library(kableExtra) #tablas
+library(purrr)
+library(corrplot)
+library(leaflet)
+library(webshot2) #capturas de pantalla
+library(htmlwidgets) #manipular objetos html
+library(ggrepel) #evitar que texto se encime
+library(ggstatsplot)
+library(scales)
+library(MASS) #lda,qda
+library(metrica) #medidas aparentes
+library(caret) #particiones
+library(e1071) #naive
+library(class) # knn
+library(glmnet)
+library(ROCR) #curva roc
+library(DHARMa) #supuestos glm
+library(car)
+
+
+
+# funcion propia para mejor presentacion de tablas
+# recibe un df y la descripcion de la tabla
+# se puede personzalizar mas agregando otras funciones de la paqueteria kableExtra
+tabKable <- function(tabla,cap=""){
+  tabla %>% 
+    kbl(booktabs = TRUE, align = "c",caption = cap) %>%
+    #evita  que cambie de posicion 
+    kable_styling(latex_options = c("hold_position")) 
+}  
+
+options(encoding = "UTF-8") #indica encoding
+
+```
+
+# Un título
+
+
+Se puede usar *letras cursivas*, o en **negritas**. 
+
+```{r prueba1, echo=TRUE,fig.cap="Este es un pie de imagen."}
+
+set.seed(123)
+
+ingresos <- round(rlnorm(100, meanlog = 9, sdlog = 0.5), -2)
+
+boxplot(ingresos)
+
+```
+
+
+```{r patchwork,fig.cap="Cambiando las dimensiones de la gráfica desde el setup de este chunk.",fig.dim=c(3,2),echo=TRUE}
+
+densityplot(ingresos)
+
+```
+
+
+# Un subtítulo
+
+Expresiones en LaTeX como:
+
+$$
+\mu_j\mid \mathbf x, z
+\sim
+N\left(
+\frac{B}{A},
+\frac{\sigma^2}{A}
+\right)
+$$
+O varias alineadas:
+
+$$
+\begin{aligned}
+\alpha &\sim \mathcal{U}(0,0.1)  \\
+\beta&\sim \mathcal{U}(0,0.1) \\
+\gamma &\sim \mathcal{U}(0, 0.2) \\
+\delta &\sim \mathcal{U}(0, 1)
+\end{aligned}
+$$
+
+\newpage
+
+# Tablas
+
+En lugar de mostrar un df así:
+
+
+```{r tabla1}
+
+n<-5
+
+df <- data.frame(
+  ID = 1:n,
+  Sexo = sample(c("Hombre", "Mujer"), n, replace = TRUE, prob = c(0.45, 0.55)),
+  Edad = round(rnorm(n, mean = 35, sd = 12)),  # edades promedio 35 años
+  Escolaridad = sample(
+    c("Primaria", "Secundaria", "Preparatoria", "Universidad", "Posgrado"),
+    n, replace = TRUE, prob = c(0.1, 0.25, 0.3, 0.25, 0.1)
+  ),
+  Ingresos = round(rlnorm(n, meanlog = 9, sdlog = 0.5), -2),  # distribución sesgada a la derecha
+  Estado_Civil = sample(
+    c("Soltero/a", "Casado/a", "Divorciado/a", "Unión libre"),
+    n, replace = TRUE, prob = c(0.4, 0.35, 0.15, 0.1)
+  )
+)
+
+
+head(df)
+
+```
+
+Se puede mejorar la presentación así:
+
+```{r tabla2}
+
+tabKable(df,cap="Datos de prueba")
+
+```
+
