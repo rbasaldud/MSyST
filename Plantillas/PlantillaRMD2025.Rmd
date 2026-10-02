@@ -37,7 +37,7 @@ knitr::opts_chunk$set(
 	echo = F, # imprime salida del codigo pero no muestra el codigo en el pdf
 	fig.pos="H") #grafica en el orden de aparicion
 
-#paqueterias
+#paqueterias utiles 
 
 library(naniar) # para datos faltantes
 library(ggplot2)
@@ -45,30 +45,38 @@ library(visdat)
 library(dplyr)
 library(stringr)
 library(tidyr)
-library(leaflet)
+library(leaflet) #mapas interactivos
 library(RColorBrewer) #paletas de colores
-library(factoextra)
+library(factoextra) #analisis factorial
 library(patchwork) 
 library(readxl) #xls
 library(kableExtra) #tablas
-library(purrr)
-library(corrplot)
-library(leaflet)
+library(purrr) # programacion en paralelo
+library(corrplot) #correlacion
 library(webshot2) #capturas de pantalla
 library(htmlwidgets) #manipular objetos html
 library(ggrepel) #evitar que texto se encime
-library(ggstatsplot)
+library(ggstatsplot) #graficas con ph
 library(scales)
 library(MASS) #lda,qda
 library(metrica) #medidas aparentes
 library(caret) #particiones
 library(e1071) #naive
 library(class) # knn
-library(glmnet)
+library(glmnet) #entrenar glm
+library(plotly)
 library(ROCR) #curva roc
 library(DHARMa) #supuestos glm
 library(car)
-
+library(forecast) # desde aqui son de series de tiempo
+library(TSstudio)
+library(UnitCircle)
+library(timeDate)
+library(dygraphs)
+library(zoo)
+library(ggResidpanel)
+library(forecastHybrid)
+library(lubridate)
 
 
 # funcion propia para mejor presentacion de tablas
@@ -88,7 +96,8 @@ options(encoding = "UTF-8") #indica encoding
 # Un título
 
 
-Se puede usar *letras cursivas*, o en **negritas**. 
+Se puede usar *letras cursivas*, o en **negritas**. Se puede referenciar gráficas o tablas, como se muestra en [Figura 2](#fig:prueba2) o en [Cuadro 1](#tab:tabla2).
+
 
 ```{r prueba1, echo=TRUE,fig.cap="Este es un pie de imagen."}
 
@@ -101,11 +110,7 @@ boxplot(ingresos)
 ```
 
 
-```{r patchwork,fig.cap="Cambiando las dimensiones de la gráfica desde el setup de este chunk.",fig.dim=c(3,2),echo=TRUE}
 
-densityplot(ingresos)
-
-```
 
 
 # Un subtítulo
@@ -130,6 +135,12 @@ $$
 \delta &\sim \mathcal{U}(0, 1)
 \end{aligned}
 $$
+```{r prueba2,fig.cap="Cambiando las dimensiones de la gráfica desde el setup de este chunk.",fig.dim=c(3,2),echo=TRUE}
+
+densityplot(ingresos)
+
+```
+
 
 \newpage
 
