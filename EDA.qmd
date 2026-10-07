@@ -1,0 +1,145 @@
+---
+title: "Análisis Exploratorio de Datos (EDA)"
+subtitle: "Aspectos básicos"
+author: "Rodrigo B"
+lang: es
+format:
+  html:
+    toc: true
+    toc-depth: 2
+    number-sections: false
+    code-fold: true
+    code-tools: true
+    embed-resources: true
+    theme: flatly
+execute:
+  warning: false
+  message: false
+---
+
+
+
+La estadística descriptiva es una de las herramientas más poderosas dentro de la modelación, pues permite identificar tendencias, detectar valores atípicos, reconocer relaciones entre variables y descubrir posibles errores en los datos.
+
+Antes de la implementación de modelos, como la regresión lineal múltiple o algoritmos de machine learning, un buen análisis preliminar es crucial para garantizar que los supuestos de los modelos se cumplan y obtener resultados confiables. (i.e  normalidad, homocedasticidad, independencia, no correlación).
+
+Antes de **aplicar cualquier técnica de modelación**, es indispensable **realizar un análisis exploratorio de nuestros datos** (EDA).
+
+Es común que se minimice la importancia de esta etapa y se pase directamente a la aplicación de modelos. Entre los errores frecuentes se encuentran: trabajar con datos sin limpiar, interpretar gráficos de manera superficial, ignorar la distribución de las variables, o asumir que todos los registros son igualmente confiables.
+
+El EDA permite **describir/explicar/entender el comportamiento** del fenómeno de interés.
+
+## Componentes del EDA
+
+Aunque no se puede generalizar, estos son algunos puntos indispensables a considerar (en un orden sugerido) cuando se realiza un primer acercamiento a los datos:
+
+1. **Limpieza de la base (qué hacer con valores faltantes — NA)**
+2. **Verificar la calidad de la información**
+3. **Preprocesamiento (tipo de variable y formato)**
+4. **Análisis univariado y multivariado**
+    - **a) Visualización de los datos** 
+        - **a.1) Relaciones y patrones**
+        - **a.2) Distribución**
+    - **b) Estadísticas descriptivas**
+
+### Manejo de valores faltantes 
+
+**Limpieza de la base (qué hacer con valores faltantes — NA)**
+
+El primer paso consiste en revisar la integridad de la base de datos y decidir cómo manejar los valores faltantes. 
+
+Hay dos opciones con los datos faltantes: Imputar (rellenar valores) o eliminar registros.
+
+- **Imputar**
+
+El mayor error que se puede cometer en este paso es realizar imputación de una variable de forma marginal, es decir, colocar nuevos valores en los registros faltantes de una variable sin considerar la estructura de dependencia con otras variables. 
+
+Por ejemplo, tenemos el una base con el peso y la estatura de personas, la mayoría de las personas del estudio eran mujeres y tenían alturas "pequeñas"
+
+Nos falta un registro en el peso de un hombre que mide 1.78 cm, y si tomamos la mediana del peso para asignarle ese valor, estariamos asignando un peso muy pequeño para una persona que mide 1.78cm, y tendríamos el registro de una persona con características muy contradictorias.
+
+
+Otros errores:
+
+- Usar la media, pues además de que es sensible ante outliers, no hemos verificaso siquiera si esos outliers corresponden a registros que tengan sentido. 
+- Usar la mediana, pues no toma en cuenta a las demás variables.
+
+Lo ideal es usar métodos de imputación más robustos como regresión lineal o algoritmos de Machine Learning, que sí consideran la estructura de relación entre las variables.
+
+- **Eliminar**
+
+No siempre es adecuado eliminarlos: en ocasiones, los NA pueden tener un significado particular o estar asociados a un **patrón relevante**, otras ocasiones la mayoria de datos faltantes pertecen a **variables especificas que no son relevantes para el objetivo del modelo** y por ende no afecta quitarlas. 
+
+Ejemplo: En una base de datos sobre calidad del agua superficial en México, se desea implementar un modelo para predecir la calidad del agua de un cuerpo.
+
+- Variables geográficas no relevantes con NA 
+- Observaciones con semáforo verde tienen NA en variable Contaminantes.
+
+### Verificar la calidad de la información
+
+Antes de proceder al análisis, es fundamental comprobar que las mediciones sean coherentes y estén dentro de rangos plausibles. Esto incluye revisar inconsistencias, errores de captura o formatos incorrectos.
+
+Ejemplo: Edades negativas o valores numéricos en campos donde se esperaban cadenas de texto.
+
+### Preprocesamiento
+
+En esta etapa se debe verificar que cada variable esté correctamente clasificada según su tipo (numérica continua, entera, categórica, ordinal, etc.) y que su formato sea compatible con las operaciones que se realizarán.
+
+Una variable mal tipificada puede alterar por completo las estadísticas o visualizaciones posteriores.
+
+Ejemplo: Variables categóricas almacenadas como números. (Fumador 0 = No, 1 = Sí)
+
+### Análisis univariado y multivariado
+
+Una vez depurada la base, se procede al análisis estadístico y visual. Aquí se distinguen dos enfoques principales:
+
+- **a) Estadísticas descriptivas**
+
+Es muy importante identificar la escala de las variables (nominal, ordinal, de intervalo o de razón), ya que esto afecta la interpretación de la dispersión aparente y la elección de las medidas de resumen adecuadas.
+
+Las estadísticas descriptivas permiten obtener una primera idea de la forma (asimetria y curtosis), tendencia central (localización) y variabilidad (dispersión) de los datos.
+
+- **b) Visualización de los datos** 
+
+**b.1) Distribución**
+
+El análisis de distribuciones univariadas permite explorar cómo se comporta cada variable individualmente.
+
+En muchos casos, conviene segmentar los datos por categorías para realizar comparaciones, o porque naturalmente se comportan de manera distinta entre categorías (población heterogénea).
+
+En esta fase se pueden **identificar valores atípicos** (outliers) y decidir si conviene mantenerlos o excluirlos del análisis. En general, los outliers deben ser investigados para entender su origen antes de tomar una decisión, en ocasiones pueden aportar información valiosa sobre el fenómeno estudiado.
+
+**b.2) Relaciones y patrones**
+
+**Análisis de correlaciones**:
+
+Permite interpretar las relaciones entre pares de variables y detectar posibles inconsistencias o redundancias.
+
+Se pueden utilizar correlogramas o gráficas bivariadas, siempre que la dimensión de los datos lo permita.
+
+Además, el Análisis de Componentes Principales (PCA) puede emplearse para resumir la información y explorar patrones multivariados.
+
+## Ejemplo
+
+**Fogón vs. Estufas: Contexto**  
+
+
+Se realiza una investigación sobre la efectividad de diferentes estufas ecológicas frente a fogones tradicionales en una comunidad rural. Se busca simular las actividades diarias de una familia y medir la calidad del aire dentro de la cocina en usando ambos métodos con el objetivo de evaluar el rendimiento de las estufas ecológicas.
+
+Para esto, tres voluntarias cocinaron en una casa equipada con ambos métodos de cocción diferentes alimentos cotidianos (arroz, frijoles, etc.), cada voluntaria utilizó el fogón y 3 estufas diferentes (A, B y C) en días separados, mientras se registraban las concentraciones de contaminantes en el aire dentro de la sala.
+
+Entre ellos, la medición de concentración de carbono negro, esta variable está asociada a un contaminante que tiene efectos negativos a largo plazo en el sistema respiratorio de las personas. Se puede decir que entre mayor sea el valor de esta variable, más dañino para la salud.
+
+**Análisis**
+
+Al platicar con las personas encargadas de colocar los equipos para las mediciones, el encargado de realizar el análisis de datos realizó la siguiente visualización. Se asustaron por los niveles tan altos de carbono negro para los fogones tradicionales. Al platicar con un experto, este comentó que las mediciones eran demasiado altas. Luego de investigar, el grupo de trabajo reveló que la dinámica para hacer las mediciones fue encender el fogón, preparar alimentos y posteriormente apagarlo de forma abrupta. Este escenario no se apega exactamente a lo que se desea modelar, pues una familia no apaga el fogón poco después de ocuparlo, usualmente se mantiene encendido alimentandolo menos. Esto se interpretó como que las mediciones no correspondían al fenómeno que se deseaba modelar, y por ende se podía eliminar los outliers.
+
+Otro problema que presenta la gráfica es que al estar en escalas muy diferentes, las mediciones de los fogones hacen que se pierda por completo el comportamiento de las estufas ecológicas. Esto quiere decir que modelar en la misma gráfica fenómenos con distintas escalas puede perder información. En todo caso, lo ideal es acompañar de un segundo gráfico que permita identificar el comportamiento de los demás grupos.
+
+También es posible detectar irregularidades en los datos, como la presencia de variables latentes que influyen en las mediciones.
+
+Por ejemplo, las mismas estufas con diferentes mediciones según la usuaria. 
+
+Por último, pueden revelarse patrones o comportamientos particulares dentro de los datos.
+
+Por ejemplo, las mediciones de una usuaria en específico siempre eran las más pequeñas.

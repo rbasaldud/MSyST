@@ -11,6 +11,12 @@ format:
 
 > "All models are wrong, but some are useful". - George Box
 
+# Otros aspectos
+| Tema | Presentación |
+|:-----------------------------------|:-----------------------------------|
+| Análisis exploratorio de datos (EDA) | [Presentación](EDA.qmd)
+
+
 # Series de tiempo
 
 | Tema | Presentación |
@@ -22,6 +28,8 @@ format:
 | Autocorrelación y autocorrelación parcial | [Notas](series_tiempo/ACF_PACF.Rmd) |
 | Modelos $AR(p)$, $MA(q)$ y $ARMA(p,q)$ | [Notas](series_tiempo/modelos_ARMA.qmd) |
 | Box-Jenkins | [Notas](series_tiempo/box_jenkins.qmd) |
+| ARIMAX | [Notas](series_tiempo/arimax_demografia.qmd) |
+
 
 # Repositorio
 

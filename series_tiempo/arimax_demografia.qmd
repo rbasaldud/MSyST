@@ -1,0 +1,263 @@
+---
+title: "Modelos ARIMAX"
+subtitle: "Natalidad mensual y variables demográficas"
+author: "Rodrigo B"
+lang: es
+format:
+  html:
+    toc: true
+    toc-depth: 2
+    number-sections: false
+    code-fold: true
+    code-tools: true
+    embed-resources: true
+    theme: flatly
+execute:
+  warning: false
+  message: false
+---
+
+```{r}
+#| label: setup
+#| include: false
+
+
+library(tidyverse)
+library(lubridate)
+library(forecast)
+library(tseries)
+library(lmtest)
+library(naniar)
+library(imputeTS)
+library(GGally)
+library(car)
+library(patchwork)
+library(knitr)
+
+theme_set(theme_minimal(base_size = 12))
+options(digits = 4)
+```
+
+# Contexto del problema
+
+## Demografía y natalidad
+
+La natalidad es uno de los tres componentes de la dinámica demográfica (junto con la mortalidad y la migración). Anticipar el número de nacimientos es importante para diversos aspectos.
+
+Los expertos han estipulado que la natalidad presenta tres características típicas:
+
+- Tendencia de largo plazo (creciente o decreciente por la transición demográfica).
+- Estacionalidad anual (más nacimientos en ciertos meses del año).
+- Sensibilidad al contexto socioeconómico: el desempleo, crisis económicas y la participación laboral femenina influyen, a veces su efecto no es inmediato, también hay eventos como la pandemia de COVID-19 generaron cambios abruptos.
+
+## Pregunta de investigación
+
+> ¿Es posible modelar y pronosticar el número mensual de nacimientos incorporando información socioeconómica (variables exógenas o covariables)? ¿Cómo se compara este modelo con respecto a uno que sólo usa la historia de la serie (**ARIMA**) o uno que solo considera la relación con variables exógenas (**Regresión lineal**)?
+
+## ¿Qué es un ARIMAX?
+
+Un ARIMAX es una regresión con errores ARIMA, que combina la relación entre una variable de respuesta y sus covariables pero mantiene la dependencia temporal de la variable de respuesta. Su forma general es:
+
+$$
+y_t = \beta_0 + \sum_{k=1}^{K}\beta_k x_{k,t} + \eta_t, \qquad 
+$$
+
+Donde $\eta_t$ es un modelo $ARIMA(p,d,q)(P,D,Q)_s$ que captura la dependencia temporal de los errores.
+$$
+\Phi(B^s)\,\phi(B)\,(1-B)^d(1-B^s)^D\,\eta_t = \Theta(B^s)\,\theta(B)\,\varepsilon_t
+$$
+
+Hay que tener cuidado con la innterpretación de la regresión en caso de realizar diferenciaciones.
+
+## Diccionario de variables
+
+| Variable | Descripción | Unidad |
+|---|---|---|
+| `fecha` | Primer día del mes | fecha |
+| `nacimientos` | Nacimientos registrados en el mes (**variable respuesta**) | miles |
+| `desempleo` | Tasa de desocupación | % |
+| `pib_var` | Variación anualizada de la actividad económica | % |
+| `part_fem` | Tasa de participación laboral femenina | % |
+| `mort_inf` | Tasa de mortalidad infantil | cada mil nacidos vivos |
+| `pandemia` | Indicador (0/1) del efecto rezagado de la pandemia (2021) | dummy |
+
+
+
+```{r}
+#| label: simulacion
+#| echo: false
+
+set.seed(2024)
+
+fechas <- seq(as.Date("2000-01-01"), as.Date("2023-12-01"), by = "month")
+n  <- length(fechas)          # 288 meses
+t  <- seq_len(n)
+mes <- month(fechas)
+
+
+desemp <- 4.5 + as.numeric(arima.sim(list(ar = 0.95), n = n, sd = 0.15)) +
+  2.0 * exp(-((t - 117)^2) / (2 * 8^2)) +
+  2.5 * exp(-((t - 243)^2) / (2 * 4^2))
+
+pib <- 2.5 + as.numeric(arima.sim(list(ar = 0.5), n = n, sd = 0.8)) -
+  6 * exp(-((t - 117)^2) / (2 * 4^2)) -
+  9 * exp(-((t - 244)^2) / (2 * 2^2))
+
+part_fem <- 38 + 0.045 * t + cumsum(rnorm(n, 0, 0.06))
+mort_inf <- 22 * exp(-0.006 * t) + rnorm(n, 0, 0.15)
+
+pandemia <- as.integer(fechas >= as.Date("2021-01-01") &
+                       fechas <= as.Date("2021-12-01"))
+
+err <- as.numeric(arima.sim(list(ar = 0.6, ma = 0.3), n = n, sd = 2.5))
+nac <- 215 - 0.30 * t +
+  5 * sin(2 * pi * mes / 12) + 3 * cos(2 * pi * mes / 12) -
+  4.0 * (desemp - 4.5) + 0.8 * pib - 12 * pandemia + err
+
+datos_crudos <- tibble(
+  fecha       = fechas,
+  nacimientos = round(nac, 1),
+  desempleo   = round(desemp, 2),
+  pib_var     = round(pib, 2),
+  part_fem    = round(part_fem, 2),
+  mort_inf    = round(mort_inf, 2),
+  pandemia    = pandemia
+)
+
+#problemas 
+
+datos_crudos$nacimientos[c(15, 16, 90, 200)] <- NA
+datos_crudos$desempleo[sample(n, 10)]        <- NA
+datos_crudos$pib_var[sample(n, 8)]           <- NA
+datos_crudos$part_fem[50:52]                 <- NA
+
+datos_crudos$nacimientos[130] <- -150                              # signo mal
+datos_crudos$nacimientos[170] <- datos_crudos$nacimientos[170] * 10 # error de digitacion
+datos_crudos$desempleo[60]    <- 45                                # fuera de rango
+datos_crudos$part_fem[220]    <- 150                               # > 100 %
+
+datos_crudos <- datos_crudos[-250, ]
+datos_crudos <- bind_rows(datos_crudos, datos_crudos[100, ]) |> arrange(fecha)
+
+write_csv(datos_crudos, "demografia_natalidad_cruda.csv")
+```
+
+# Análisis exploratorio (EDA)
+
+Un error común es asumir que la base de datos está limpia y lista para modelar. Antes de cualquier análisis, conviene inspeccionar la integridad de los datos, la presencia de valores faltantes, la coherencia de los registros y la existencia de valores atípicos. 
+
+
+
+```{r}
+glimpse(datos_crudos)
+```
+
+```{r}
+summary(datos_crudos)
+```
+
+¿Estas tablas son suficientes para realizar un diagnóstico de calidad de datos? ¿Qué otras herramientas podrían ayudar a detectar problemas?
+
+
+Vamos a verificar la integridad temporal (duplicados y meses faltantes)
+
+```{r}
+# Duplicados
+duplicados <- datos_crudos |> count(fecha) |> filter(n > 1)
+duplicados
+
+# Meses faltantes en la secuencia esperada
+secuencia <- seq(min(datos_crudos$fecha), max(datos_crudos$fecha), by = "month")
+meses_faltantes <- setdiff(secuencia, datos_crudos$fecha) |> as.Date()
+meses_faltantes
+```
+
+En nuestro contexto, basta con eliminar los registros duplicados y el mes ausente se agrega con valores `NA` para ser imputado después. 
+
+```{r}
+datos <- datos_crudos |>
+  distinct() |>
+  complete(fecha = secuencia) |>
+  arrange(fecha) |>
+  # el indicador de pandemia es determinístico: se reconstruye desde la fecha
+  mutate(pandemia = as.integer(fecha >= as.Date("2021-01-01") &
+                               fecha <= as.Date("2021-12-01")))
+
+stopifnot(nrow(datos) == 288, !anyDuplicated(datos$fecha))
+```
+
+Para analizar los valores faltantes (NA) de una base, se puede usar estadísticas descriptivas sin embargo será de mayor utilidad una visualización que muestre la distribución de los NA por variable y por observación. La función `vis_miss()` de `naniar` es muy útil para este propósito.
+
+```{r}
+#| fig-height: 4
+miss_var_summary(datos) |> kable(digits = 2, caption = "Resumen de NA por variable")
+vis_miss(datos)
+```
+
+Antes de imputar, conviene determinar si la ausencia es aleatoria o parece existir un patrón. 
+
+```{r}
+# Longitud de las rachas de NA en la variable respuesta y exógenas
+rachas <- function(x) {
+  r <- rle(is.na(x)); if (!any(r$values)) return(0L); max(r$lengths[r$values])
+}
+datos |> summarise(across(c(nacimientos, desempleo, pib_var, part_fem, mort_inf), rachas)) |>
+  kable(caption = "Racha máxima de NA consecutivos")
+```
+
+## Coherencia de los registros
+
+- Nacimientos deben ser **estrictamente positivos**.
+- Tasas porcentuales (`desempleo`, `part_fem`) deben estar en rangos plausibles: desempleo en $[0, 25]$ %; participación en $[0, 100]$ %.
+
+```{r}
+incoherencias <- datos |>
+  summarise(
+    nacimientos_no_positivos  = sum(nacimientos <= 0, na.rm = TRUE),
+    desempleo_fuera_de_rango  = sum(desempleo < 0 | desempleo > 25, na.rm = TRUE),
+    part_fem_fuera_de_rango   = sum(part_fem < 0 | part_fem > 100, na.rm = TRUE),
+    mort_inf_fuera_de_rango   = sum(mort_inf <= 0 | mort_inf > 1000, na.rm = TRUE)
+  )
+kable(incoherencias, caption = "Violaciones de reglas de coherencia")
+```
+
+Los valores que violan las reglas se convierten en `NA` (no se "corrigen" a mano, porque no sabemos cuál era el valor verdadero)
+
+```{r}
+datos <- datos |>
+  mutate(
+    nacimientos = if_else(nacimientos <= 0, NA_real_, nacimientos),
+    desempleo   = if_else(desempleo < 0 | desempleo > 25, NA_real_, desempleo),
+    part_fem    = if_else(part_fem < 0 | part_fem > 100, NA_real_, part_fem),
+    mort_inf    = if_else(mort_inf <= 0 | mort_inf > 1000, NA_real_, mort_inf)
+  )
+```
+
+## Detección de valores atípicos
+
+Un atípico en una serie con tendencia y estacionalidad no se detecta con un simple rango intercuartílico sobre los datos crudos (la tendencia lo enmascara). 
+
+```{r}
+#| fig-height: 4
+# Serie provisional (interpolación lineal) sólo para poder aplicar STL
+prov <- na_interpolation(ts(datos$nacimientos, start = c(2000, 1), frequency = 12))
+stl_prov <- stl(prov, s.window = "periodic", robust = TRUE)
+resid_stl <- stl_prov$time.series[, "remainder"]
+
+umbral <- 4 * mad(resid_stl)
+atipicos <- which(abs(resid_stl - median(resid_stl)) > umbral)
+
+datos[atipicos, c("fecha", "nacimientos")]
+
+tibble(fecha = datos$fecha, residuo = as.numeric(resid_stl)) |>
+  ggplot(aes(fecha, residuo)) +
+  geom_line(color = "grey40") +
+  geom_hline(yintercept = c(-umbral, umbral) + median(resid_stl),
+             linetype = "dashed", color = "red") +
+  labs(title = "Residuo STL robusto de los nacimientos", x = NULL, y = "Residuo")
+```
+
+```{r}
+datos$nacimientos[atipicos] <- NA
+```
+
