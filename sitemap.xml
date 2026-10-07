@@ -1,35 +1,47 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://rbasaldud.github.io/MSyST/index.html</loc>
-    <lastmod>2026-09-30T05:18:30.607Z</lastmod>
+    <loc>https://rbasaldud.github.io/MSyST/Otros/EDA.html</loc>
+    <lastmod>2026-10-07T22:54:41.828Z</lastmod>
+  </url>
+  <url>
+    <loc>https://rbasaldud.github.io/MSyST/Plantillas/PlantillaRMD2025.html</loc>
+    <lastmod>2026-10-02T03:47:12.973Z</lastmod>
   </url>
   <url>
     <loc>https://rbasaldud.github.io/MSyST/series_tiempo/ACF_PACF.html</loc>
     <lastmod>2026-09-04T01:13:24.540Z</lastmod>
   </url>
   <url>
-    <loc>https://rbasaldud.github.io/MSyST/series_tiempo/box_jenkins.html</loc>
-    <lastmod>2026-09-30T22:48:05.957Z</lastmod>
-  </url>
-  <url>
-    <loc>https://rbasaldud.github.io/MSyST/series_tiempo/motivacion_3B.html</loc>
-    <lastmod>2026-09-23T04:21:56.556Z</lastmod>
-  </url>
-  <url>
-    <loc>https://rbasaldud.github.io/MSyST/series_tiempo/visualizacion.html</loc>
-    <lastmod>2026-08-30T02:07:46.546Z</lastmod>
+    <loc>https://rbasaldud.github.io/MSyST/series_tiempo/Componentes_y_estacionariedad.html</loc>
+    <lastmod>2026-09-20T23:11:18.784Z</lastmod>
   </url>
   <url>
     <loc>https://rbasaldud.github.io/MSyST/series_tiempo/Dependencia.html</loc>
     <lastmod>2026-09-04T01:12:44.790Z</lastmod>
   </url>
   <url>
-    <loc>https://rbasaldud.github.io/MSyST/series_tiempo/Componentes_y_estacionariedad.html</loc>
-    <lastmod>2026-09-20T23:11:18.784Z</lastmod>
+    <loc>https://rbasaldud.github.io/MSyST/series_tiempo/visualizacion.html</loc>
+    <lastmod>2026-08-30T02:07:46.546Z</lastmod>
+  </url>
+  <url>
+    <loc>https://rbasaldud.github.io/MSyST/series_tiempo/motivacion_3B.html</loc>
+    <lastmod>2026-09-23T04:21:56.556Z</lastmod>
+  </url>
+  <url>
+    <loc>https://rbasaldud.github.io/MSyST/series_tiempo/box_jenkins.html</loc>
+    <lastmod>2026-09-30T22:48:05.957Z</lastmod>
+  </url>
+  <url>
+    <loc>https://rbasaldud.github.io/MSyST/series_tiempo/arimax_demografia.html</loc>
+    <lastmod>2026-10-07T22:43:28.098Z</lastmod>
   </url>
   <url>
     <loc>https://rbasaldud.github.io/MSyST/series_tiempo/modelos_ARMA.html</loc>
     <lastmod>2026-09-29T04:38:02.418Z</lastmod>
+  </url>
+  <url>
+    <loc>https://rbasaldud.github.io/MSyST/index.html</loc>
+    <lastmod>2026-10-07T22:43:28.094Z</lastmod>
   </url>
 </urlset>
