@@ -133,22 +133,16 @@ Entre ellos, la medición de concentración de carbono negro, esta variable est�
 
 Al platicar con las personas encargadas de colocar los equipos para las mediciones, el encargado de realizar el análisis de datos realizó la siguiente visualización. Se asustaron por los niveles tan altos de carbono negro para los fogones tradicionales. Al platicar con un experto, este comentó que las mediciones eran demasiado altas. Luego de investigar, el grupo de trabajo reveló que la dinámica para hacer las mediciones fue encender el fogón, preparar alimentos y posteriormente apagarlo de forma abrupta. Este escenario no se apega exactamente a lo que se desea modelar, pues una familia no apaga el fogón poco después de ocuparlo, usualmente se mantiene encendido alimentandolo menos. Esto se interpretó como que las mediciones no correspondían al fenómeno que se deseaba modelar, y por ende se podía eliminar los outliers.
 
-![Ouliers de la medición](Otros/Estufas1.jpg)
-
-
 
 Otro problema que presenta la gráfica es que al estar en escalas muy diferentes, las mediciones de los fogones hacen que se pierda por completo el comportamiento de las estufas ecológicas. Esto quiere decir que modelar en la misma gráfica fenómenos con distintas escalas puede perder información. En todo caso, lo ideal es acompañar de un segundo gráfico que permita identificar el comportamiento de los demás grupos.
 
 
-![Ouliers de la medición](Otros/Estufas2.jpg)
 
 
 
 
 También es posible detectar irregularidades en los datos, como la presencia de variables latentes que influyen en las mediciones.
 
-
-![Ouliers de la medición](Otros/Estufas3.jpg)
 
 Por ejemplo, las mismas estufas con diferentes mediciones según la usuaria. 
 

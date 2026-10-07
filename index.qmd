@@ -17,6 +17,7 @@ format:
 | Análisis exploratorio de datos (EDA) | [Presentación](EDA.qmd)
 
 
+
 # Series de tiempo
 
 | Tema | Presentación |
