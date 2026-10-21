@@ -1,0 +1,369 @@
+---
+title: "Introducción al Análisis de supervivencia"
+subtitle: "Rotterdam dataset:Datos censurados, modelos paramétricos y máxima verosimilitud"
+lang: es
+format:
+  html:
+    toc: true
+    toc-depth: 2
+    toc-title: "Contenido"
+    code-fold: true
+    code-tools: true
+    theme: flatly
+    embed-resources: true
+    fig-width: 8
+    fig-height: 5
+    fig-align: center
+execute:
+  warning: false
+  message: false
+---
+
+```{r}
+#| label: setup
+#| include: false
+
+#Limpiamos entorno
+rm(list = ls(all.names = TRUE))
+gc() #Liberamos memoria
+
+library(tidyverse)
+library(survival)    # >= 3.2 para disponer de la base `rotterdam`
+library(survminer)
+library(ggsurvfit)
+library(flexsurv)
+library(muhaz)
+library(patchwork)
+library(knitr)
+library(plotly)
+library(DT)
+
+
+```
+
+
+
+
+Para ejemplificar algunas ideas básicas del análisis de supervivencia clásico usaremos el dataset `Rotterdam` del paquete `survival`. Primero se darán algunos ejemplos sobre cómo realizar un análisis exploratorio de los datos, luego se presentarán algunos modelos paramétricos y finalmente un análisis de la maximización de la función de verosimilitud para datos con censura no informativa. 
+
+# Rotterdam: Cáncer de mama 
+
+
+2982 mujeres con cáncer de mama operadas, registradas en el banco de tumores de Rotterdam. Aquí se analiza el tiempo desde la cirugía hasta la muerte (`dtime`, `death`), pasado de días a años. Las pacientes vivas al final del seguimiento son observaciones censuradas por la derecha.
+
+```{r}
+#| label: datos
+rott <- rotterdam |>
+  transmute(
+    id    = row_number(),
+    time  = dtime / 365.25,          # años hasta muerte o último seguimiento
+    event = death,                   # 1 = muerte, 0 = censura
+    age,
+    meno  = factor(meno,   levels = 0:1, labels = c("Premenopáusica", "Postmenopáusica")),
+    size  = factor(size,   levels = c("<=20", "20-50", ">50")),
+    grade = factor(grade),
+    nodes,
+    hormon = factor(hormon, levels = 0:1, labels = c("No", "Sí")),
+    chemo  = factor(chemo,  levels = 0:1, labels = c("No", "Sí"))
+  )
+
+glimpse(rott)
+```
+
+
+Podemos explorar de formar interactiva. El tiempo está en años y el evento es 1 = muerte, 0 = censura.
+
+```{r}
+#| label: dt-datos
+rott |>
+  mutate(time = round(time, 2)) |>
+  datatable(
+    filter  = "top",
+    rownames = FALSE,
+    options = list(pageLength = 8, scrollX = TRUE, dom = "tip"),
+    caption = "Base Rotterdam (pacientes con cáncer de mama operadas)"
+  )
+```
+
+
+# Visualización de datos censurados
+
+## El objeto `Surv`
+
+Los datos con censura por la derecha se representan como pares $(t_i, \delta_i)$, con $t_i = \min(T_i, C_i)$ y $\delta_i = \mathbb{1}(T_i \le C_i)$. En R, `Surv()` los codifica la censura como un `+`.
+
+```{r}
+#| label: surv-obj
+head(Surv(rott$time, rott$event), 15)
+```
+
+```{r}
+#| label: resumen-censura
+rott |>
+  group_by(size) |>
+  summarise(
+    n           = n(),
+    eventos     = sum(event),
+    censuras    = sum(1 - event),
+    `% censura` = round(100 * mean(1 - event), 1),
+    `seguimiento máx. (años)` = round(max(time), 1)
+  ) |>
+  kable(caption = "Eventos y censuras por tamaño tumoral")
+```
+
+::: {.callout-note}
+## Otros tipos de censura
+`Surv()` también admite censura por la izquierda (`type = "left"`), por intervalo (`type = "interval"`).
+:::
+
+## Trayectorias individuales (*lifelines*)
+
+Antes de resumir, conviene ver los datos crudos: cada línea es una paciente y el círculo marca una muerte y la cruz marca una censura.
+
+
+```{r}
+#| label: lifelines
+#| fig-height: 6
+set.seed(2024)
+
+vida <- rott |>
+  slice_sample(n = 50) |>
+  arrange(time) |>
+  mutate(
+    y      = row_number(),
+    estado = factor(event, levels = c(1, 0), labels = c("Evento", "Censura"))
+  )
+
+ggplot(vida, aes(y = y)) +
+  geom_segment(aes(x = 0, xend = time, yend = y), colour = "grey70") +
+  geom_point(aes(x = time, shape = estado, colour = estado), size = 3) +
+  scale_shape_manual(values = c(Evento = 16, Censura = 4)) +
+  scale_colour_manual(values = c(Evento = "#C0392B", Censura = "#2C3E50")) +
+  labs(x = "Tiempo (años)", y = "Paciente (ordenada por tiempo)",
+       shape = NULL, colour = NULL,
+       title = "Trayectorias de seguimiento (muestra de 50 pacientes)")
+```
+
+Si quisieramos agregar covariables, se puede hacer interactiva para la inspección.
+
+```{r}
+#| label: lifelines-plotly
+#| fig-height: 6.5
+vida <- vida |>
+  mutate(texto = paste0(
+    "<b>Paciente ", id, "</b><br>",
+    "Tiempo: ", round(time, 2), " años<br>",
+    "Estado: ", estado, "<br>",
+    "Edad: ", age, "<br>",
+    "Tamaño: ", size, " mm<br>",
+    "Ganglios: ", nodes
+  ))
+
+plot_ly(vida) |>
+  add_segments(x = 0, xend = ~time, y = ~y, yend = ~y,
+               line = list(color = "lightgray", width = 1.5),
+               showlegend = FALSE, hoverinfo = "skip") |>
+  add_markers(x = ~time, y = ~y, color = ~estado, symbol = ~estado,
+              colors = c(Evento = "#C0392B", Censura = "#2C3E50"),
+              symbols = c("circle", "x"),
+              marker = list(size = 9),
+              text = ~texto, hoverinfo = "text") |>
+  layout(
+    title = "Trayectorias de seguimiento (interactivo)",
+    xaxis = list(title = "Tiempo (años)"),
+    yaxis = list(title = "Paciente (ordenada por tiempo)", showticklabels = FALSE)
+  )
+```
+
+## Kaplan–Meier con `ggsurvfit`
+
+`ggsurvfit` construye curvas de supervivencia como objetos `ggplot2`, con tabla de riesgo, marcas de censura y cuantiles.
+
+```{r}
+#| label: km-ggsurvfit
+#| fig-height: 7
+survfit2(Surv(time, event) ~ size, data = rott) |>
+  ggsurvfit(linewidth = 1) +
+  add_confidence_interval() +
+  add_censor_mark(size = 2, alpha = 0.5) +
+  add_quantile(y_value = 0.5, linetype = "dashed", colour = "grey40") +
+  add_risktable(risktable_stats = "{n.risk} ({cum.censor})") +
+  scale_ggsurvfit() +
+  labs(x = "Tiempo (años)", y = "Probabilidad de supervivencia",
+       title = "Kaplan–Meier por tamaño tumoral (mm)",
+       subtitle = "Tabla de riesgo: en riesgo (censuras acumuladas)")
+```
+
+## Kaplan–Meier con `survminer`
+
+`ggsurvplot()` hace casi lo mismo (tabla de riesgo, gráfico de censuras y línea de la mediana).
+
+```{r}
+#| label: km-survminer
+#| fig-height: 8.5
+fit_km <- survfit(Surv(time, event) ~ size, data = rott)
+
+ggsurvplot(
+  fit_km, data = rott,
+  conf.int         = TRUE,
+  pval             = TRUE,
+  surv.median.line = "hv",
+  risk.table       = TRUE,
+  ncensor.plot     = TRUE,
+  censor.shape     = "|",
+  palette          = c("#2E86C1", "#27AE60", "#C0392B"),
+  xlab             = "Tiempo (años)",
+  legend.labs      = levels(rott$size),
+  ggtheme          = theme_minimal()
+)
+```
+
+
+También se puede hacer de forma interavtiva.
+
+
+```{r}
+#| label: funciones-km
+# Colores a rgba para las bandas de confianza
+rgba <- function(hex, a = 0.2) {
+  v <- col2rgb(hex)
+  sprintf("rgba(%d,%d,%d,%.2f)", v[1], v[2], v[3], a)
+}
+
+# survfit -> data frame ordenado
+tidy_km <- function(fit) {
+  est <- tibble(
+    time = fit$time, surv = fit$surv,
+    lower = fit$lower, upper = fit$upper,
+    n_risk = fit$n.risk, n_event = fit$n.event, n_cens = fit$n.censor
+  )
+  est$grupo <- if (is.null(fit$strata)) {
+    "Global"
+  } else {
+    sub("^[^=]+=", "", rep(names(fit$strata), fit$strata))
+  }
+  est$grupo <- factor(est$grupo, levels = unique(est$grupo))
+
+  ini <- est |>
+    distinct(grupo) |>
+    mutate(time = 0, surv = 1, lower = 1, upper = 1,
+           n_risk = NA_real_, n_event = 0, n_cens = 0)
+
+  bind_rows(ini, est) |>
+    arrange(grupo, time) |>
+    mutate(cumhaz = -log(surv), ch_lo = -log(upper), ch_hi = -log(lower))
+}
+
+# Añade 4 trazas por grupo: banda sup., banda inf. (relleno), curva y censuras
+anadir_km <- function(fig, d, paleta, tipo = "survival",
+                      visible = TRUE, prefijo = "") {
+  gr <- levels(d$grupo)
+  for (i in seq_along(gr)) {
+    dg  <- d |> filter(grupo == gr[i])
+    col <- paleta[i]
+    lg  <- paste(prefijo, gr[i])
+
+    if (tipo == "survival") {
+      y <- dg$surv; lo <- dg$lower; hi <- dg$upper
+    } else {
+      y <- dg$cumhaz; lo <- dg$ch_lo; hi <- dg$ch_hi
+    }
+    dc <- dg |> filter(n_cens > 0)
+    yc <- if (tipo == "survival") dc$surv else dc$cumhaz
+
+    fig <- fig |>
+      add_trace(x = dg$time, y = hi, type = "scatter", mode = "lines",
+                line = list(width = 0, shape = "hv"),
+                legendgroup = lg, showlegend = FALSE,
+                hoverinfo = "skip", visible = visible) |>
+      add_trace(x = dg$time, y = lo, type = "scatter", mode = "lines",
+                line = list(width = 0, shape = "hv"),
+                fill = "tonexty", fillcolor = rgba(col, 0.2),
+                legendgroup = lg, showlegend = FALSE,
+                hoverinfo = "skip", visible = visible) |>
+      add_trace(x = dg$time, y = y, type = "scatter", mode = "lines",
+                line = list(color = col, width = 2.5, shape = "hv"),
+                name = gr[i], legendgroup = lg, visible = visible,
+                customdata = dg$n_risk,
+                hovertemplate = paste0(
+                  "Año %{x:.2f}<br>",
+                  if (tipo == "survival") "S(t) = " else "H(t) = ",
+                  "%{y:.3f}<br>En riesgo: %{customdata}")) |>
+      add_trace(x = dc$time, y = yc, type = "scatter", mode = "markers",
+                marker = list(symbol = "line-ns-open", size = 7, color = col,
+                              line = list(width = 1.2)),
+                legendgroup = lg, showlegend = FALSE,
+                hoverinfo = "skip", visible = visible)
+  }
+  fig
+}
+```
+
+
+```{r}
+#| label: km-selector
+#| fig-height: 6.5
+vars_est <- c(size = "Tamaño tumoral", hormon = "Terapia hormonal",
+              grade = "Grado", meno = "Menopausia")
+pal_g <- c("#2E86C1", "#C0392B", "#27AE60", "#8E44AD")
+
+tidy_list <- map(names(vars_est), \(v) {
+  tidy_km(survfit(as.formula(paste("Surv(time, event) ~", v)), data = rott))
+})
+n_tr <- map_int(tidy_list, \(d) 4L * n_distinct(d$grupo))
+
+fig <- plot_ly()
+for (j in seq_along(tidy_list)) {
+  fig <- anadir_km(fig, tidy_list[[j]], pal_g,
+                   visible = (j == 1), prefijo = names(vars_est)[j])
+}
+
+botones <- map(seq_along(vars_est), \(j) {
+  v <- rep(FALSE, sum(n_tr))
+  v[(cumsum(c(0, n_tr))[j] + 1):cumsum(n_tr)[j]] <- TRUE
+  list(label = unname(vars_est[j]), method = "update",
+       args = list(list(visible = v)))
+})
+
+fig |>
+  layout(
+    title = "Kaplan–Meier interactivo",
+    updatemenus = list(list(type = "buttons", direction = "right",
+                            x = 0, xanchor = "left", y = 1.14, yanchor = "top",
+                            buttons = botones)),
+    xaxis = list(title = "Tiempo (años)", rangeslider = list(thickness = 0.06)),
+    yaxis = list(title = "S(t)", range = c(0, 1.02)),
+    margin = list(t = 100)
+  )
+```
+
+## Riesgo acumulado
+
+La función de riesgo acumulado $H(t) = -\log S(t)$ se estima de forma no paramétrica con Nelson–Aalen. 
+
+
+```{r}
+#| label: cumhaz-ggsurvfit
+survfit2(Surv(time, event) ~ size, data = rott) |>
+  ggsurvfit(type = "cumhaz", linewidth = 1) +
+  add_confidence_interval() +
+  scale_ggsurvfit() +
+  labs(x = "Tiempo (años)", y = "Riesgo acumulado",
+       title = "Riesgo acumulado (Nelson–Aalen) por tamaño tumoral")
+```
+
+
+```{r}
+#| label: cumhaz-plotly
+d_size <- tidy_km(survfit(Surv(time, event) ~ size, data = rott))
+
+plot_ly() |>
+  anadir_km(d_size, pal_g[1:3], tipo = "cumhaz", prefijo = "size") |>
+  layout(
+    title = "Riesgo acumulado por tamaño tumoral (interactivo)",
+    xaxis = list(title = "Tiempo (años)"),
+    yaxis = list(title = "H(t)"),
+    legend = list(title = list(text = "Tamaño (mm)"))
+  )
+```
+

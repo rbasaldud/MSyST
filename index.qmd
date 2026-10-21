@@ -32,6 +32,15 @@ format:
 | ARIMAX | [Notas](series_tiempo/arimax_demografia.qmd) |
 
 
+
+# Análisis de supervivencia
+| Tema | Presentación |
+|:-----------------------------------|:-----------------------------------|
+| Datos censurados y modelos paramétricos  | [Notas](supervivencia/funciones_modelosParametricos.qmd) |
+
+
+
+
 # Repositorio
 
 Los códigos de las presentaciones y ejemplos están disponibles en este [repositorio](https://github.com/rbasaldud/MSyST)
