@@ -1,6 +1,6 @@
 ---
 title: "Introducción al Análisis de supervivencia"
-subtitle: "Rotterdam dataset:Datos censurados, modelos paramétricos y máxima verosimilitud"
+subtitle: "Datos censurados, modelos paramétricos y máxima verosimilitud"
 lang: es
 format:
   html:
@@ -28,7 +28,7 @@ rm(list = ls(all.names = TRUE))
 gc() #Liberamos memoria
 
 library(tidyverse)
-library(survival)    # >= 3.2 para disponer de la base `rotterdam`
+library(survival)    
 library(survminer)
 library(ggsurvfit)
 library(flexsurv)
@@ -56,7 +56,7 @@ Para ejemplificar algunas ideas básicas del análisis de supervivencia clásico
 rott <- rotterdam |>
   transmute(
     id    = row_number(),
-    time  = dtime / 365.25,          # años hasta muerte o último seguimiento
+    time  = dtime / 365.25,          # años hasta muerte o ultimo seguimiento
     event = death,                   # 1 = muerte, 0 = censura
     age,
     meno  = factor(meno,   levels = 0:1, labels = c("Premenopáusica", "Postmenopáusica")),
@@ -71,7 +71,7 @@ glimpse(rott)
 ```
 
 
-Podemos explorar de formar interactiva. El tiempo está en años y el evento es 1 = muerte, 0 = censura.
+ Este buscador interactivo nos permite filtrar por cualquier covariable y ordenar por cualquier columna. El tiempo está en años y el evento es 1 = muerte, 0 = censura.
 
 ```{r}
 #| label: dt-datos
@@ -88,13 +88,18 @@ rott |>
 
 # Visualización de datos censurados
 
+Probablemente antes de este punto los datos censurados eran un fenómeno desconocido, sin embargo el tratamiento de los mismos requiere algunas consideraciones. Algunas preguntas que surgen son: ¿cómo se representan los datos censurados en R?, ¿cómo se visualizan?, ¿cómo se resumen?. Si bien existen muchas formas de hacerlo, lo adecuado es primero preguntarse por el objetivo del análisis y luego elegir. De forma general, los datos censurados pueden explorarse con gráficas de trayectorias individuales, trayectorias con covariables, tablas de resumen (cantidad de censuras para cada nivel de variables categóricas), y siempre puede ser útil el uso de técnicas de análisis multivariado como PCA o clustering para explorar la estructura de los datos (sobre las covariables, no sobre la variable de tiempo). Todo lo anterior es previo a la construcción de los estimadores paramétricos o no paramétricos de la función de supervivencia, riesgo acumulado, etc.
+
+
 ## El objeto `Surv`
 
-Los datos con censura por la derecha se representan como pares $(t_i, \delta_i)$, con $t_i = \min(T_i, C_i)$ y $\delta_i = \mathbb{1}(T_i \le C_i)$. En R, `Surv()` los codifica la censura como un `+`.
+En R, los datos con censura (por la derecha) se representan como pares $(t_i, \delta_i)$, con $t_i = \min(T_i, C_i)$ el tiempo observado y $\delta_i = \mathbb{1}(T_i \le C_i)$ una indicadora si la observación es falla o censura. 
+
+El objeto de `Surv()` guarda las observaciones que son censuras añadiendo un `+` al final del valor correspondiente. Por ejemplo, si mostramos las primeras 20 observaciones de nuestra base.
 
 ```{r}
 #| label: surv-obj
-head(Surv(rott$time, rott$event), 15)
+head(Surv(rott$time, rott$event), 20)
 ```
 
 ```{r}
@@ -118,8 +123,9 @@ rott |>
 
 ## Trayectorias individuales (*lifelines*)
 
-Antes de resumir, conviene ver los datos crudos: cada línea es una paciente y el círculo marca una muerte y la cruz marca una censura.
+Un supuesto que se suele olvidar es que hasta este momento, no consideramos relevante el orden en el que observamos a los pacientes. Sin embargo, en la práctica, el orden de los datos puede ser importante para la interpretación de los resultados. Por ejemplo, si se observa que las primeras pacientes mueren rápidamente y las últimas sobreviven mucho tiempo, esto podría indicar un sesgo en la selección de pacientes o en el tratamiento recibido.
 
+Visualizando las trayectorias individuales de una muestra aleatoria de 50 pacientes. Debido a la dimensión de la base, en realidad esta visualización es inútil, pero sirve para ilustrar la idea de que cada paciente tiene su propia trayectoria de seguimiento, y que las censuras se representan con un símbolo diferente al de los eventos.
 
 ```{r}
 #| label: lifelines
@@ -144,7 +150,8 @@ ggplot(vida, aes(y = y)) +
        title = "Trayectorias de seguimiento (muestra de 50 pacientes)")
 ```
 
-Si quisieramos agregar covariables, se puede hacer interactiva para la inspección.
+
+La gráfica anterior puede ser de utilidad para analizar los tiempos observados y las censuras, pero cuando hay presencia de covariables, es intuitivo que pensar que tal vez nos estamos perdiendo de información relevante. En este paso entra el uso de técnicas como PCA o clustering para explorar la estructura de los datos (sobre las covariables, no sobre la variable de tiempo). Sin embargo, si queremos agregar covariables a la visualización, podemos hacer una gráfica interactiva.
 
 ```{r}
 #| label: lifelines-plotly
@@ -177,7 +184,7 @@ plot_ly(vida) |>
 
 ## Kaplan–Meier con `ggsurvfit`
 
-`ggsurvfit` construye curvas de supervivencia como objetos `ggplot2`, con tabla de riesgo, marcas de censura y cuantiles.
+La función `ggsurvfit` construye curvas de supervivencia con tabla de riesgo, marcas de censura y las medianas de cada grupo usando el cuantil empirico obtenido por el estimador de Kaplan–Meier. La función `add_confidence_interval()` añade intervalos de confianza al 95% para cada curva. 
 
 ```{r}
 #| label: km-ggsurvfit
@@ -191,16 +198,15 @@ survfit2(Surv(time, event) ~ size, data = rott) |>
   scale_ggsurvfit() +
   labs(x = "Tiempo (años)", y = "Probabilidad de supervivencia",
        title = "Kaplan–Meier por tamaño tumoral (mm)",
-       subtitle = "Tabla de riesgo: en riesgo (censuras acumuladas)")
+       subtitle = "Con tabla de riesgos acumulados)")
 ```
 
 ## Kaplan–Meier con `survminer`
 
-`ggsurvplot()` hace casi lo mismo (tabla de riesgo, gráfico de censuras y línea de la mediana).
-
+`ggsurvplot()` hace casi lo mismo (tabla de riesgo, gráfico de censuras y línea de la mediana). Esta opción puede ser más fácil de usar, pero menos flexible que `ggsurvfit()`. La función `survfit()` estima la función de supervivencia de Kaplan–Meier y `ggsurvplot()` la visualiza mientras que `ggsurvfit()` hace ambas cosas en un solo paso. 
 ```{r}
 #| label: km-survminer
-#| fig-height: 8.5
+#| fig-height: 7.5
 fit_km <- survfit(Surv(time, event) ~ size, data = rott)
 
 ggsurvplot(
@@ -224,13 +230,16 @@ También se puede hacer de forma interavtiva.
 
 ```{r}
 #| label: funciones-km
-# Colores a rgba para las bandas de confianza
+
+#funcion para calcular KM interactiva segun covariables 
+
+# colores a rgba para intervalos
 rgba <- function(hex, a = 0.2) {
   v <- col2rgb(hex)
   sprintf("rgba(%d,%d,%d,%.2f)", v[1], v[2], v[3], a)
 }
 
-# survfit -> data frame ordenado
+# data frame ordenado
 tidy_km <- function(fit) {
   est <- tibble(
     time = fit$time, surv = fit$surv,
@@ -254,7 +263,7 @@ tidy_km <- function(fit) {
     mutate(cumhaz = -log(surv), ch_lo = -log(upper), ch_hi = -log(lower))
 }
 
-# Añade 4 trazas por grupo: banda sup., banda inf. (relleno), curva y censuras
+# añade 4 lineas por grupo: intervalo sup, intervalo inf, curva y censuras
 anadir_km <- function(fig, d, paleta, tipo = "survival",
                       visible = TRUE, prefijo = "") {
   gr <- levels(d$grupo)
@@ -301,8 +310,8 @@ anadir_km <- function(fig, d, paleta, tipo = "survival",
 
 
 ```{r}
-#| label: km-selector
-#| fig-height: 6.5
+#| label: km-interactivo
+#| fig-height: 7.5
 vars_est <- c(size = "Tamaño tumoral", hormon = "Terapia hormonal",
               grade = "Grado", meno = "Menopausia")
 pal_g <- c("#2E86C1", "#C0392B", "#27AE60", "#8E44AD")
@@ -365,5 +374,453 @@ plot_ly() |>
     yaxis = list(title = "H(t)"),
     legend = list(title = list(text = "Tamaño (mm)"))
   )
+```
+
+
+# Modelos paramétricos
+
+Como parte de la introducción al análisis de supervivencia, se estudian de forma teórica las funciones de supervivencia, riesgo y riesgo acumulado suponiendo que los tiempos de falla siguen distribuciones conocidas.
+
+ Por lo general en estos análisis se ajustan varias distribuciones (a los tiempos y sin covariables) y se comparan con el estimador de Kaplan–Meier. La selección de la distribución más adecuada (menos mala) se puede hacer con base en criterios de información (AIC, BIC) y en la inspección visual de las funciones ajustadas frente a las estimaciones no paramétricas. No es común realizar pruebas de bondad de ajuste formales, pues la censura complica la contrucción de las pruebas y la interpretación de los resultados no es concluyente. Lo más común es construir modelos que consideren covariables y sobre esos realizar verificación de supuestos (entre ellos, la bondad de ajuste).
+
+## Estimación por máxima verosimilitud con censura no informativa
+
+Sea $T_i$ el tiempo de falla y $C_i$ el de censura, con $t_i = \min(T_i, C_i)$ y $\delta_i = \mathbb{1}(T_i \le C_i)$. Si la censura es **no informativa** ($C_i$ independiente de $T_i$ y con distribución que no depende de los parámetros $\theta$ de interés), la verosimilitud puede escribirse como:
+$$
+L(\theta) \;\propto\; \prod_{i=1}^{n} f(t_i;\theta)^{\delta_i}\, S(t_i;\theta)^{1-\delta_i}.
+$$
+
+Cada evento observado aporta su densidad $f$; cada censura por la derecha aporta $S(t_i)$, pues solo se sabe que $T_i > t_i$. Escrita con el riesgo, la log-verosimilitud es:
+
+$$
+\ell(\theta) = \sum_{i=1}^{n} \delta_i \log h(t_i;\theta) \;-\; \sum_{i=1}^{n} H(t_i;\theta).
+$$
+
+Para la **Weibull** con forma $k$ y escala $\lambda$ (misma parametrización de `dweibull(shape = k, scale = lambda)`):
+
+$$
+h(t) = \frac{k}{\lambda}\left(\frac{t}{\lambda}\right)^{k-1}, \qquad
+H(t) = \left(\frac{t}{\lambda}\right)^{k},
+$$
+
+$$
+\ell(k,\lambda) = d\,(\log k - k\log\lambda) + (k-1)\sum_i \delta_i \log t_i - \lambda^{-k}\sum_i t_i^{k},
+\qquad d = \sum_i \delta_i .
+$$
+
+Como $\ell$ no es lineal en los parámetros, se puede maximizar numéricamente. Primero mostraremos cómo hacerlo con la función por defecto para análisis de supervivencia en R `flexsurvreg()` y luego de forma manual con `optim()`.
+
+
+## Ajuste con `flexsurv`
+
+`flexsurvreg()` ajusta modelos paramétricos por máxima verosimilitud, admitiendo censura por la derecha (y otros tipos). Se ajustan seis distribuciones (Exponencial, Weibull, Gamma, Log-normal, Logística, Gompertz) sin covariables. 
+
+```{r}
+#| label: ajuste-param
+dists <- c("exp", "weibull", "gamma", "lnorm", "llogis", "gompertz")
+
+fits <- map(set_names(dists), \(d) {
+  flexsurvreg(Surv(time, event) ~ 1, data = rott, dist = d)
+})
+
+n_obs <- nrow(rott)
+
+tabla_ajuste <- tibble(
+  distribucion = dists,
+  parametros   = map_dbl(fits, \(f) attr(logLik(f), "df")),
+  logLik       = map_dbl(fits, \(f) as.numeric(logLik(f))),
+  AIC          = map_dbl(fits, AIC),
+  BIC          = -2 * logLik + parametros * log(n_obs)
+) |>
+  arrange(AIC)
+
+datatable(tabla_ajuste |> mutate(across(where(is.double), \(x) round(x, 2))),
+          rownames = FALSE,
+          options = list(dom = "t", ordering = TRUE),
+          caption = "Comparación de modelos paramétricos.")
+```
+
+Los parámetros estimados, errores estándar e intervalos de confianza del modelo Weibull ajustados son:
+
+```{r}
+#| label: param-weibull
+kable(fits$weibull$res, digits = 5)
+```
+
+## Comparación de funciones de supervivencia, riesgo y riesgo acumulado
+
+Recoremos que dado un modelo, las tres funciones se relacionan así:
+
+$$
+S(t) = \exp\{-H(t)\}, \qquad
+h(t) = \frac{f(t)}{S(t)}, \qquad
+H(t) = \int_0^t h(u)\,du .
+$$
+
+Luego de ajustar distintos modelos, se pueden comparan con las estimaciones no paramétricas: Kaplan–Meier y Nelson-Aalen.
+
+```{r}
+#| label: curvas-datos
+t_grid <- seq(0.1, max(rott$time), length.out = 200)
+
+curvas <- function(tipo) {
+  imap_dfr(fits, \(f, nombre) {
+    summary(f, type = tipo, t = t_grid, ci = FALSE, tidy = TRUE) |>
+      mutate(dist = nombre)
+  })
+}
+
+df_surv   <- curvas("survival")
+df_hazard <- curvas("hazard")
+df_cumhaz <- curvas("cumhaz")
+
+# Estimaciones no paramétricas
+km <- survfit(Surv(time, event) ~ 1, data = rott)
+df_km <- bind_rows(
+  tibble(time = 0, surv = 1, cumhaz = 0),
+  tibble(time = km$time, surv = km$surv, cumhaz = -log(km$surv))
+)
+
+mh <- muhaz(rott$time, rott$event, bw.method = "global")
+df_mh <- tibble(time = mh$est.grid, haz = mh$haz.est)
+
+pal <- c(exp = "#E67E22", weibull = "#C0392B", gamma = "#27AE60",
+         lnorm = "#2E86C1", llogis = "#8E44AD", gompertz = "#7F8C8D")
+```
+
+
+```{r}
+#| label: curvas-graficos
+#| fig-height: 11
+#| fig-width: 8
+p_s <- ggplot() +
+  geom_step(data = df_km, aes(time, surv), colour = "black", linewidth = 0.8) +
+  geom_line(data = df_surv, aes(time, est, colour = dist), linewidth = 0.9) +
+  scale_colour_manual(values = pal) +
+  labs(x = NULL, y = "S(t)", colour = "Modelo",
+       title = "Función de supervivencia", subtitle = "Negro: Kaplan–Meier")
+
+
+p_H <- ggplot() +
+  geom_step(data = df_km, aes(time, cumhaz), colour = "black", linewidth = 0.8) +
+  geom_line(data = df_cumhaz, aes(time, est, colour = dist), linewidth = 0.9) +
+  scale_colour_manual(values = pal) +
+  labs(x = "Tiempo (años)", y = "H(t)", colour = "Modelo",
+       title = "Función de riesgo acumulado",
+       subtitle = "Negro: Nelson-Aalen")
+
+(p_s / p_H) + plot_layout(guides = "collect")
+```
+
+
+Es mejor si la hacemos interactiva.  
+
+```{r}
+#| label: curvas-plotly
+#| fig-height: 6
+np <- list(
+  survival = list(x = df_km$time, y = df_km$surv,   shape = "hv"),
+  hazard   = list(x = df_mh$time, y = df_mh$haz,    shape = "linear"),
+  cumhaz   = list(x = df_km$time, y = df_km$cumhaz, shape = "hv")
+)
+dfs <- list(survival = df_surv, hazard = df_hazard, cumhaz = df_cumhaz)
+tipos <- names(np)
+n_por_tipo <- 1 + length(dists)     # 1 curva no paramétrica + 6 modelos
+
+fig <- plot_ly()
+for (i in seq_along(tipos)) {
+  nm <- tipos[i]
+  fig <- add_trace(
+    fig, x = np[[nm]]$x, y = np[[nm]]$y, type = "scatter", mode = "lines",
+    line = list(color = "black", width = 2, shape = np[[nm]]$shape),
+    name = "No paramétrico", legendgroup = "np", visible = (i == 1)
+  )
+  for (d in dists) {
+    dd <- dfs[[nm]] |> filter(dist == d)
+    fig <- add_trace(
+      fig, x = dd$time, y = dd$est, type = "scatter", mode = "lines",
+      line = list(color = pal[[d]], width = 2),
+      name = d, legendgroup = d, visible = (i == 1)
+    )
+  }
+}
+
+vis <- function(k) {
+  v <- rep(FALSE, length(tipos) * n_por_tipo)
+  v[((k - 1) * n_por_tipo + 1):(k * n_por_tipo)] <- TRUE
+  v
+}
+etiquetas <- c("S(t)", "h(t)", "H(t)")
+
+botones <- map(seq_along(tipos), \(k) {
+  list(label = etiquetas[k], method = "update",
+       args = list(list(visible = vis(k)),
+                   list("yaxis.title.text" = etiquetas[k],
+                        "yaxis.autorange" = TRUE)))
+})
+
+fig |>
+  layout(
+    title = "Modelos paramétricos vs. estimación no paramétrica",
+    updatemenus = list(list(type = "buttons", direction = "right",
+                            x = 0, xanchor = "left", y = 1.14, yanchor = "top",
+                            buttons = botones)),
+    xaxis = list(title = "Tiempo (años)"),
+    yaxis = list(title = "S(t)"),
+    margin = list(t = 100)
+  )
+```
+
+### Modelo seleccionado con IC
+
+Para el Weibull se muestran las tres funciones con IC al 95 % (por simulación desde la distribución asintótica de los estimadores). 
+
+```{r}
+#| label: weibull-ic
+#| fig-height: 4.5
+fw <- fits$weibull
+
+bandas <- function(tipo, etiqueta) {
+  summary(fw, type = tipo, t = t_grid, B = 500, tidy = TRUE) |>
+    mutate(funcion = etiqueta)
+}
+
+df_w <- bind_rows(
+  bandas("survival", "S(t)"),
+  bandas("hazard",   "h(t)"),
+  bandas("cumhaz",   "H(t)")
+)
+
+p_w <- ggplot(df_w, aes(time, est)) +
+  geom_ribbon(aes(ymin = lcl, ymax = ucl), fill = "#C0392B", alpha = 0.2) +
+  geom_line(colour = "#C0392B", linewidth = 1) +
+  facet_wrap(~ funcion, scales = "free_y") +
+  labs(x = "Tiempo (años)", y = NULL,
+       title = "Modelo Weibull ajustado con IC al 95 %")
+
+ggplotly(p_w)
+```
+
+El método `plot()` propio de `flexsurv` (base R) permite una comprobación rápida:
+
+```{r}
+#| label: plot-flexsurv
+#| fig-height: 4
+par(mfrow = c(1, 3), mar = c(4, 4, 3, 1))
+plot(fits$weibull, type = "survival", main = "S(t)", xlab = "Años", ylab = "S(t)")
+plot(fits$weibull, type = "hazard",   main = "h(t)", xlab = "Años", ylab = "h(t)")
+plot(fits$weibull, type = "cumhaz",   main = "H(t)", xlab = "Años", ylab = "H(t)")
+par(mfrow = c(1, 1))
+```
+
+## Modelo Weibull para distintos tamaños tumorales
+
+Se ajusta un modelo Weibull para cada nivel de la covariable tamaño tumoral. La función `flexsurvreg()` permite incluir covariables en el modelo, es una noción similar a la de la regresión lineal cuando se incluyen variables categóricas. En este caso, el modelo ajusta un parámetro de escala $\lambda$ distinto para cada nivel de la covariable `size`, mientras que el parámetro de forma $k$ es común a todos los niveles.
+
+
+```{r}
+#| label: weibull-size
+fit_size <- flexsurvreg(Surv(time, event) ~ size, data = rott, dist = "weibull")
+kable(fit_size$res, digits = 4, caption = "Weibull con covariable tamaño tumoral")
+```
+
+```{r}
+#| label: weibull-size-graf
+#| fig-height: 4.5
+nuevo <- data.frame(size = factor(levels(rott$size), levels = levels(rott$size)))
+
+df_size <- bind_rows(
+  summary(fit_size, newdata = nuevo, type = "survival", t = t_grid, tidy = TRUE) |>
+    mutate(funcion = "S(t)"),
+  summary(fit_size, newdata = nuevo, type = "hazard", t = t_grid, tidy = TRUE) |>
+    mutate(funcion = "h(t)"),
+  summary(fit_size, newdata = nuevo, type = "cumhaz", t = t_grid, tidy = TRUE) |>
+    mutate(funcion = "H(t)")
+)
+
+p_sz <- ggplot(df_size, aes(time, est, colour = size, fill = size)) +
+  geom_ribbon(aes(ymin = lcl, ymax = ucl), alpha = 0.15, colour = NA) +
+  geom_line(linewidth = 1) +
+  facet_wrap(~ funcion, scales = "free_y") +
+  scale_colour_manual(values = pal_g[1:3]) +
+  scale_fill_manual(values = pal_g[1:3]) +
+  labs(x = "Tiempo (años)", y = NULL, colour = "Tamaño (mm)", fill = "Tamaño (mm)",
+       title = "Weibull ajustado por tamaño tumoral")
+
+ggplotly(p_sz)
+```
+
+
+## Optimización manual para datos simulados con censura aleatoria
+
+Se simula un escenario de un modelo Weibull con parámetros conocidos: $k = 1.5$, $\lambda = 10$, y censura independiente exponencial. El porcetanje de censuras es de 44%. Vamos a ajustar el modelo Weibull por máxima verosimilitud usando `optim()` y se comparan los resultados con `flexsurvreg()`, que es la forma más sencilla de hacerlo en R.
+
+```{r}
+#| label: simulacion
+set.seed(123)
+n        <- 300
+k_real   <- 1.5
+lam_real <- 10
+
+T_i <- rweibull(n, shape = k_real, scale = lam_real)   # tiempos de falla
+C_i <- rexp(n, rate = 0.08)                            # censura independiente
+
+sim <- tibble(
+  time  = pmin(T_i, C_i),
+  event = as.integer(T_i <= C_i)
+)
+```
+
+La ventaja de usar datos simulados es que podemos comparar la estimación de Kaplan–Meier con la curva verdadera de supervivencia Weibull. 
+
+```{r}
+#| label: sim-km
+survfit2(Surv(time, event) ~ 1, data = sim) |>
+  ggsurvfit(linewidth = 1) +
+  add_confidence_interval() +
+  add_censor_mark(size = 2, alpha = 0.5) +
+  stat_function(fun = \(x) pweibull(x, k_real, lam_real, lower.tail = FALSE),
+                colour = "#C0392B", linetype = "dashed", linewidth = 1) +
+  scale_ggsurvfit() +
+  labs(x = "Tiempo", y = "S(t)",
+       title = "Datos simulados: Kaplan–Meier vs. curva verdadera")
+```
+
+## Log-verosimilitud Weibull y optimización
+
+Para maximizar la log-verosimilitud, es más estable trabajar con los parámetros en escala logarítmica. Definimos una función `loglik_weibull()` que calcula la log-verosimilitud para un vector de parámetros $\theta = (\log k, \log \lambda)$ y los datos $(t_i, \delta_i)$. Luego la función `optim()` encuentra los parámetros que maximizan la log-verosimilitud.
+
+```{r}
+#| label: loglik-weibull
+loglik_weibull <- function(par, t, d) {
+  k   <- exp(par[1])
+  lam <- exp(par[2])
+  log_h <- log(k) - log(lam) + (k - 1) * log(t / lam)   # log h(t)
+  H     <- (t / lam)^k                                  # H(t)
+  sum(d * log_h) - sum(H)
+}
+
+opt <- optim(
+  par     = c(log_k = 0, log_lam = log(mean(sim$time))),
+  fn      = loglik_weibull,
+  t       = sim$time,
+  d       = sim$event,
+  method  = "BFGS",
+  hessian = TRUE,
+  control = list(fnscale = -1)      # fnscale = -1 => maximizar
+)
+
+opt$convergence   # 0 = convergio
+opt$value         # log-verosimilitud maxima
+```
+
+Hacemos una comparativa de los resultados obtenidos con `optim()` y los parámetros reales usados para simular los datos. 
+
+```{r}
+#| label: ee-weibull
+
+#tambien podemos calcular errores estandar e intervalos de confianza usando teoremas limite 
+V_log   <- solve(-opt$hessian)      # varianzas-covarianzas en escala log
+se_log  <- sqrt(diag(V_log))
+est_log <- opt$par
+
+res_mle <- tibble(
+  parametro = c("forma (k)", "escala (λ)"),
+  verdadero = c(k_real, lam_real),
+  estimado  = exp(est_log)
+)
+
+kable(res_mle, digits = 3,
+      caption = "Estimación MLE manual del modelo Weibull (censura no informativa)")
+```
+
+## Comparación con `flexsurv` 
+
+```{r}
+#| label: comparar
+fit_flex <- flexsurvreg(Surv(time, event) ~ 1, data = sim, dist = "weibull")
+fit_sr   <- survreg(Surv(time, event) ~ 1, data = sim, dist = "weibull")
+
+tibble(
+  metodo = c("optim (manual)", "flexsurvreg"),
+  forma  = c(exp(est_log[1]), fit_flex$res["shape", "est"]),
+  escala = c(exp(est_log[2]), fit_flex$res["scale", "est"])
+) |>
+  kable(digits = 7, caption = "Comparativa optim vs. flexsurvreg")
+```
+
+
+
+## Análisis de la verosimilitud para el parámetro de forma
+
+
+```{r}
+#| label: perfil
+d_tot <- sum(sim$event)
+
+lam_hat   <- \(k) (sum(sim$time^k) / d_tot)^(1 / k)
+ll_perfil <- \(k) loglik_weibull(c(log(k), log(lam_hat(k))), sim$time, sim$event)
+
+k_grid  <- seq(1.0, 2.2, length.out = 300)
+df_perf <- tibble(k = k_grid, ll = map_dbl(k_grid, ll_perfil))
+
+ll_max  <- opt$value
+corte   <- ll_max - qchisq(0.95, 1) / 2
+ic_perf <- range(df_perf$k[df_perf$ll >= corte])
+
+
+p_perf <- ggplot(df_perf, aes(k, ll)) +
+  geom_line(linewidth = 1, colour = "#2E86C1") +
+  geom_hline(yintercept = corte, linetype = "dashed") +
+  geom_vline(xintercept = exp(est_log[1]), colour = "#C0392B") +
+  geom_vline(xintercept = k_real, colour = "grey40", linetype = "dotted") +
+  labs(x = "Forma k", y = "Log-verosimilitud perfil",
+       title = "Perfil de verosimilitud para k (rojo: MLE; punteado: valor real)")
+
+ggplotly(p_perf)
+```
+
+## Superficie de verosimilitud para los parámetros de forma y escala
+
+
+```{r}
+#| label: superficie
+k_seq   <- seq(1.1, 2.0, length.out = 60)
+lam_seq <- seq(8, 13, length.out = 60)
+
+M <- outer(k_seq, lam_seq,
+           Vectorize(\(k, l) loglik_weibull(c(log(k), log(l)),
+                                            sim$time, sim$event))) - ll_max
+
+plot_ly() |>
+  add_surface(x = k_seq, y = lam_seq, z = t(pmax(M, -30)),
+              colorscale = "Viridis", showscale = TRUE,
+              colorbar = list(title = "log-verosimilitud (relativa)")) |>
+  add_trace(type = "scatter3d", mode = "markers",
+            x = exp(est_log[1]), y = exp(est_log[2]), z = 0,
+            marker = list(size = 5, color = "red"), name = "MLE") |>
+  layout(
+    title = "Superficie de log-verosimilitud relativa (Weibull)",
+    scene = list(xaxis = list(title = "Forma k"),
+                 yaxis = list(title = "Escala lambda"),
+                 zaxis = list(title = "log-verosimilitud relativa"))
+  )
+```
+
+```{r}
+#| label: contornos
+plot_ly() |>
+  add_contour(x = k_seq, y = lam_seq, z = t(pmax(M, -15)),
+              ncontours = 15, colorscale = "Blues", reversescale = TRUE,
+              colorbar = list(title = "log-verosimilitud (relativa)")) |>
+  add_markers(x = exp(est_log[1]), y = exp(est_log[2]),
+              marker = list(color = "red", symbol = "x", size = 10),
+              name = "MLE") |>
+  add_markers(x = k_real, y = lam_real,
+              marker = list(color = "black", size = 9),
+              name = "Valor verdadero") |>
+  layout(title = "Contornos de la log-verosimilitud relativa",
+         xaxis = list(title = "Forma k"),
+         yaxis = list(title = "Escala lambda"))
 ```
 
