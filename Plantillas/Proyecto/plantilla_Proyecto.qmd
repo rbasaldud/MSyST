@@ -1,0 +1,270 @@
+---
+title: "Titulo"
+subtitle: "Algo mas"
+author: "Nombres"
+institute: "Institucion u Organizacion"
+date: today
+date-format: "D [de] MMMM, YYYY"
+lang: es
+
+format:
+  revealjs:
+    theme: [default, custom.scss] # usa las configuraciones de custom.scss
+    width: 1280
+    height: 720
+    margin: 0.06
+    slide-number: c/t # numeracion 
+    progress: true
+    hash: true
+    transition: fade
+    transition-speed: fast
+    background-transition: fade
+    controls: true
+    preview-links: auto
+    footer: "Facultad de Ciencias, UNAM" # pie de pagina
+    # logo: img/logo.png           # para incluir imagen de logo en la esquina inferior derecha
+    html-math-method: mathjax      # formulas LaTeX
+    fig-align: center
+    embed-resources: true          # un solo .html portable (incluye posibles GIF)
+
+
+execute:              #configuraciones por defecto para los chunks de R
+  echo: false
+  warning: false
+  message: false
+  fig-dpi: 150
+---
+
+```{r}
+#| label: setup
+library(tidyverse)
+library(plotly)
+library(gganimate)
+library(gifski)
+library(scales)
+
+# Paleta coherente con custom.scss
+pal <- c(navy = "#1B2A41", teal = "#2A9D8F", amber = "#E9A23B",
+         coral = "#E76F51", gris = "#6B7280")
+
+theme_set(
+  theme_minimal(base_size = 18) +
+    theme(
+      plot.title       = element_text(face = "bold", color = pal["navy"]),
+      plot.subtitle    = element_text(color = pal["gris"]),
+      panel.grid.minor = element_blank(),
+      legend.position  = "bottom"
+    )
+)
+```
+
+## Contenido
+
+1. Introducción y objetivos
+2. Marco teórico
+3. Métodos
+4. Resultados
+5. Conclusiones
+
+# Introducción {.section-slide}
+
+## Motivación y objetivos
+
+- Algo.
+- Algo **más** 
+- Delimita el **alcance** de la presentación.
+
+. . .
+
+::: {.callout-note appearance="simple"}
+## Idea principal
+Resume las ideas
+:::
+
+## Cifras destacadas
+
+::::: {.columns}
+::: {.column width="33%"}
+::: {.kpi}
+::: {.num}
+`{r} nrow(mtcars)`
+:::
+::: {.lbl}
+Observaciones
+:::
+:::
+:::
+::: {.column width="33%"}
+::: {.kpi .warn}
+::: {.num}
+`{r} round(mean(mtcars$mpg), 1)`
+:::
+::: {.lbl}
+Media 
+:::
+:::
+:::
+::: {.column width="33%"}
+::: {.kpi .bad}
+::: {.num}
+`{r} ncol(mtcars)`
+:::
+::: {.lbl}
+Variables
+:::
+:::
+:::
+:::::
+
+# Otra transición {.section-slide}
+
+## Fórmulas 
+
+Sea $X_1,\dots,X_n$ una muestra con media $\mu$ y varianza $\sigma^2$.
+
+$$
+\bar{X}=\frac{1}{n}\sum_{i=1}^{n}X_i,\qquad
+\bar{X}\;\xrightarrow{\,d\,}\;\mathcal{N}\!\left(\mu,\tfrac{\sigma^2}{n}\right)
+$$
+
+. . .
+
+$$
+\hat{\beta}=\left(\mathbf{X}^\top\mathbf{X}\right)^{-1}\mathbf{X}^\top\mathbf{y}
+$$
+
+::: {.small}
+Referencia teórica: @hastie2009.
+:::
+
+## Literatura relacionada
+
+::::: {.columns}
+::: {.column width="50%" .articulo}
+![](img/articulo1.png){fig-alt="Encabezado del artículo 1"}
+
+::: {.cap}
+Encabezado de @ejemplo2020
+:::
+:::
+::: {.column width="50%" .articulo}
+![](img/articulo2.png){fig-alt="Encabezado del artículo 2"}
+
+::: {.cap}
+Encabezado de @hastie2009
+:::
+:::
+:::::
+
+::: {.notes}
+Las capturas de los encabezados (título, autores, revista) van en una carpeta hipotética  img/.
+:::
+
+# Resultados {.section-slide}
+
+## Tabla de ejemplo
+
+```{r}
+#| label: tabla
+mtcars |>
+  group_by(Cilindros = cyl) |>
+  summarise(Autos = n(),
+            `mpg medio` = round(mean(mpg), 1),
+            `hp medio` = round(mean(hp), 0)) |>
+  knitr::kable(align = "lccc")
+```
+
+## Gráfica interactiva (plotly)
+
+```{r}
+#| label: plotly1
+#| fig-width: 11
+#| fig-height: 4.8
+plot_ly(
+  mtcars, x = ~wt, y = ~mpg, color = ~factor(cyl),
+  colors = unname(pal[c("teal", "amber", "coral")]),
+  type = "scatter", mode = "markers",
+  marker = list(size = 12, opacity = .8),
+  text = ~paste0("Peso: ", wt, "<br>mpg: ", mpg, "<br>hp: ", hp),
+  hoverinfo = "text"
+) |>
+  layout(
+    xaxis = list(title = "Peso (1000 lb)"),
+    yaxis = list(title = "Millas por galón"),
+    legend = list(title = list(text = "Cilindros"), orientation = "h", y = -0.2),
+    paper_bgcolor = "rgba(0,0,0,0)", plot_bgcolor = "rgba(0,0,0,0)",
+    font = list(family = "Lato", size = 16)
+  ) |>
+  config(displayModeBar = FALSE)
+```
+
+
+## Mostrar código de R
+
+```{r}
+#| label: codigoR
+#| echo: true
+#| code-line-numbers: "|2,3,4"
+
+set.seed(2026)
+
+n <- 120  # 10 años de datos mensuales
+t <- 1:n
+fechas <- seq(as.Date("2015-01-01"), by = "month", length.out = n)
+
+tendencia <- 50 + 0.8 * t
+
+estacionalidad <- 15 * sin(2 * pi * (t - 3) / 12)
+
+ciclo <- 10 * sin(2 * pi * t / 54) + 4 * sin(2 * pi * t / 37)
+
+ruido <- rnorm(n, mean = 0, sd = 3)
+
+ingresos <- tendencia + estacionalidad + ciclo + ruido
+
+serie_df <- tibble(
+  fecha = fechas,
+  ingresos = ingresos,
+  tendencia = tendencia,
+  estacionalidad = estacionalidad,
+  ciclo = ciclo
+)
+
+```
+
+
+
+# Conclusiones {.section-slide}
+
+## Conclusiones
+
+::::: {.columns}
+::: {.column width="50%"}
+### Hallazgos
+
+- Primer hallazgo.
+- Segundo
+- Tercer hallazgo.
+:::
+::: {.column width="50%"}
+### Implicaciones
+
+1. Acción o recomendación 1.
+2. Acción o recomendación 2.
+3. Trabajo futuro.
+:::
+:::::
+
+::: {.callout-warning appearance="simple"}
+## Limitaciones
+Menciona los supuestos y límites de los resultados presentados.
+:::
+
+## Referencias {.smaller}
+
+::: {#refs}
+:::
+
+## Agradecimientos {.section-slide}
+
+tu.correo@institucion.com
